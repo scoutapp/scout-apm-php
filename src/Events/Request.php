@@ -72,6 +72,11 @@ class Request extends Event implements \JsonSerializable
         return $this->spans;
     }
 
+    public function getFirstSpan() : Span
+    {
+        return reset($this->spans);
+    }
+
     public function tagSpan(TagSpan $tagSpan)
     {
         $this->spans[$tagSpan->getId()] = $tagSpan;
