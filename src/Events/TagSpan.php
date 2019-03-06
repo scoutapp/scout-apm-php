@@ -48,20 +48,7 @@ class TagSpan extends Event implements \JsonSerializable
         return $this->value;
     }
 
-    public function getArrays()
-    {
-        return [
-            ['TagSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getSpanId(),
-                'tag' => $this->getTag(),
-                'value' => $this->getValue(),
-                'timestamp' => $this->getTimestamp(),
-            ]]
-        ];
-    }
-
-    public function jsonSerialize() : array
+    public function getSpanData() : array
     {
         return [
             'TagSpan' => [
@@ -72,5 +59,15 @@ class TagSpan extends Event implements \JsonSerializable
                 'timestamp' => $this->getTimestamp(),
             ]
         ];
+    }
+
+    public function getArrays() : array
+    {
+        return [$this->getSpanData()];
+    }
+
+    public function jsonSerialize() : array
+    {
+        return $this->getSpanData();
     }
 }

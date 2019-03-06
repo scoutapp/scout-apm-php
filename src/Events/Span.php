@@ -69,25 +69,7 @@ class Span extends Event implements \JsonSerializable
         return $this->summary;
     }
 
-    public function getArrays()
-    {
-        return [
-            ['StartSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
-                'parent_id' => $this->getParentId(),
-                'operation' => $this->getName(),
-                'timestamp' => $this->timer->getStart(),
-            ]],
-            ['StopSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
-                'timestamp' => $this->timer->getStop(),
-            ]],
-        ];
-    }
-
-    public function jsonSerialize() : array
+    public function getStartData() : array
     {
         return [
             'StartSpan' => [
@@ -96,12 +78,28 @@ class Span extends Event implements \JsonSerializable
                 'parent_id' => $this->getParentId(),
                 'operation' => $this->getName(),
                 'timestamp' => $this->timer->getStart(),
-            ],
+            ]
+        ];
+    }
+
+    public function getStopData() : array
+    {
+        return [
             'StopSpan' => [
                 'request_id' => $this->getRequestId(),
                 'span_id' => $this->getId(),
                 'timestamp' => $this->timer->getStop(),
-            ],
+            ]
         ];
+    }
+
+    public function getArrays() : array
+    {
+        return [$this->getStartData(), $this->getStopData()];
+    }
+
+    public function jsonSerialize() : array
+    {
+        return $this->getStartData() + $this->getStopData();
     }
 }

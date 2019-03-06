@@ -82,16 +82,29 @@ class Request extends Event implements \JsonSerializable
         $this->spans[$tagSpan->getId()] = $tagSpan;
     }
 
+    public function getStartData() : array
+    {
+        return [
+            'StartRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $this->timer->getStart(),
+            ]
+        ];
+    }
+
+    public function getFinishData() : array
+    {
+        return [
+            'FinishRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $this->timer->getStop(),
+            ]
+        ];
+    }
+
     public function jsonSerialize() : array
     {
-        $output = [
-            [
-                'StartRequest' => [
-                    'request_id' => $this->getId(),
-                    'timestamp' => $this->timer->getStart(),
-                ]
-            ],
-        ];
+        $output = [$this->getStartData()];
 
         $spans = $this->getSpans();
         foreach ($spans as $span) {
@@ -102,12 +115,7 @@ class Request extends Event implements \JsonSerializable
             }
         }
 
-        $output[] =             [
-            'FinishRequest' => [
-                'request_id' => $this->getId(),
-                'timestamp' => $this->timer->getStop(),
-            ]
-            ];
+        $output[] = $this->getFinishData();
 
 
         return $output;
