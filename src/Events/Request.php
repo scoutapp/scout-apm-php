@@ -4,17 +4,12 @@ namespace Scoutapm\Events;
 
 use Ramsey\Uuid\Uuid;
 use Scoutapm\Helper\Timer;
-use Scoutapm\Events\Span;
 
 class Request extends Event implements \JsonSerializable
 {
     private $name;
 
     private $timer;
-
-    private $summary = [
-        'duration'  => 0.0,
-    ];
 
     private $spans = [];
 
@@ -34,11 +29,9 @@ class Request extends Event implements \JsonSerializable
         $this->timer->start($override);
     }
 
-    public function stop(int $duration = null)
+    public function stop()
     {
         $this->timer->stop();
-
-        $this->summary['duration']  = $duration ?? round($this->timer->getDuration(), 3);
     }
 
     public function setRequestName(string $name)
@@ -49,11 +42,6 @@ class Request extends Event implements \JsonSerializable
     public function getRequestName() : string
     {
         return $this->name;
-    }
-
-    public function getSummary() : array
-    {
-        return $this->summary;
     }
 
     public function setSpan(Span $span)

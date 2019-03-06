@@ -15,10 +15,6 @@ class Span extends Event implements \JsonSerializable
 
     private $timer;
 
-    private $summary = [
-        'duration'  => 0.0,
-    ];
-
     public function __construct(string $name, string $requestId, string $parentId = null)
     {
         $this->id = Uuid::uuid4()->toString();
@@ -37,11 +33,9 @@ class Span extends Event implements \JsonSerializable
         $this->timer->start($override);
     }
 
-    public function stop(int $duration = null)
+    public function stop()
     {
         $this->timer->stop();
-
-        $this->summary['duration']  = $duration ?? round($this->timer->getDuration(), 3);
     }
 
     public function getRequestId() : string
@@ -62,11 +56,6 @@ class Span extends Event implements \JsonSerializable
     public function getName() : string
     {
         return $this->name;
-    }
-
-    public function getSummary() : array
-    {
-        return $this->summary;
     }
 
     public function getArrays()
