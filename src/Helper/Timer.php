@@ -34,17 +34,6 @@ class Timer
         return $this->toMicro($this->stop - $this->start);
     }
 
-    public function getElapsed() : float
-    {
-        if ($this->start === null) {
-            throw new NotStartedException();
-        }
-
-        return ($this->stop === null) ?
-            $this->toMicro(microtime(true) - $this->start) :
-            $this->getDuration();
-    }
-
     public function getStop()
     {
         $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->stop));
