@@ -20,10 +20,7 @@ class Request extends Event implements \JsonSerializable
 
     public function __construct(string $name)
     {
-        $this->id = Uuid::uuid4()->toString();
-        $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)));
-        $timestamp->setTimeZone(new \DateTimeZone('UTC'));
-        $this->timestamp = $timestamp->format('Y-m-d\TH:i:s.u\Z');
+        parent::__construct();
 
         $this->setRequestName($name);
         $this->timer = new Timer();
