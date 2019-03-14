@@ -4,6 +4,7 @@ namespace Scoutapm;
 
 use Scoutapm\Events\Span;
 use Scoutapm\Events\TagSpan;
+use Scoutapm\Events\TagRequest;
 use Scoutapm\Events\Request;
 use Scoutapm\Helper\Timer;
 use Scoutapm\Helper\Config;
@@ -76,6 +77,15 @@ class Agent
         $request->tagSpan($tagSpan);
 
         return $tagSpan;
+    }
+
+    public function tagRequest(string $requestName, string $tag, string $value, string $requestId, string $spanId, float $timestamp = null) : TagRequest
+    {
+        $request = $this->getRequest($requestName);
+        $tagRequest = new TagRequest($tag, $value, $requestId, $spanId, $timestamp);
+        $request->tagRequest($tagRequest);
+
+        return $tagRequest;
     }
 
     public function getRequest(string $name)

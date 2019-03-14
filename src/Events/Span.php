@@ -2,7 +2,6 @@
 
 namespace Scoutapm\Events;
 
-use Ramsey\Uuid\Uuid;
 use Scoutapm\Helper\Timer;
 
 class Span extends Event
