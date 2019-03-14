@@ -16,16 +16,12 @@ class TagSpan extends Event implements \JsonSerializable
 
     public function __construct(string $tag, string $value, string $requestId, string $spanId, float $timestamp = null)
     {
-        $this->id = Uuid::uuid4()->toString();
+        parent::__construct();
 
         $this->request_id = $requestId;
         $this->span_id = $spanId;
         $this->tag = $tag;
         $this->value = $value;
-
-        $dt = \DateTime::createFromFormat('U.u', sprintf('%.6F', $timestamp ?? microtime(true)));
-        $dt->setTimeZone(new \DateTimeZone('UTC'));
-        $this->timestamp = $dt->format('Y-m-d\TH:i:s.u\Z');
     }
 
     public function getRequestId() : string
