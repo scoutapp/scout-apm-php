@@ -10,13 +10,15 @@ class Request extends Event implements \JsonSerializable
 
     private $timer;
 
-    private $spans = [];
+    private $events = [];
+
+    private $openSpans = [];
 
     public function __construct(string $name)
     {
         parent::__construct();
 
-        $this->setRequestName($name);
+        $this->name = $name;
         $this->timer = new Timer();
     }
 
@@ -30,45 +32,42 @@ class Request extends Event implements \JsonSerializable
         $this->timer->stop();
     }
 
-    public function setRequestName(string $name)
+    public function addSpan(Span $span)
     {
-        $this->name = $name;
+        if ($parent = end($this->openSpans)) {
+            $span->setParentId($parent->getId());
+        }
+
+        $span->setRequestId($this->id);
+        $this->openSpans[] = $span;
     }
 
-    public function getRequestName() : string
+    public function stopSpan()
     {
-        return $this->name;
+        $span = array_pop($this->openSpans);
+        $span->stop();
+        $this->events[] = $span;
     }
 
-    public function setSpan(Span $span)
+    public function tagRequest(TagRequest $tag)
     {
-        $name = $span->getName();
-        $this->spans[$name] = $span;
+        $tag->setRequestId($this->id);
+        $this->events[] = $tag;
     }
 
-    public function getSpan(string $name): Span
+    public function tagSpan(TagSpan $tag, $current)
     {
-        return $this->spans[$name];
-    }
+        // todo: this needs to be refactored. You can't tag the previous span twice.
+        if ($current) {
+            $span = end($this->openSpans);
+        } else {
+            $span = end($this->events);
+        }
 
-    public function getSpans(): array
-    {
-        return $this->spans;
-    }
+        $tag->setSpanId($span->getId());
+        $tag->setRequestId($this->id);
 
-    public function getFirstSpan() : Span
-    {
-        return reset($this->spans);
-    }
-
-    public function tagSpan(TagSpan $tagSpan)
-    {
-        $this->spans[$tagSpan->getId()] = $tagSpan;
-    }
-
-    public function tagRequest(TagRequest $tagRequest)
-    {
-        $this->spans[$tagRequest->getId()] = $tagRequest;
+        $this->events[] = $tag;
     }
 
     public function jsonSerialize() : array
@@ -82,21 +81,20 @@ class Request extends Event implements \JsonSerializable
             ],
         ];
 
-        $spans = $this->getSpans();
-        foreach ($spans as $span) {
-            $arr = $span->getArrays();
-    
+        $events = $this->events;
+        foreach ($events as $event) {
+            $arr = $event->getArrays();
             foreach ($arr as $value) {
                 $output[] = $value;
             }
         }
 
-        $output[] =             [
+        $output[] = [
             'FinishRequest' => [
                 'request_id' => $this->getId(),
                 'timestamp' => $this->timer->getStop(),
             ]
-            ];
+        ];
 
 
         return $output;

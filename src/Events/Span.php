@@ -6,21 +6,19 @@ use Scoutapm\Helper\Timer;
 
 class Span extends Event
 {
-    private $request_id;
+    private $requestId;
 
-    private $parent_id;
+    private $parentId;
 
     private $name;
 
     private $timer;
 
-    public function __construct(string $name, string $requestId, string $parentId = null)
+    public function __construct(string $name)
     {
         parent::__construct();
 
-        $this->setName($name);
-        $this->request_id = $requestId;
-        $this->parent_id = $parentId;
+        $this->name = $name;
         $this->timer = new Timer();
     }
 
@@ -34,19 +32,14 @@ class Span extends Event
         $this->timer->stop();
     }
 
-    public function getRequestId() : string
+    public function setRequestId(string $requestId)
     {
-        return $this->request_id;
+        $this->request_id = $requestId;
     }
 
-    public function getParentId() : ?string
+    public function setParentId(string $parentId)
     {
-        return $this->parent_id;
-    }
-
-    public function setName(string $name)
-    {
-        $this->name = $name;
+        $this->parent_id = $parentId;
     }
 
     public function getName() : string
@@ -58,15 +51,15 @@ class Span extends Event
     {
         return [
             ['StartSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
-                'parent_id' => $this->getParentId(),
-                'operation' => $this->getName(),
+                'request_id' => $this->requestId,
+                'span_id' => $this->id,
+                'parent_id' => $this->parentId,
+                'operation' => $this->name,
                 'timestamp' => $this->timer->getStart(),
             ]],
             ['StopSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
+                'request_id' => $this->requestId,
+                'span_id' => $this->id,
                 'timestamp' => $this->timer->getStop(),
             ]],
         ];
