@@ -2,7 +2,7 @@
 
 namespace Scoutapm\Events;
 
-class TagSpan extends Event
+class TagRequest extends Event
 {
     private $request_id;
 
@@ -45,7 +45,7 @@ class TagSpan extends Event
     public function getArrays()
     {
         return [
-            ['TagSpan' => [
+            ['TagRequest' => [
                 'request_id' => $this->getRequestId(),
                 'span_id' => $this->getSpanId(),
                 'tag' => $this->getTag(),

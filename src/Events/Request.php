@@ -2,7 +2,6 @@
 
 namespace Scoutapm\Events;
 
-use Ramsey\Uuid\Uuid;
 use Scoutapm\Helper\Timer;
 
 class Request extends Event implements \JsonSerializable
@@ -65,6 +64,11 @@ class Request extends Event implements \JsonSerializable
     public function tagSpan(TagSpan $tagSpan)
     {
         $this->spans[$tagSpan->getId()] = $tagSpan;
+    }
+
+    public function tagRequest(TagRequest $tagRequest)
+    {
+        $this->spans[$tagRequest->getId()] = $tagRequest;
     }
 
     public function jsonSerialize() : array
