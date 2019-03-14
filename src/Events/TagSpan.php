@@ -4,7 +4,7 @@ namespace Scoutapm\Events;
 
 use Ramsey\Uuid\Uuid;
 
-class TagSpan extends Event implements \JsonSerializable
+class TagSpan extends Event
 {
     private $request_id;
 
@@ -54,19 +54,6 @@ class TagSpan extends Event implements \JsonSerializable
                 'value' => $this->getValue(),
                 'timestamp' => $this->getTimestamp(),
             ]]
-        ];
-    }
-
-    public function jsonSerialize() : array
-    {
-        return [
-            'TagSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getSpanId(),
-                'tag' => $this->getTag(),
-                'value' => $this->getValue(),
-                'timestamp' => $this->getTimestamp(),
-            ]
         ];
     }
 }

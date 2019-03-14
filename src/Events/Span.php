@@ -5,7 +5,7 @@ namespace Scoutapm\Events;
 use Ramsey\Uuid\Uuid;
 use Scoutapm\Helper\Timer;
 
-class Span extends Event implements \JsonSerializable
+class Span extends Event
 {
     private $request_id;
 
@@ -70,24 +70,6 @@ class Span extends Event implements \JsonSerializable
                 'span_id' => $this->getId(),
                 'timestamp' => $this->timer->getStop(),
             ]],
-        ];
-    }
-
-    public function jsonSerialize() : array
-    {
-        return [
-            'StartSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
-                'parent_id' => $this->getParentId(),
-                'operation' => $this->getName(),
-                'timestamp' => $this->timer->getStart(),
-            ],
-            'StopSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getId(),
-                'timestamp' => $this->timer->getStop(),
-            ],
         ];
     }
 }
