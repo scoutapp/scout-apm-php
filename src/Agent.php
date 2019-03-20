@@ -62,12 +62,7 @@ class Agent
 
         $connector = new Connector($this->config);
 
-        if (!$this->requestsStore->isEmpty()) {
-            $status = $connector->sendRequests($this->requestsStore);
-            if (!$status) {
-                $this->requestsStore->clear();
-            }
-        }
+        $status = $connector->sendRequests($this->request);
 
         return $status;
     }

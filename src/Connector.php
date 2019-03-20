@@ -2,6 +2,8 @@
 
 namespace Scoutapm;
 
+use Scoutapm\Events\Request;
+
 class Connector
 {
     private $config;
@@ -16,7 +18,7 @@ class Connector
         register_shutdown_function([&$this, 'shutdown']);
     }
 
-    public function sendRequests(RequestsStore $store) : bool
+    public function sendRequests(Request $store) : bool
     {
         $registerMessage = json_encode([
             'Register' => [
