@@ -7,7 +7,6 @@ use Scoutapm\Events\TagSpan;
 use Scoutapm\Events\TagRequest;
 use Scoutapm\Events\Request;
 use Scoutapm\Helper\Config;
-use Scoutapm\Exception\Request\UnknownRequestException;
 
 class Agent
 {
@@ -49,7 +48,7 @@ class Agent
         $this->request->tagRequest($tagRequest);
     }
 
-    public function getConfig() : \Scoutapm\Helper\Config
+    public function getConfig() : Config
     {
         return $this->config;
     }
