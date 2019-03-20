@@ -3,6 +3,7 @@ namespace Scoutapm\Tests;
 
 use \Scoutapm\Agent;
 use \PHPUnit\Framework\TestCase;
+use Scoutapm\Exception\Timer\NotStartedException;
 
 /**
 * Test Case for @see \Scoutapm\Agent
@@ -19,36 +20,18 @@ final class AgentTest extends TestCase {
         $agent = new Agent([ 'appName' => 'phpunit_1', 'key' => '1234' ]);
 
         $name = 'request';
-        $agent->startRequest($name);
+        $agent->tagRequest($name, 'test', time());
         usleep(5);
-        $agent->stopRequest($name);
+        $agent->send();
+
+        $this->assertTrue(true);
     }
 
-    /**
-    * @depends testStartAndStopARequest
-    *
-    * @covers \Scoutapm\Agent::__construct
-    * @covers \Scoutapm\Agent::getRequest
-    */
-    public function testForceErrorOnUnknownRequest() {
-        $this->expectException(\Scoutapm\Exception\Request\UnknownRequestException::class);
+    public function testSpanNotStarted() {
+        $this->expectException(NotStartedException::class);
         $agent = new Agent([ 'appName' => 'phpunit_x', 'key' => '1234' ]);
 
-        $agent->getRequest('unknown');
-    }
-
-    /**
-    * @depends testForceErrorOnUnknownRequest
-    *
-    * @covers \Scoutapm\Agent::__construct
-    * @covers \Scoutapm\Agent::stopRequest
-    */
-    public function testForceErrorOnUnstartedRequest() {
-        $this->expectException(\Scoutapm\Exception\Request\UnknownRequestException::class);
-
-        $agent = new Agent([ 'appName' => 'phpunit_2', 'key' => '1234' ]);
-
-        $agent->stopRequest('unknown');
+        $agent->stopSpan();
     }
 
 }

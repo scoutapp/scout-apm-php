@@ -2,6 +2,7 @@
 
 namespace Scoutapm\Events;
 
+use Scoutapm\Exception\Timer\NotStartedException;
 use Scoutapm\Helper\Timer;
 
 class Request extends Event implements \JsonSerializable
@@ -45,6 +46,11 @@ class Request extends Event implements \JsonSerializable
     public function stopSpan()
     {
         $span = array_pop($this->openSpans);
+
+        if ($span === null) {
+            throw new NotStartedException();
+        }
+
         $span->stop();
         $this->events[] = $span;
     }
