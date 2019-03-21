@@ -24,7 +24,7 @@ class Agent
         $this->request = new Request('Request');
     }
 
-    public function startSpan(string $name, float $startTime=null)
+    public function startSpan(string $name, float $startTime = null)
     {
         $span = new Span($name);
         $span->start($startTime);
