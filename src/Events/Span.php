@@ -47,21 +47,31 @@ class Span extends Event
         return $this->name;
     }
 
+    public function getStartArray()
+    {
+        return ['StartSpan' => [
+            'request_id' => $this->requestId,
+            'span_id' => $this->id,
+            'parent_id' => $this->parentId,
+            'operation' => $this->name,
+            'timestamp' => $this->timer->getStart(),
+        ]];
+    }
+
+    public function getStopArray()
+    {
+        return ['StopSpan' => [
+            'request_id' => $this->requestId,
+            'span_id' => $this->id,
+            'timestamp' => $this->timer->getStop(),
+        ]];
+    }
+
     public function getArrays()
     {
         return [
-            ['StartSpan' => [
-                'request_id' => $this->requestId,
-                'span_id' => $this->id,
-                'parent_id' => $this->parentId,
-                'operation' => $this->name,
-                'timestamp' => $this->timer->getStart(),
-            ]],
-            ['StopSpan' => [
-                'request_id' => $this->requestId,
-                'span_id' => $this->id,
-                'timestamp' => $this->timer->getStop(),
-            ]],
+            $this->getStartArray(),
+            $this->getStopArray(),
         ];
     }
 }
