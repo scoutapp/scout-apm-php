@@ -34,12 +34,12 @@ class Span extends Event
 
     public function setRequestId(string $requestId)
     {
-        $this->request_id = $requestId;
+        $this->requestId = $requestId;
     }
 
     public function setParentId(string $parentId)
     {
-        $this->parent_id = $parentId;
+        $this->parentId = $parentId;
     }
 
     public function getName() : string
