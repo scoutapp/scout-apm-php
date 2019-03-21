@@ -9,7 +9,7 @@ class Config
 {
     private $config;
 
-    public function __construct(array $config)
+    public function __construct(array $config = [])
     {
         $this->config = array_merge($this->getDefaultConfig(), $config);
     }
