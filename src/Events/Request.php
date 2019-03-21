@@ -15,6 +15,8 @@ class Request extends Event implements \JsonSerializable
 
     private $openSpans = [];
 
+    private $stack = [];
+
     public function __construct(string $name)
     {
         parent::__construct();
@@ -41,6 +43,8 @@ class Request extends Event implements \JsonSerializable
 
         $span->setRequestId($this->id);
         $this->openSpans[] = $span;
+
+        $this->stack[] = $span;
     }
 
     public function stopSpan()
@@ -53,6 +57,7 @@ class Request extends Event implements \JsonSerializable
 
         $span->stop();
         $this->events[] = $span;
+        $this->stack[] = $span;
     }
 
     public function tagRequest(TagRequest $tag)
@@ -74,6 +79,7 @@ class Request extends Event implements \JsonSerializable
         $tag->setRequestId($this->id);
 
         $this->events[] = $tag;
+        $this->stack[] = $tag;
     }
 
     public function jsonSerialize() : array
@@ -87,11 +93,41 @@ class Request extends Event implements \JsonSerializable
             ],
         ];
 
-        $events = $this->events;
-        foreach ($events as $event) {
-            $arr = $event->getArrays();
-            foreach ($arr as $value) {
-                $output[] = $value;
+        $parents = [];
+        foreach ($this->stack as $event) {
+            $currentParent = end($parents);
+
+            if ($event instanceof Span) {
+                if ($currentParent == $event) {
+                    array_pop($parents);
+
+                    $arr = [$event->getStopArray()];
+                    foreach ($arr as $value) {
+                        $output[] = $value;
+                    }
+                    continue;
+                }
+
+                $parents[] = $event;
+
+                $arr = [$event->getStartArray()];
+                foreach ($arr as $value) {
+                    $output[] = $value;
+                }
+
+                continue;
+            }
+
+            if ($event instanceof Tag) {
+
+                $event->setSpanId($currentParent->getId());
+
+                $arr = $event->getArrays();
+                foreach ($arr as $value) {
+                    $output[] = $value;
+                }
+
+                continue;
             }
         }
 
@@ -101,7 +137,6 @@ class Request extends Event implements \JsonSerializable
                 'timestamp' => $this->timer->getStop(),
             ]
         ];
-
 
         return $output;
     }
