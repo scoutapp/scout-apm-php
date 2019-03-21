@@ -61,7 +61,7 @@ class Agent
 
         $connector = new Connector($this->config);
 
-        $status = $connector->sendRequests($this->request);
+        $status = $connector->sendRequest($this->request);
 
         return $status;
     }

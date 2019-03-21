@@ -18,7 +18,7 @@ class Connector
         register_shutdown_function([&$this, 'shutdown']);
     }
 
-    public function sendRequests(Request $request) : bool
+    public function sendRequest(Request $request) : bool
     {
         $registerMessage = json_encode([
             'Register' => [
