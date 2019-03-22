@@ -13,13 +13,16 @@ class TagSpan extends Tag
 
     public function getArrays() : array
     {
+        $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));
+        $timestamp->setTimeZone(new \DateTimeZone('UTC'));
+
         return [
             ['TagSpan' => [
                 'request_id' => $this->requestId,
                 'span_id' => $this->spanId,
                 'tag' => $this->tag,
                 'value' => $this->value,
-                'timestamp' => $this->timestamp,
+                'timestamp' => $timestamp->format('Y-m-d\TH:i:s.u\Z'),
             ]]
         ];
     }
