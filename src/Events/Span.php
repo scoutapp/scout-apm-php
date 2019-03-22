@@ -47,6 +47,16 @@ class Span extends Event
         return $this->name;
     }
 
+    public function getStartTime()
+    {
+        return $this->timer->getStart();
+    }
+
+    public function getStopTime()
+    {
+        return $this->timer->getStop();
+    }
+
     public function getStartArray()
     {
         return ['StartSpan' => [
@@ -54,7 +64,7 @@ class Span extends Event
             'span_id' => $this->id,
             'parent_id' => $this->parentId,
             'operation' => $this->name,
-            'timestamp' => $this->timer->getStart(),
+            'timestamp' => $this->getStartTime(),
         ]];
     }
 
@@ -63,7 +73,7 @@ class Span extends Event
         return ['StopSpan' => [
             'request_id' => $this->requestId,
             'span_id' => $this->id,
-            'timestamp' => $this->timer->getStop(),
+            'timestamp' => $this->getStopTime(),
         ]];
     }
 
