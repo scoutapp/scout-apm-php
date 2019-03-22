@@ -84,17 +84,25 @@ class Request extends Event implements \JsonSerializable
 
     public function jsonSerialize() : array
     {
+        $events = $this->stack;
+
+        $startTime = $this->timer->getStart();
+        if (count($events) > 0) {
+            $event = reset($events);
+            $startTime = $event->getStartTime();
+        }
+
         $output = [
             [
                 'StartRequest' => [
                     'request_id' => $this->getId(),
-                    'timestamp' => $this->timer->getStart(),
+                    'timestamp' => $startTime,
                 ]
             ],
         ];
 
         $parents = [];
-        foreach ($this->stack as $event) {
+        foreach ($events as $event) {
             $currentParent = end($parents);
 
             if ($event instanceof Span) {
@@ -131,10 +139,15 @@ class Request extends Event implements \JsonSerializable
             }
         }
 
+        $lastestTime = microtime(true);
+        if (isset($event)) {
+            $lastestTime = $event->getStopTime();
+        }
+
         $output[] = [
             'FinishRequest' => [
                 'request_id' => $this->getId(),
-                'timestamp' => $this->timer->getStop(),
+                'timestamp' => $lastestTime,
             ]
         ];
 
