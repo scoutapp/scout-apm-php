@@ -36,7 +36,7 @@ class Agent
         $this->request->stopSpan();
     }
 
-    public function tagSpan(string $tag, string $value, bool $current = true, float $timestamp = null)
+    public function tagSpan(string $tag, string $value, float $timestamp = null, bool $current = true)
     {
         $tagSpan = new TagSpan($tag, $value, $timestamp);
         $this->request->tagSpan($tagSpan, $current);
