@@ -2,6 +2,8 @@
 
 namespace Scoutapm;
 
+use Scoutapm\Events\Request;
+
 class Connector
 {
     private $config;
@@ -16,7 +18,7 @@ class Connector
         register_shutdown_function([&$this, 'shutdown']);
     }
 
-    public function sendRequests(RequestsStore $store) : bool
+    public function sendRequest(Request $request) : bool
     {
         $registerMessage = json_encode([
             'Register' => [
@@ -33,7 +35,7 @@ class Connector
 
 
         // Send Request
-        $request = json_encode(new RequestSerializer($this->config, $store));
+        $request = json_encode(new RequestSerializer($this->config, $request));
         
         $requestSize = strlen($request);
         socket_send($this->socket, pack('N', $requestSize), 4, 0);

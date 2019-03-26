@@ -2,55 +2,27 @@
 
 namespace Scoutapm\Events;
 
-class TagSpan extends Event
+class TagSpan extends Tag
 {
-    private $request_id;
+    protected $spanId;
 
-    private $span_id;
-
-    private $tag;
-
-    private $value;
-
-    public function __construct(string $tag, string $value, string $requestId, string $spanId, float $timestamp = null)
+    public function setSpanId($spanId)
     {
-        parent::__construct();
-
-        $this->request_id = $requestId;
-        $this->span_id = $spanId;
-        $this->tag = $tag;
-        $this->value = $value;
+        $this->spanId = $spanId;
     }
 
-    public function getRequestId() : string
+    public function getArrays() : array
     {
-        return $this->request_id;
-    }
+        $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));
+        $timestamp->setTimeZone(new \DateTimeZone('UTC'));
 
-    public function getSpanId() : string
-    {
-        return $this->span_id;
-    }
-
-    public function getTag() : ?string
-    {
-        return $this->tag;
-    }
-
-    public function getValue() : string
-    {
-        return $this->value;
-    }
-
-    public function getArrays()
-    {
         return [
             ['TagSpan' => [
-                'request_id' => $this->getRequestId(),
-                'span_id' => $this->getSpanId(),
-                'tag' => $this->getTag(),
-                'value' => $this->getValue(),
-                'timestamp' => $this->getTimestamp(),
+                'request_id' => $this->requestId,
+                'span_id' => $this->spanId,
+                'tag' => $this->tag,
+                'value' => $this->value,
+                'timestamp' => $timestamp->format('Y-m-d\TH:i:s.u\Z'),
             ]]
         ];
     }

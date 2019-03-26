@@ -2,6 +2,7 @@
 
 namespace Scoutapm\Events;
 
+use Scoutapm\Exception\Timer\NotStartedException;
 use Scoutapm\Helper\Timer;
 
 class Request extends Event implements \JsonSerializable
@@ -10,13 +11,17 @@ class Request extends Event implements \JsonSerializable
 
     private $timer;
 
-    private $spans = [];
+    private $events = [];
+
+    private $openSpans = [];
+
+    private $stack = [];
 
     public function __construct(string $name)
     {
         parent::__construct();
 
-        $this->setRequestName($name);
+        $this->name = $name;
         $this->timer = new Timer();
     }
 
@@ -30,74 +35,121 @@ class Request extends Event implements \JsonSerializable
         $this->timer->stop();
     }
 
-    public function setRequestName(string $name)
+    public function addSpan(Span $span)
     {
-        $this->name = $name;
+        if ($parent = end($this->openSpans)) {
+            $span->setParentId($parent->getId());
+        }
+
+        $span->setRequestId($this->id);
+        $this->openSpans[] = $span;
+
+        $this->stack[] = $span;
     }
 
-    public function getRequestName() : string
+    public function stopSpan()
     {
-        return $this->name;
+        $span = array_pop($this->openSpans);
+
+        if ($span === null) {
+            throw new NotStartedException();
+        }
+
+        $span->stop();
+        $this->events[] = $span;
+        $this->stack[] = $span;
     }
 
-    public function setSpan(Span $span)
+    public function tagRequest(TagRequest $tag)
     {
-        $name = $span->getName();
-        $this->spans[$name] = $span;
+        $tag->setRequestId($this->id);
+        $this->events[] = $tag;
     }
 
-    public function getSpan(string $name): Span
+    public function tagSpan(TagSpan $tag, $current)
     {
-        return $this->spans[$name];
-    }
+        // todo: this needs to be refactored. You can't tag the previous span twice.
+        if ($current) {
+            $span = end($this->openSpans);
+        } else {
+            $span = end($this->events);
+        }
 
-    public function getSpans(): array
-    {
-        return $this->spans;
-    }
+        $tag->setSpanId($span->getId());
+        $tag->setRequestId($this->id);
 
-    public function getFirstSpan() : Span
-    {
-        return reset($this->spans);
-    }
-
-    public function tagSpan(TagSpan $tagSpan)
-    {
-        $this->spans[$tagSpan->getId()] = $tagSpan;
-    }
-
-    public function tagRequest(TagRequest $tagRequest)
-    {
-        $this->spans[$tagRequest->getId()] = $tagRequest;
+        $this->events[] = $tag;
+        $this->stack[] = $tag;
     }
 
     public function jsonSerialize() : array
     {
+        $events = $this->stack;
+
+        $startTime = $this->timer->getStart();
+        if (count($events) > 0) {
+            $event = reset($events);
+            $startTime = $event->getStartTime();
+        }
+
         $output = [
             [
                 'StartRequest' => [
                     'request_id' => $this->getId(),
-                    'timestamp' => $this->timer->getStart(),
+                    'timestamp' => $startTime,
                 ]
             ],
         ];
 
-        $spans = $this->getSpans();
-        foreach ($spans as $span) {
-            $arr = $span->getArrays();
-    
-            foreach ($arr as $value) {
-                $output[] = $value;
+        $parents = [];
+        foreach ($events as $event) {
+            $currentParent = end($parents);
+
+            if ($event instanceof Span) {
+                if ($currentParent == $event) {
+                    array_pop($parents);
+
+                    $arr = [$event->getStopArray()];
+                    foreach ($arr as $value) {
+                        $output[] = $value;
+                    }
+                    continue;
+                }
+
+                $parents[] = $event;
+
+                $arr = [$event->getStartArray()];
+                foreach ($arr as $value) {
+                    $output[] = $value;
+                }
+
+                continue;
+            }
+
+            if ($event instanceof Tag) {
+
+                $event->setSpanId($currentParent->getId());
+
+                $arr = $event->getArrays();
+                foreach ($arr as $value) {
+                    $output[] = $value;
+                }
+
+                continue;
             }
         }
 
-        $output[] =             [
+        $lastestTime = microtime(true);
+        if (isset($event)) {
+            $lastestTime = $event->getStopTime();
+        }
+
+        $output[] = [
             'FinishRequest' => [
                 'request_id' => $this->getId(),
-                'timestamp' => $this->timer->getStop(),
+                'timestamp' => $lastestTime,
             ]
-            ];
-
+        ];
 
         return $output;
     }

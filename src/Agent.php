@@ -6,9 +6,7 @@ use Scoutapm\Events\Span;
 use Scoutapm\Events\TagSpan;
 use Scoutapm\Events\TagRequest;
 use Scoutapm\Events\Request;
-use Scoutapm\Helper\Timer;
 use Scoutapm\Helper\Config;
-use Scoutapm\Exception\Request\UnknownRequestException;
 
 class Agent
 {
@@ -18,87 +16,39 @@ class Agent
 
     private $config;
 
-    private $requestsStore;
-
-    private $timer;
+    private $request;
 
     public function __construct(array $config)
     {
         $this->config = new Config($config);
-        $this->requestsStore = new RequestsStore();
-
-        $this->timer = new Timer();
-        $this->timer->start();
+        $this->request = new Request('Request');
     }
 
-    public function startRequest(string $name, float $startTime = null): Request
+    public function startSpan(string $name, float $startTime = null)
     {
-        $this->requestsStore->register(
-            new Request($name)
-        );
-
-        $request = $this->requestsStore->get($name);
-        $request->start($startTime);
-
-        return $request;
-    }
-
-    public function stopRequest(string $name)
-    {
-        $this->getRequest($name)->stop();
-    }
-
-    public function startSpan(string $name, string $requestName, float $startTime=null, string $parentSpanName=null) : Span
-    {
-        $request = $this->getRequest($requestName);
-        $parentSpanId = null;
-        if ($parentSpanName !== null) {
-            $parentSpanId = $request->getSpan($parentSpanName)->getId();
-        }
-        $span = new Span($name, $request->getId(), $parentSpanId);
+        $span = new Span($name);
         $span->start($startTime);
-        $request->setSpan($span);
-
-        return $span;
+        $this->request->addSpan($span);
     }
 
-    public function stopSpan(string $name, string $requestName)
+    public function stopSpan()
     {
-        $request = $this->getRequest($requestName);
-        $span = $request->getSpan($name);
-        $span->stop();
-        $request->setSpan($span);
+        $this->request->stopSpan();
     }
 
-    public function tagSpan(string $requestName, string $tag, string $value, string $requestId, string $spanId, float $timestamp = null) : TagSpan
+    public function tagSpan(string $tag, string $value, float $timestamp = null, bool $current = true)
     {
-        $request = $this->getRequest($requestName);
-        $tagSpan = new TagSpan($tag, $value, $requestId, $spanId, $timestamp);
-        $request->tagSpan($tagSpan);
-
-        return $tagSpan;
+        $tagSpan = new TagSpan($tag, $value, $timestamp);
+        $this->request->tagSpan($tagSpan, $current);
     }
 
-    public function tagRequest(string $requestName, string $tag, string $value, string $requestId, string $spanId, float $timestamp = null) : TagRequest
+    public function tagRequest(string $tag, string $value, float $timestamp = null)
     {
-        $request = $this->getRequest($requestName);
-        $tagRequest = new TagRequest($tag, $value, $requestId, $spanId, $timestamp);
-        $request->tagRequest($tagRequest);
-
-        return $tagRequest;
+        $tagRequest = new TagRequest($tag, $value, $timestamp);
+        $this->request->tagRequest($tagRequest);
     }
 
-    public function getRequest(string $name)
-    {
-        $request = $this->requestsStore->get($name);
-        if ($request === null) {
-            throw new UnknownRequestException($name);
-        }
-
-        return $request;
-    }
-
-    public function getConfig() : \Scoutapm\Helper\Config
+    public function getConfig() : Config
     {
         return $this->config;
     }
@@ -111,12 +61,7 @@ class Agent
 
         $connector = new Connector($this->config);
 
-        if (!$this->requestsStore->isEmpty()) {
-            $status = $connector->sendRequests($this->requestsStore);
-            if (!$status) {
-                $this->requestsStore->clear();
-            }
-        }
+        $status = $connector->sendRequest($this->request);
 
         return $status;
     }
