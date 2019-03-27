@@ -30,6 +30,4 @@ abstract class Tag extends Event
     {
         $this->requestId = $requestId;
     }
-
-    abstract public function getArrays() : array;
 }

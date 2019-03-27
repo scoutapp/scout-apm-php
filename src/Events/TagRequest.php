@@ -4,7 +4,7 @@ namespace Scoutapm\Events;
 
 class TagRequest extends Tag
 {
-    public function getArrays() : array
+    public function getEventArray(array &$parents): array
     {
         return [
             ['TagRequest' => [

@@ -11,8 +11,11 @@ class TagSpan extends Tag
         $this->spanId = $spanId;
     }
 
-    public function getArrays() : array
+    public function getEventArray(array &$parents): array
     {
+        $currentParent = end($parents);
+        $this->setSpanId($currentParent->getId());
+
         $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));
         $timestamp->setTimeZone(new \DateTimeZone('UTC'));
 

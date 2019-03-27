@@ -77,11 +77,15 @@ class Span extends Event
         ]];
     }
 
-    public function getArrays()
+    public function getEventArray(array &$parents): array
     {
-        return [
-            $this->getStartArray(),
-            $this->getStopArray(),
-        ];
+        $currentParent = array_pop($parents);
+
+        if ($currentParent == $this) {
+            return [$this->getStopArray()];
+        }
+
+        array_push($parents, $this);
+        return [$this->getStartArray()];
     }
 }
