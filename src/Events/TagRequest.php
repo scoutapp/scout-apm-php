@@ -4,15 +4,9 @@ namespace Scoutapm\Events;
 
 class TagRequest extends Tag
 {
-    public function getEventArray(array &$parents): array
+    public function __construct(string $tag, string $value, float $timestamp = null)
     {
-        return [
-            ['TagRequest' => [
-                'request_id' => $this->requestId,
-                'tag' => $this->tag,
-                'value' => $this->value,
-                'timestamp' => $this->timestamp,
-            ]]
-        ];
+        $this->name = 'TagRequest';
+        parent::__construct($tag, $value, $timestamp);
     }
 }
