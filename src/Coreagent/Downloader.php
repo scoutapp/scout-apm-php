@@ -35,7 +35,14 @@ class Downloader
 
     public function createCoreAgentDirectory() : bool
     {
-        return mkdir($this->destination);
+        try {
+            mkdir($this->destination);
+        }
+        catch (Exception $exception) {
+
+        }
+
+        return file_exists($this->destination) && is_dir($this->destination);
     }
 
     public function downloadPackage() : bool

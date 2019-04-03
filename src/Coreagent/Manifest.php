@@ -20,9 +20,16 @@ class Manifest
 
     public function parse()
     {
-        $handle = fopen($this->path, 'r');
-        $data = fread($handle, filesize($this->path));
-        $json = json_decode($data, true);
+        echo "Path: $this->path \n";
+        try {
+            $handle = fopen($this->path, 'r');
+            $data = fread($handle, filesize($this->path));
+            $json = json_decode($data, true);
+        }
+        catch (\Exception $exception) {
+            $this->valid = false;
+            return;
+        }
 
         $this->version = $json['version'];
         $this->binaryVersion = $json['core_agent_version'];
