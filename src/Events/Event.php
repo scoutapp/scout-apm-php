@@ -4,7 +4,7 @@ namespace Scoutapm\Events;
 
 use Ramsey\Uuid\Uuid;
 
-class Event
+abstract class Event
 {
     protected $id;
 
@@ -28,4 +28,5 @@ class Event
         return $this->timestamp;
     }
 
+    abstract public function getEventArray(array &$parents) : array;
 }

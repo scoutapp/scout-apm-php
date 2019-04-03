@@ -11,11 +11,10 @@ class Request extends Event implements \JsonSerializable
 
     private $timer;
 
-    private $events = [];
+    /** @var Event[] full event stack */
+    private $stack = [];
 
     private $openSpans = [];
-
-    private $stack = [];
 
     public function __construct(string $name)
     {
@@ -30,6 +29,9 @@ class Request extends Event implements \JsonSerializable
         $this->timer->start($override);
     }
 
+    /**
+     * @throws NotStartedException
+     */
     public function stop()
     {
         $this->timer->stop();
@@ -56,101 +58,80 @@ class Request extends Event implements \JsonSerializable
         }
 
         $span->stop();
-        $this->events[] = $span;
         $this->stack[] = $span;
     }
 
     public function tagRequest(TagRequest $tag)
     {
         $tag->setRequestId($this->id);
-        $this->events[] = $tag;
     }
 
     public function tagSpan(TagSpan $tag, $current)
     {
-        // todo: this needs to be refactored. You can't tag the previous span twice.
-        if ($current) {
-            $span = end($this->openSpans);
-        } else {
-            $span = end($this->events);
-        }
-
-        $tag->setSpanId($span->getId());
         $tag->setRequestId($this->id);
 
-        $this->events[] = $tag;
         $this->stack[] = $tag;
+    }
+
+    public function getStartArray()
+    {
+        $startTime = $this->timer->getStart();
+        if (count($this->stack) > 0) {
+            $event = reset($this->stack);
+            $startTime = $event->getStartTime();
+        }
+
+        return [
+            'StartRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $startTime,
+            ]
+        ];
+    }
+
+    public function getStopArray()
+    {
+        $stopTime = $this->timer->getStop();
+        if (count($this->stack) > 0) {
+            $event = end($this->stack);
+            $stopTime = $event->getStopTime();
+        }
+
+        return [
+            'FinishRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $stopTime,
+            ]
+        ];
     }
 
     public function jsonSerialize() : array
     {
-        $events = $this->stack;
-
-        $startTime = $this->timer->getStart();
-        if (count($events) > 0) {
-            $event = reset($events);
-            $startTime = $event->getStartTime();
-        }
-
-        $output = [
-            [
-                'StartRequest' => [
-                    'request_id' => $this->getId(),
-                    'timestamp' => $startTime,
-                ]
-            ],
-        ];
+        $output = [$this->getStartArray()];
 
         $parents = [];
-        foreach ($events as $event) {
-            $currentParent = end($parents);
+        foreach ($this->stack as $event) {
+            $array = $event->getEventArray($parents);
 
-            if ($event instanceof Span) {
-                if ($currentParent == $event) {
-                    array_pop($parents);
-
-                    $arr = [$event->getStopArray()];
-                    foreach ($arr as $value) {
-                        $output[] = $value;
-                    }
-                    continue;
-                }
-
-                $parents[] = $event;
-
-                $arr = [$event->getStartArray()];
-                foreach ($arr as $value) {
-                    $output[] = $value;
-                }
-
-                continue;
-            }
-
-            if ($event instanceof Tag) {
-
-                $event->setSpanId($currentParent->getId());
-
-                $arr = $event->getArrays();
-                foreach ($arr as $value) {
-                    $output[] = $value;
-                }
-
-                continue;
+            foreach ($array as $value) {
+                $output[] = $value;
             }
         }
 
-        $lastestTime = microtime(true);
-        if (isset($event)) {
-            $lastestTime = $event->getStopTime();
-        }
-
-        $output[] = [
-            'FinishRequest' => [
-                'request_id' => $this->getId(),
-                'timestamp' => $lastestTime,
-            ]
-        ];
+        $output[] = $this->getStopArray();
 
         return $output;
+    }
+
+    public function getEventArray(array &$parents): array
+    {
+        $currentParent = array_pop($parents);
+
+        if ($currentParent == $this) {
+            return [$this->getStopArray()];
+        }
+
+        array_push($parents, $this);
+        return [$this->getStartArray()];
     }
 }
