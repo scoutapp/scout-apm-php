@@ -14,8 +14,8 @@ class Manager
 
     public function __construct()
     {
-        $this->coreAgentDir = config('scoutapm.core_agent_dir') . '/' . config('scoutapm.core_agent_full_name');
-        $this->downloader = new Downloader($this->coreAgentDir, config('scoutapm.core_agent_full_name'));
+        $this->coreAgentDir = config('scoutapm.coreAgentDir');
+        $this->downloader = new Downloader($this->coreAgentDir, config('scoutapm.coreAgentFullName'));
     }
 
     public function launch() : bool
