@@ -31,6 +31,8 @@ class Config
             'key' => null,
             'apiVersion'  => '1.0',
             'socketLocation'   => '/tmp/core-agent.sock',
+            'coreAgentDir' => '/tmp/scout_apm_core',
+            'coreAgentFullName' => 'scout_apm_core-latest-x86_64-unknown-linux-gnu.tgz',
         ];
     }
 }
