@@ -12,7 +12,7 @@ class DefaultSource
 {
     private $defaults;
 
-    public function __construct(array $config = [])
+    public function __construct()
     {
         $this->defaults = $this->getDefaultConfig();
     }
