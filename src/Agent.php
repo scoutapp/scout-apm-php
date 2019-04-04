@@ -18,9 +18,9 @@ class Agent
 
     private $request;
 
-    public function __construct(array $config)
+    public function __construct()
     {
-        $this->config = new Config($config);
+        $this->config = new Config();
         $this->request = new Request('Request');
     }
 

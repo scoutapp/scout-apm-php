@@ -11,7 +11,7 @@ class Config
     private $sources;
     private $userSettingsSource;
 
-    public function __construct(array $config = [])
+    public function __construct()
     {
         $this->userSettingsSource = new Config\UserSettingsSource();
 
