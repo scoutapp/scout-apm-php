@@ -3,17 +3,13 @@
 namespace Scoutapm;
 
 use Scoutapm\Events\Request;
-use Scoutapm\Helper\Config;
 
 class RequestSerializer implements \JsonSerializable
 {
-    protected $config;
-
     private $request;
 
-    public function __construct(Config $config, Request $request)
+    public function __construct(Request $request)
     {
-        $this->config = $config;
         $this->request = $request;
     }
 

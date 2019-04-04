@@ -10,11 +10,11 @@ class Connector
 
     private $socket;
 
-    public function __construct(\Scoutapm\Helper\Config $config)
+    public function __construct(\Scoutapm\Config $config)
     {
         $this->config = $config;
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
-        socket_connect($this->socket, $this->config->get('socketLocation'));
+        socket_connect($this->socket, $this->config->get('socket_location'));
         register_shutdown_function([&$this, 'shutdown']);
     }
 
@@ -22,9 +22,9 @@ class Connector
     {
         $registerMessage = json_encode([
             'Register' => [
-            'app' => $this->config->get('appName'),
+            'app' => $this->config->get('app_name'),
             'key' => $this->config->get('key'),
-            'api_version' => $this->config->get('apiVersion'),
+            'api_version' => $this->config->get('api_version'),
             ]
         ]);
         $registerSize = strlen($registerMessage);
@@ -35,7 +35,7 @@ class Connector
 
 
         // Send Request
-        $request = json_encode(new RequestSerializer($this->config, $request));
+        $request = json_encode(new RequestSerializer($request));
         
         $requestSize = strlen($request);
         socket_send($this->socket, pack('N', $requestSize), 4, 0);
