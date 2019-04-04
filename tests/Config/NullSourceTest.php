@@ -7,8 +7,8 @@ use \PHPUnit\Framework\TestCase;
 final class ConfigNullSourceTest extends TestCase {
   public function testHasKey() {
     $defaults = new NullSource();
-    $this->assertTrue($defaults->has_key("apiVersion"));
-    $this->assertTrue($defaults->has_key("notAValue"));
+    $this->assertTrue($defaults->hasKey("apiVersion"));
+    $this->assertTrue($defaults->hasKey("notAValue"));
   }
 
   public function testGet()

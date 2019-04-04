@@ -23,7 +23,7 @@ class UserSettingsSource
      *
      * @return bool
      */
-    public function has_key(string $key) : bool
+    public function hasKey(string $key) : bool
     {
         return array_key_exists($key, $this->config);
     }
@@ -32,7 +32,7 @@ class UserSettingsSource
     /**
      * Returns the value for this configuration key.
      *
-     * Only valid if the Source has previously returned "true" to `has_key`
+     * Only valid if the Source has previously returned "true" to `hasKey`
      *
      * @return The value requested
      */

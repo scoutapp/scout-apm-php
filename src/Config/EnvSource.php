@@ -16,7 +16,7 @@ class EnvSource
      *
      * @return bool
      */
-    public function has_key(string $key) : bool
+    public function hasKey(string $key) : bool
     {
         if (getEnv($this->envVarName($key))) {
             return true;
@@ -29,7 +29,7 @@ class EnvSource
     /**
      * Returns the value for this configuration key.
      *
-     * Only valid if the Source has previously returned "true" to `has_key`
+     * Only valid if the Source has previously returned "true" to `hasKey`
      *
      * @return The value requested
      */

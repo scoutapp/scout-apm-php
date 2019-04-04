@@ -10,8 +10,8 @@ final class ConfigDerivedSourceTest extends TestCase {
     $config = new Config();
     $derived = new DerivedSource($config);
 
-    $this->assertTrue($derived->has_key("testing"));
-    $this->assertFalse($derived->has_key("is_array"));
+    $this->assertTrue($derived->hasKey("testing"));
+    $this->assertFalse($derived->hasKey("is_array"));
   }
 
   public function testGet()

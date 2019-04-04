@@ -7,11 +7,11 @@ use \PHPUnit\Framework\TestCase;
 final class ConfigEnvSourceTest extends TestCase {
   public function testHasKey() {
     $config = new EnvSource();
-    $this->assertFalse($config->has_key("test_case_foo"));
+    $this->assertFalse($config->hasKey("test_case_foo"));
 
     putenv("SCOUT_TEST_CASE_FOO=thevalue");
 
-    $this->assertTrue($config->has_key("test_case_foo"));
+    $this->assertTrue($config->hasKey("test_case_foo"));
 
     // Clean up the var
     putenv('SCOUT_TEST_CASE_FOO');

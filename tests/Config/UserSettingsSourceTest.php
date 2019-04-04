@@ -7,11 +7,11 @@ use \PHPUnit\Framework\TestCase;
 final class ConfigUserSettingsSourceTest extends TestCase {
   public function testHasKeyAfterBeingSet() {
     $config = new UserSettingsSource();
-    $this->assertFalse($config->has_key("foo"));
+    $this->assertFalse($config->hasKey("foo"));
 
     $config->set("foo", "bar");
 
-    $this->assertTrue($config->has_key("foo"));
+    $this->assertTrue($config->hasKey("foo"));
   }
 
   public function testGet()

@@ -11,8 +11,8 @@ use \PHPUnit\Framework\TestCase;
 final class ConfigDefaultSourceTest extends TestCase {
   public function testHasKey() {
     $defaults = new DefaultSource();
-    $this->assertTrue($defaults->has_key("api_version"));
-    $this->assertFalse($defaults->has_key("notAValue"));
+    $this->assertTrue($defaults->hasKey("api_version"));
+    $this->assertFalse($defaults->hasKey("notAValue"));
   }
 
   public function testGet()
