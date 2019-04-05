@@ -6,7 +6,7 @@ use Scoutapm\Events\Span;
 use Scoutapm\Events\TagSpan;
 use Scoutapm\Events\TagRequest;
 use Scoutapm\Events\Request;
-use Scoutapm\Helper\Config;
+use Scoutapm\Config;
 
 class Agent
 {
@@ -18,9 +18,9 @@ class Agent
 
     private $request;
 
-    public function __construct(array $config)
+    public function __construct()
     {
-        $this->config = new Config($config);
+        $this->config = new Config();
         $this->request = new Request('Request');
     }
 
