@@ -27,5 +27,8 @@
   },
     "config" : {
         "optimize-autoloader" : true
+    },
+    "provide": {
+        "psr/log-implementation": "1.0.0"
     }
 }
