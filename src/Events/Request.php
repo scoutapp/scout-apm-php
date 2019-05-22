@@ -16,7 +16,7 @@ class Request extends Event implements \JsonSerializable
 
     private $openSpans = [];
 
-    public function __construct(string $name)
+    public function __construct(\Scoutapm\Agent $agent, string $name)
     {
         parent::__construct();
 

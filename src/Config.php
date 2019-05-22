@@ -10,9 +10,11 @@ class Config
 {
     private $sources;
     private $userSettingsSource;
+    private $agent;
 
-    public function __construct()
+    public function __construct(\Scoutapm\Agent $agent)
     {
+        $this->agent = $agent;
         $this->userSettingsSource = new Config\UserSettingsSource();
 
         $this->sources = [
