@@ -16,9 +16,9 @@ class Tag extends Event
 
     protected $extraAttributes = [];
 
-    public function __construct(string $tag, string $value, float $timestamp = null)
+    public function __construct(\Scoutapm\Agent $agent, string $tag, string $value, float $timestamp = null)
     {
-        parent::__construct();
+        parent::__construct($agent);
 
         if ($timestamp === null) {
             $timestamp = microtime(true);

@@ -6,12 +6,15 @@ use Ramsey\Uuid\Uuid;
 
 abstract class Event
 {
+    protected $agent;
+
     protected $id;
 
     protected $timestamp;
 
-    public function __construct()
+    public function __construct(\Scoutapm\Agent $agent)
     {
+        $this->agent = $agent;
         $this->id = Uuid::uuid4()->toString();
         $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', microtime(true)));
         $timestamp->setTimeZone(new \DateTimeZone('UTC'));

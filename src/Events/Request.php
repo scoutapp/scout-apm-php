@@ -18,7 +18,7 @@ class Request extends Event implements \JsonSerializable
 
     public function __construct(\Scoutapm\Agent $agent, string $name)
     {
-        parent::__construct();
+        parent::__construct($agent);
 
         $this->name = $name;
         $this->timer = new Timer();

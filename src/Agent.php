@@ -63,7 +63,7 @@ class Agent
 
     public function startSpan(string $name, float $startTime = null)
     {
-        $span = new Span($name);
+        $span = new Span($this, $name);
         $span->start($startTime);
         $this->request->addSpan($span);
     }
@@ -75,13 +75,13 @@ class Agent
 
     public function tagSpan(string $tag, string $value, float $timestamp = null, bool $current = true)
     {
-        $tagSpan = new TagSpan($tag, $value, $timestamp);
+        $tagSpan = new TagSpan($this, $tag, $value, $timestamp);
         $this->request->tagSpan($tagSpan, $current);
     }
 
     public function tagRequest(string $tag, string $value, float $timestamp = null)
     {
-        $tagRequest = new TagRequest($tag, $value, $timestamp);
+        $tagRequest = new TagRequest($this, $tag, $value, $timestamp);
         $this->request->tagRequest($tagRequest);
     }
 
@@ -91,7 +91,7 @@ class Agent
             return true;
         }
 
-        $connector = new Connector($this->config);
+        $connector = new Connector($this);
 
         $status = $connector->sendRequest($this->request);
 

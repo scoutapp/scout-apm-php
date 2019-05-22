@@ -6,10 +6,10 @@ class TagSpan extends Tag
 {
     protected $spanId;
 
-    public function __construct(string $tag, string $value, float $timestamp = null)
+    public function __construct(\Scoutapm\Agent $agent, string $tag, string $value, float $timestamp = null)
     {
         $this->name = 'TagSpan';
-        parent::__construct($tag, $value, $timestamp);
+        parent::__construct($agent, $tag, $value, $timestamp);
     }
 
     public function setSpanId($spanId)

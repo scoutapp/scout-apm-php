@@ -6,13 +6,16 @@ use Scoutapm\Events\Request;
 
 class Connector
 {
+    private $agent;
+
     private $config;
 
     private $socket;
 
-    public function __construct(\Scoutapm\Config $config)
+    public function __construct(\Scoutapm\Agent $agent)
     {
-        $this->config = $config;
+        $this->agent = $agent;
+        $this->config = $agent->getConfig();
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
         socket_connect($this->socket, $this->config->get('socket_location'));
         register_shutdown_function([&$this, 'shutdown']);
