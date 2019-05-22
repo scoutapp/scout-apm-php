@@ -47,7 +47,9 @@ class DerivedSource
     public function get(string $key)
     {
         // Whitelisted keys only
-        if (! $this->hasKey($key) ) { return null; }
+        if (! $this->hasKey($key)) {
+            return null;
+        }
 
         return $this->$key();
     }
@@ -56,7 +58,8 @@ class DerivedSource
     * Used for testing this class, not a real configuration.
     * We should remove this and adjust the test once we have a real use of this class.
      */
-    private function testing() {
+    private function testing()
+    {
         $version = $this->config->get("api_version");
         return "derived api version: " . $version;
     }

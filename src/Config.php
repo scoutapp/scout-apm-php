@@ -33,7 +33,7 @@ class Config
      */
     public function get(string $key)
     {
-        foreach($this->sources as $source) {
+        foreach ($this->sources as $source) {
             if ($source->hasKey($key)) {
                 return $source->get($key);
             }

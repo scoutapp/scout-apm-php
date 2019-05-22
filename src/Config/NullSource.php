@@ -11,7 +11,7 @@ namespace Scoutapm\Config;
 class NullSource
 {
     /**
-     * Returns true 
+     * Returns true
      *
      * @return bool (always True)
      */

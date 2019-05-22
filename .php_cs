@@ -3,7 +3,7 @@
 $finder = Symfony\Component\Finder\Finder::create()
     ->notPath('vendor')
     ->in(__DIR__)
-    ->name('*.php')
+    ->name('*.php');
 
 return PhpCsFixer\Config::create()
     ->setRules([

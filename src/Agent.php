@@ -2,14 +2,12 @@
 
 namespace Scoutapm;
 
-use Scoutapm\Events\Span;
-use Scoutapm\Events\TagSpan;
-use Scoutapm\Events\TagRequest;
-use Scoutapm\Events\Request;
-use Scoutapm\Config;
-
-use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Scoutapm\Events\Request;
+use Scoutapm\Events\Span;
+use Scoutapm\Events\TagRequest;
+
+use Scoutapm\Events\TagSpan;
 
 class Agent
 {

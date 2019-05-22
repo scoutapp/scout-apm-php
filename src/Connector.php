@@ -50,7 +50,6 @@ class Connector
         socket_read($this->socket, @unpack('N', $responseLength)[1]);
 
         return socket_last_error($this->socket) === 0;
-
     }
 
     public function shutdown()

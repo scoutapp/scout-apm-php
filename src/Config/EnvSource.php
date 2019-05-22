@@ -38,7 +38,9 @@ class EnvSource
         $value = getEnv($this->envVarName($key));
 
         // Make sure this returns null when not found, instead of getEnv's false.
-        if ($value == false) { $value = null; }
+        if ($value == false) {
+            $value = null;
+        }
 
         return $value;
     }
