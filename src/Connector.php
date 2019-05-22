@@ -16,6 +16,7 @@ class Connector
     {
         $this->agent = $agent;
         $this->config = $agent->getConfig();
+
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
         socket_connect($this->socket, $this->config->get('socket_location'));
         register_shutdown_function([&$this, 'shutdown']);
