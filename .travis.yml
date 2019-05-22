@@ -9,7 +9,9 @@ before_script:
   - composer self-update
   - composer install --prefer-dist --no-interaction --no-suggest
 
-script: phpunit --configuration phpunit.xml.dist
+script:
+    - vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation --using-cache=no
+    - phpunit --configuration phpunit.xml.dist
 
 notifications:
     on_success: never
