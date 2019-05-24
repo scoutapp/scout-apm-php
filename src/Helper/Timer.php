@@ -2,8 +2,6 @@
 
 namespace Scoutapm\Helper;
 
-use Scoutapm\Exception\Timer\NotStoppedException;
-
 class Timer
 {
     private $start = null;
@@ -33,7 +31,9 @@ class Timer
      **/
     public function getStop()
     {
-        if ($this->stop == null)  { return null; }
+        if ($this->stop == null) {
+            return null;
+        }
 
         $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->stop));
         $timestamp->setTimeZone(new \DateTimeZone('UTC'));

@@ -76,5 +76,4 @@ class Tag extends Event
     {
         return $this->value;
     }
-    
 }

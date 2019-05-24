@@ -103,5 +103,4 @@ class Request extends Event implements \JsonSerializable
     {
         return $this->events;
     }
-    
 }
