@@ -59,13 +59,24 @@ class Agent
         return $this->config;
     }
 
-    public function startSpan(string $name, float $startTime = null)
+    /**
+     * Starts a new span on the current request.
+     *
+     * NOTE: Do not call stop on the span itself, use the stopSpan() function
+     * here to ensure the whole system knows its stopped
+     *
+     * @param operation The "name" of the span, something like "Controller/User" or "SQL/Query"
+     * @param overrideTimestamp if you need to set the start time to something specific
+     *
+     * @return Span
+     */
+    public function startSpan(string $operation, float $overrideTimestamp = null)
     {
-        $span = new Span($this, $name);
-        $span->start($startTime);
+        $span = new Span($this, $operation, $overrideTimestamp);
         $this->request->addSpan($span);
+        return $span;
     }
-
+    
     public function stopSpan()
     {
         $this->request->stopSpan();
@@ -74,7 +85,7 @@ class Agent
     public function tagSpan(string $tag, string $value, float $timestamp = null, bool $current = true)
     {
         $tagSpan = new TagSpan($this, $tag, $value, $timestamp);
-        $this->request->tagSpan($tagSpan, $current);
+        $this->request->tagSpan($tagSpan);
     }
 
     public function tagRequest(string $tag, string $value, float $timestamp = null)
@@ -95,4 +106,15 @@ class Agent
 
         return $status;
     }
+
+    /**
+     * You probably don't need this, it's useful in testing
+     *
+     * @return Request
+     */
+    public function getRequest() : \Scoutapm\Events\Request
+    {
+        return $this->request;
+    }
+    
 }

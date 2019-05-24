@@ -9,48 +9,35 @@ use \Scoutapm\Helper\Timer;
  */
 final class TimerTest extends TestCase
 {
-
-  /**
-   * @covers \Scoutapm\Helper\Timer::start
-   * @covers \Scoutapm\Helper\Timer::stop
-   * @covers \Scoutapm\Helper\Timer::getDuration
-   * @covers \Scoutapm\Helper\Timer::toMicro
-   */
-    public function testCanBeStartedAndStoppedWithDuration()
+    public function testCreatingTheTimerSetsStartTime()
     {
         $timer = new Timer();
-        $duration = rand(25, 100);
-
-        $timer->start();
-        usleep($duration);
-        $timer->stop();
-
-        $this->assertGreaterThanOrEqual($duration, $timer->getDuration());
+        $this->assertNotNull($timer->getStart());
     }
 
-    /**
-     * @depends testCanBeStartedAndStoppedWithDuration
-     *
-     * @covers \Scoutapm\Helper\Timer::start
-     * @covers \Scoutapm\Helper\Timer::getDuration
-     */
-    public function testCanBeStartedWithForcingDurationException()
+    public function testStoppingSetsStopTime()
     {
-        $this->expectException(\Scoutapm\Exception\Timer\NotStoppedException::class);
-        $timer = new Timer();
-        $timer->start();
-        $timer->getDuration();
-    }
-
-    /**
-     * @depends testCanBeStartedWithForcingDurationException
-     *
-     * @covers \Scoutapm\Helper\Timer::stop
-     */
-    public function testCannotBeStoppedWithoutStart()
-    {
-        $this->expectException(\Scoutapm\Exception\Timer\NotStartedException::class);
         $timer = new Timer();
         $timer->stop();
+        $this->assertNotNull($timer->getStop());
+    }
+
+    public function testStopTimeIsNullIfNotStopped()
+    {
+        $timer = new Timer();
+        $this->assertNull($timer->getStop());
+    }
+
+    public function testTimesAreFormatted()
+    {
+        $timer = new Timer();
+        $timer->stop();
+
+        // Matches date format like: "2019-05-23T17:03:41.260463Z"
+        // https://regex101.com/r/L85Mb2/1
+        $dateRegex = '/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/';
+
+        $this->assertEquals(1, preg_match($dateRegex, $timer->getStart()));
+        $this->assertEquals(1, preg_match($dateRegex, $timer->getStop()));
     }
 }

@@ -11,9 +11,10 @@ class Request extends Event implements \JsonSerializable
 
     private $timer;
 
-    /** @var Event[] full event stack */
-    private $stack = [];
+    /** @var Every event that happens (Span, Tags, etc) is added here. */
+    private $events = [];
 
+    /** @var The currently open / running Spans */
     private $openSpans = [];
 
     public function __construct(\Scoutapm\Agent $agent, string $name)
@@ -24,14 +25,6 @@ class Request extends Event implements \JsonSerializable
         $this->timer = new Timer();
     }
 
-    public function start($override = null) : void
-    {
-        $this->timer->start($override);
-    }
-
-    /**
-     * @throws NotStartedException
-     */
     public function stop()
     {
         $this->timer->stop();
@@ -45,8 +38,6 @@ class Request extends Event implements \JsonSerializable
 
         $span->setRequestId($this->id);
         $this->openSpans[] = $span;
-
-        $this->stack[] = $span;
     }
 
     public function stopSpan()
@@ -58,80 +49,59 @@ class Request extends Event implements \JsonSerializable
         }
 
         $span->stop();
-        $this->stack[] = $span;
+        $this->events[] = $span;
     }
 
     public function tagRequest(TagRequest $tag)
     {
         $tag->setRequestId($this->id);
+        $this->events[] = $tag;
     }
 
-    public function tagSpan(TagSpan $tag, $current)
+    public function tagSpan(TagSpan $tag)
     {
         $tag->setRequestId($this->id);
-
-        $this->stack[] = $tag;
+        $this->events[] = $tag;
     }
 
-    public function getStartArray()
-    {
-        $startTime = $this->timer->getStart();
-        if (count($this->stack) > 0) {
-            $event = reset($this->stack);
-            $startTime = $event->getStartTime();
-        }
-
-        return [
-            'StartRequest' => [
-                'request_id' => $this->getId(),
-                'timestamp' => $startTime,
-            ]
-        ];
-    }
-
-    public function getStopArray()
-    {
-        $stopTime = $this->timer->getStop();
-        if (count($this->stack) > 0) {
-            $event = end($this->stack);
-            $stopTime = $event->getStopTime();
-        }
-
-        return [
-            'FinishRequest' => [
-                'request_id' => $this->getId(),
-                'timestamp' => $stopTime,
-            ]
-        ];
-    }
-
+    /**
+     * turn this object into a list of commands to send to the CoreAgent
+     *
+     * @return array[core agent commands]
+     */
     public function jsonSerialize() : array
     {
-        $output = [$this->getStartArray()];
+        $commands = [];
+        $commands[] = ['StartRequest' => [
+            'request_id' => $this->getId(),
+            'timestamp' => $this->timer->getStart(),
+        ]];
 
-        $parents = [];
-        foreach ($this->stack as $event) {
-            $array = $event->getEventArray($parents);
+        foreach ($this->events as $event) {
+            $array = $event->serialize();
 
             foreach ($array as $value) {
-                $output[] = $value;
+                $commands[] = $value;
             }
         }
 
-        $output[] = $this->getStopArray();
+        $commands[] = ['FinishRequest' => [
+            'request_id' => $this->getId(),
+            'timestamp' => $this->timer->getStop(),
+        ]];
 
-        return $output;
+        return $commands;
     }
 
-    public function getEventArray(array &$parents): array
+    /**
+     * You probably don't need this, it's used in testing.
+     * Returns all events that have occurred in this Request.
+     *
+     * @return array[Events]
+     */
+    public function getEvents() : array
     {
-        $currentParent = array_pop($parents);
-
-        if ($currentParent == $this) {
-            return [$this->getStopArray()];
-        }
-
-        array_push($parents, $this);
-        return [$this->getStartArray()];
+        return $this->events;
     }
+    
 }

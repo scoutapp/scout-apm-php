@@ -16,7 +16,10 @@ class Tag extends Event
 
     protected $extraAttributes = [];
 
-    public function __construct(\Scoutapm\Agent $agent, string $tag, string $value, float $timestamp = null)
+    /**
+     * Value can be any jsonable structure
+     */
+    public function __construct(\Scoutapm\Agent $agent, string $tag, $value, float $timestamp = null)
     {
         parent::__construct($agent);
 
@@ -53,4 +56,25 @@ class Tag extends Event
             ] + $this->extraAttributes]
         ];
     }
+
+    /**
+     * Get the 'key' portion of this Tag
+     *
+     * @return string
+     */
+    public function getTag()
+    {
+        return $this->tag;
+    }
+    
+    /**
+     * Get the 'value' portion of this Tag
+     *
+     * @return mixed
+     */
+    public function getValue()
+    {
+        return $this->value;
+    }
+    
 }

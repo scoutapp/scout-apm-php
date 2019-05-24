@@ -4,7 +4,7 @@ namespace Scoutapm\Events;
 
 use Scoutapm\Helper\Timer;
 
-class Span extends Event
+class Span extends Event implements \JsonSerializable
 {
     private $requestId;
 
@@ -14,17 +14,14 @@ class Span extends Event
 
     private $timer;
 
-    public function __construct(\Scoutapm\Agent $agent, string $name)
+    public function __construct(\Scoutapm\Agent $agent, string $name, $override = null)
     {
         parent::__construct($agent);
 
         $this->name = $name;
-        $this->timer = new Timer();
-    }
 
-    public function start($override = null)
-    {
-        $this->timer->start($override);
+        $this->timer = new Timer();
+        $this->timer->start();
     }
 
     public function stop()
@@ -57,35 +54,23 @@ class Span extends Event
         return $this->timer->getStop();
     }
 
-    public function getStartArray()
+    public function jsonSerialize()
     {
-        return ['StartSpan' => [
+        $commands = [];
+        $commands[] = ['StartSpan' => [
             'request_id' => $this->requestId,
             'span_id' => $this->id,
             'parent_id' => $this->parentId,
             'operation' => $this->name,
             'timestamp' => $this->getStartTime(),
         ]];
-    }
 
-    public function getStopArray()
-    {
-        return ['StopSpan' => [
+        $commands[] = ['StopSpan' => [
             'request_id' => $this->requestId,
             'span_id' => $this->id,
             'timestamp' => $this->getStopTime(),
         ]];
-    }
 
-    public function getEventArray(array &$parents): array
-    {
-        $currentParent = array_pop($parents);
-
-        if ($currentParent == $this) {
-            return [$this->getStopArray()];
-        }
-
-        array_push($parents, $this);
-        return [$this->getStartArray()];
+        return $commands;
     }
 }
