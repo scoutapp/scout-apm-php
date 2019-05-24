@@ -22,33 +22,38 @@ class Connector
         register_shutdown_function([&$this, 'shutdown']);
     }
 
+    /**
+     * @param $message needs to be a single jsonable command
+     */
+    public function sendMessage($message)
+    {
+        $size = strlen($message);
+        socket_send($this->socket, pack('N', $size), 4, 0);
+        socket_send($this->socket, $message, $size, 0);
+
+        // Read the response back and drop it. Needed for socket liveness
+        $responseLength = socket_read($this->socket, 4);
+        socket_read($this->socket, unpack('N', $responseLength)[1]);
+    }
+    
     public function sendRequest(Request $request) : bool
     {
-        $registerMessage = json_encode([
+        $registerMessage = $this->sendMessage([
             'Register' => [
-            'app' => $this->config->get('app_name'),
-            'key' => $this->config->get('key'),
-            'api_version' => $this->config->get('api_version'),
+                'app' => $this->config->get('app_name'),
+                'key' => $this->config->get('key'),
+                'api_version' => $this->config->get('api_version'),
             ]
         ]);
-        $registerSize = strlen($registerMessage);
-        socket_send($this->socket, pack('N', $registerSize), 4, 0);
-        socket_send($this->socket, $registerMessage, $registerSize, 0);
-        $registerResponseLength = socket_read($this->socket, 4);
-        socket_read($this->socket, unpack('N', $registerResponseLength)[1]);
 
-
-        // Send Request
-        $request = json_encode(new RequestSerializer($request));
+        // Send the whole Request as a batch command
+        // TODO: Can I Remove the `->jsonSerialize()` call, is it implicit?
+        $request = $this->sendMessage([
+            'BatchCommand' => [
+                'commands' => $request->jsonSerialize(),
+            ]
+        ]);
         
-        $requestSize = strlen($request);
-        socket_send($this->socket, pack('N', $requestSize), 4, 0);
-        socket_send($this->socket, $request, $requestSize, 0);
-
-        // Read Response
-        $responseLength = socket_read($this->socket, 4);
-        socket_read($this->socket, @unpack('N', $responseLength)[1]);
-
         return socket_last_error($this->socket) === 0;
     }
 
