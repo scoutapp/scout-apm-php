@@ -8,7 +8,6 @@ class TagSpan extends Tag
 
     public function __construct(\Scoutapm\Agent $agent, string $tag, string $value, float $timestamp = null)
     {
-        $this->name = 'TagSpan';
         parent::__construct($agent, $tag, $value, $timestamp);
     }
 
@@ -17,13 +16,21 @@ class TagSpan extends Tag
         $this->spanId = $spanId;
     }
 
-    public function getEventArray(array &$parents): array
+    public function jsonSerialize()
     {
-        $currentParent = end($parents);
-        $this->setSpanId($currentParent->getId());
+        // Format the timestamp
+        $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));
+        $timestamp->setTimeZone(new \DateTimeZone('UTC'));
+        $timestamp = $timestamp->format('Y-m-d\TH:i:s.u\Z');
 
-        $this->extraAttributes = ['span_id' => $this->spanId];
-
-        return parent::getEventArray($parents);
+        return [
+            ['TagRequest' => [
+                'request_id' => $this->requestId,
+                'span_id' => $this->spanId,
+                'tag' => $this->tag,
+                'value' => $this->value,
+                'timestamp' => $timestamp,
+            ]]
+        ];
     }
 }

@@ -12,10 +12,6 @@ class Tag extends Event
 
     protected $timestamp;
 
-    protected $name;
-
-    protected $extraAttributes = [];
-
     /**
      * Value can be any jsonable structure
      */
@@ -35,26 +31,6 @@ class Tag extends Event
     public function setRequestId($requestId)
     {
         $this->requestId = $requestId;
-    }
-
-    public function setExtraAttributes(array $attributes)
-    {
-        $this->extraAttributes = $attributes;
-    }
-
-    public function getEventArray(array &$parents) : array
-    {
-        $timestamp = \DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));
-        $timestamp->setTimeZone(new \DateTimeZone('UTC'));
-
-        return [
-            [$this->name => [
-                'request_id' => $this->requestId,
-                'tag' => $this->tag,
-                'value' => $this->value,
-                'timestamp' => $timestamp->format('Y-m-d\TH:i:s.u\Z'),
-            ] + $this->extraAttributes]
-        ];
     }
 
     /**
