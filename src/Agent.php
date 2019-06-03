@@ -72,9 +72,7 @@ class Agent
      */
     public function startSpan(string $operation, float $overrideTimestamp = null)
     {
-        $span = new Span($this, $operation, $overrideTimestamp);
-        $this->request->addSpan($span);
-        return $span;
+        return $this->request->startSpan($operation, $overrideTimestamp);
     }
     
     public function stopSpan()
@@ -82,16 +80,9 @@ class Agent
         $this->request->stopSpan();
     }
 
-    public function tagSpan(string $tag, string $value, float $timestamp = null, bool $current = true)
+    public function tagRequest(string $tag, string $value)
     {
-        $tagSpan = new TagSpan($this, $tag, $value, $timestamp);
-        $this->request->tagSpan($tagSpan);
-    }
-
-    public function tagRequest(string $tag, string $value, float $timestamp = null)
-    {
-        $tagRequest = new TagRequest($this, $tag, $value, $timestamp);
-        $this->request->tagRequest($tagRequest);
+        $this->request->tag($tag, $value);
     }
 
     public function send() : bool

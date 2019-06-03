@@ -15,7 +15,7 @@ class Tag extends Event
     /**
      * Value can be any jsonable structure
      */
-    public function __construct(\Scoutapm\Agent $agent, string $tag, $value, float $timestamp = null)
+    public function __construct(\Scoutapm\Agent $agent, string $tag, $value, string $requestId, float $timestamp = null)
     {
         parent::__construct($agent);
 
@@ -25,12 +25,8 @@ class Tag extends Event
 
         $this->tag = $tag;
         $this->value = $value;
-        $this->timestamp = $timestamp;
-    }
-
-    public function setRequestId($requestId)
-    {
         $this->requestId = $requestId;
+        $this->timestamp = $timestamp;
     }
 
     /**

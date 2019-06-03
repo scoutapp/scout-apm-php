@@ -11,7 +11,6 @@ class Request extends Event implements \JsonSerializable
 
     private $timer;
 
-    /** @var Every event that happens (Span, Tags, etc) is added here. */
     private $events = [];
 
     /** @var The currently open / running Spans */
@@ -30,16 +29,22 @@ class Request extends Event implements \JsonSerializable
         $this->timer->stop();
     }
 
-    public function addSpan(Span $span)
+    public function startSpan(string $operation, $overrideTimestamp = null)
     {
+        $span = new Span($this->agent, $operation, $this->id, $overrideTimestamp);
+
+        // Automatically wire up the parent of this span
         if ($parent = end($this->openSpans)) {
             $span->setParentId($parent->getId());
         }
 
-        $span->setRequestId($this->id);
         $this->openSpans[] = $span;
+
+        return $span;
     }
 
+    // Stop the currently "running" span.
+    // You can still tag it if needed up until the request as a whole is finished.
     public function stopSpan()
     {
         $span = array_pop($this->openSpans);
@@ -52,15 +57,10 @@ class Request extends Event implements \JsonSerializable
         $this->events[] = $span;
     }
 
-    public function tagRequest(TagRequest $tag)
+    // Add a tag to the request as a whole
+    public function tag(string $tag, $value)
     {
-        $tag->setRequestId($this->id);
-        $this->events[] = $tag;
-    }
-
-    public function tagSpan(TagSpan $tag)
-    {
-        $tag->setRequestId($this->id);
+        $tag = new TagRequest($this->agent, $tag, $value, $this->id, $timestamp);
         $this->events[] = $tag;
     }
 
@@ -78,7 +78,7 @@ class Request extends Event implements \JsonSerializable
         ]];
 
         foreach ($this->events as $event) {
-            $array = $event->serialize();
+            $array = $event->jsonSerialize();
 
             foreach ($array as $value) {
                 $commands[] = $value;

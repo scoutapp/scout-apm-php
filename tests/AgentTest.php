@@ -10,9 +10,28 @@ use Psr\Log\NullLogger;
  */
 final class AgentTest extends TestCase
 {
-    public function testCanBeInitialized()
+    public function testFullAgentSequence()
     {
         $agent = new Agent();
+
+        // Start a Parent Controller Span
+        $span = $agent->startSpan("Controller/Test");
+
+        // Tag Whole Request
+        $agent->tagRequest("uri", "example.com/foo/bar.php");
+
+        // Start a Child Span
+        $span = $agent->startSpan("SQL/Query");
+
+        // Tag the span
+        $span->tag("sql.query", "select * from foo");
+
+        // Finish Child Span
+        $agent->stopSpan();
+
+        // Stop Controller Span
+        $agent->stopSpan();
+
         $this->assertNotNull($agent);
     }
 
@@ -63,27 +82,6 @@ final class AgentTest extends TestCase
         $tag = end($events);
 
         $this->assertInstanceOf(\Scoutapm\Events\TagRequest::class, $tag);
-        $this->assertEquals("foo", $tag->getTag());
-        $this->assertEquals("bar", $tag->getValue());
-    }
-
-    public function testTagSpan()
-    {
-        $agent = new Agent();
-        $agent->startSpan("foo/bar");
-        $agent->tagSpan("foo", "bar");
-        $agent->stopSpan();
-        
-        $request = $agent->getRequest();
-        $events = $request->getEvents();
-
-        // Last item is the span and second to last is the tag
-        $span = $events[count($events) - 1];
-        $tag = $events[count($events) - 2];
-
-        $this->assertInstanceOf(\Scoutapm\Events\Span::class, $span);
-        $this->assertInstanceOf(\Scoutapm\Events\TagSpan::class, $tag);
-
         $this->assertEquals("foo", $tag->getTag());
         $this->assertEquals("bar", $tag->getValue());
     }

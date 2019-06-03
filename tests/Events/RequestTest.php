@@ -25,10 +25,23 @@ final class RequestTest extends TestCase
 
     public function testJsonSerializes()
     {
+        // Make a request with some interesting content.
         $request = new Request(new Agent(), '');
+        $request->tag('t', 'v');
+        $span = $request->startSpan("foo");
+        $span->tag("spantag", "spanvalue");
+        $request->stopSpan();
         $request->stop();
 
         $serialized = $request->jsonSerialize();
         $this->assertInternalType('array', $serialized);
+        $this->assertArrayHasKey("StartRequest", reset($serialized));
+        $this->assertArrayHasKey("TagRequest", next($serialized));
+
+        $this->assertArrayHasKey("StartSpan", next($serialized));
+        $this->assertArrayHasKey("TagSpan", next($serialized));
+        $this->assertArrayHasKey("StopSpan", next($serialized));
+
+        $this->assertArrayHasKey("FinishRequest", next($serialized));
     }
 }

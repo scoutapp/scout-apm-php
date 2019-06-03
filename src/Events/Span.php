@@ -14,24 +14,33 @@ class Span extends Event implements \JsonSerializable
 
     private $timer;
 
-    public function __construct(\Scoutapm\Agent $agent, string $name, $override = null)
+    private $tags;
+
+    public function __construct(\Scoutapm\Agent $agent, string $name, $requestId, $override = null)
     {
         parent::__construct($agent);
 
         $this->name = $name;
+        $this->requestId = $requestId;
+
+        $this->tags = [];
 
         $this->timer = new Timer();
         $this->timer->start();
     }
 
+    // Do not call this directly - use Request#stopSpan() or Agent#stopSpan()
+    // to correctly handle bookkeeping
     public function stop()
     {
         $this->timer->stop();
     }
 
-    public function setRequestId(string $requestId)
+
+    public function tag($tag, $value)
     {
-        $this->requestId = $requestId;
+        $tagSpan = new TagSpan($this->agent, $tag, $value, $this->requestId, $this->id);
+        $this->tags[] = $tagSpan;
     }
 
     public function setParentId(string $parentId)
@@ -54,6 +63,11 @@ class Span extends Event implements \JsonSerializable
         return $this->timer->getStop();
     }
 
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
     public function jsonSerialize()
     {
         $commands = [];
@@ -64,6 +78,14 @@ class Span extends Event implements \JsonSerializable
             'operation' => $this->name,
             'timestamp' => $this->getStartTime(),
         ]];
+
+        foreach ($this->tags as $tag) {
+            $array = $tag->jsonSerialize();
+
+            foreach ($array as $value) {
+                $commands[] = $value;
+            }
+        }
 
         $commands[] = ['StopSpan' => [
             'request_id' => $this->requestId,
