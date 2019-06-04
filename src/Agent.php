@@ -7,7 +7,6 @@ use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
 use Scoutapm\Events\TagRequest;
 
-
 class Agent
 {
     const VERSION = '1.0';
