@@ -7,7 +7,6 @@ use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
 use Scoutapm\Events\TagRequest;
 
-use Scoutapm\Events\TagSpan;
 
 class Agent
 {
