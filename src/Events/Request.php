@@ -60,7 +60,7 @@ class Request extends Event implements \JsonSerializable
     // Add a tag to the request as a whole
     public function tag(string $tag, $value)
     {
-        $tag = new TagRequest($this->agent, $tag, $value, $this->id, $timestamp);
+        $tag = new TagRequest($this->agent, $tag, $value, $this->id);
         $this->events[] = $tag;
     }
 
