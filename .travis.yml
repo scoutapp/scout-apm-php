@@ -11,7 +11,7 @@ before_script:
 
 script:
     - vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation --using-cache=no
-    - phpunit --configuration phpunit.xml.dist
+    - vendor/bin/phpunit --configuration phpunit.xml.dist
 
 notifications:
     on_success: never

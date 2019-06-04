@@ -10,7 +10,7 @@
         "psr/log": "^1.1"
     },
     "require-dev" : {
-        "phpunit/phpunit" : "6.*",
+        "phpunit/phpunit" : "7.*",
         "spatie/phpunit-watcher": "^1.8",
         "friendsofphp/php-cs-fixer": "^2.15"
     },
