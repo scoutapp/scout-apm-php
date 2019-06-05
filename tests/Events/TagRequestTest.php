@@ -22,7 +22,7 @@ final class TagRequestTest extends TestCase
 
         $serialized = $tag->jsonSerialize();
 
-        $this->assertInternalType('array', $serialized);
+        $this->assertIsArray($serialized);
         $this->assertArrayHasKey("TagRequest", $serialized[0]);
 
         $data = $serialized[0]["TagRequest"];

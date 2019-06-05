@@ -34,7 +34,7 @@ final class RequestTest extends TestCase
         $request->stop();
 
         $serialized = $request->jsonSerialize();
-        $this->assertInternalType('array', $serialized);
+        $this->assertIsArray($serialized);
         $this->assertArrayHasKey("StartRequest", reset($serialized));
         $this->assertArrayHasKey("TagRequest", next($serialized));
 

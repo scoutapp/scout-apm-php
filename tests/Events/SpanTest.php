@@ -31,7 +31,7 @@ final class SpanTest extends TestCase
 
         $serialized = $span->jsonSerialize();
 
-        $this->assertInternalType('array', $serialized);
+        $this->assertIsArray($serialized);
         $this->assertArrayHasKey("StartSpan", $serialized[0]);
         $this->assertArrayHasKey("TagSpan", $serialized[1]);
         $this->assertArrayHasKey("StopSpan", $serialized[2]);
