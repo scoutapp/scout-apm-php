@@ -45,7 +45,7 @@ class Request extends Event implements \JsonSerializable
 
     // Stop the currently "running" span.
     // You can still tag it if needed up until the request as a whole is finished.
-    public function stopSpan()
+    public function stopSpan($overrideTimestamp = null)
     {
         $span = array_pop($this->openSpans);
 
@@ -53,7 +53,7 @@ class Request extends Event implements \JsonSerializable
             throw new NotStartedException();
         }
 
-        $span->stop();
+        $span->stop($overrideTimestamp);
         $this->events[] = $span;
     }
 

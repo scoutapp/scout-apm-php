@@ -25,15 +25,14 @@ class Span extends Event implements \JsonSerializable
 
         $this->tags = [];
 
-        $this->timer = new Timer();
-        $this->timer->start();
+        $this->timer = new Timer($override);
     }
 
     // Do not call this directly - use Request#stopSpan() or Agent#stopSpan()
     // to correctly handle bookkeeping
-    public function stop()
+    public function stop($override = null)
     {
-        $this->timer->stop();
+        $this->timer->stop($override);
     }
 
 

@@ -21,9 +21,9 @@ class Timer
         $this->start = $override ?? microtime(true);
     }
 
-    public function stop()
+    public function stop($override = null)
     {
-        $this->stop = microtime(true);
+        $this->stop = $override ?? microtime(true);
     }
 
     /**
