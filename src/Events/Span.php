@@ -36,6 +36,13 @@ class Span extends Event implements \JsonSerializable
     }
 
 
+    // Used if you need to start a span, but don't get a good name for it
+    // until later in its execution (or even after it's complete).
+    public function updateName($name)
+    {
+        $this->name = $name;
+    }
+
     public function tag($tag, $value)
     {
         $tagSpan = new TagSpan($this->agent, $tag, $value, $this->requestId, $this->id);

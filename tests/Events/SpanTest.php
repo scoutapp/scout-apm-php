@@ -36,4 +36,13 @@ final class SpanTest extends TestCase
         $this->assertArrayHasKey("TagSpan", $serialized[1]);
         $this->assertArrayHasKey("StopSpan", $serialized[2]);
     }
+
+    public function testSpanNameOverride()
+    {
+        $span = new Span(new Agent(), 'original', 'reqid');
+        $this->assertEquals('original', $span->getName());
+
+        $span->updateName("new");
+        $this->assertEquals('new', $span->getName());
+    }
 }
