@@ -2,6 +2,8 @@
 
 namespace Scoutapm;
 
+use PharData;
+
 /**
  * Class CoreAgentManager
  */
@@ -35,19 +37,17 @@ class CoreAgentManager
      */
     public function launch()
     {
-        if (! $this->agent->getConfig()->value("core_agent_launch")) {
+        if (! $this->agent->getConfig()->get("core_agent_launch")) {
             $this->agent->getLogger()->debug(
-                "Not attempting to launch Core Agent " .
-                "due to 'core_agent_launch' setting."
+                "Not attempting to launch Core Agent due to 'core_agent_launch' setting."
             );
             return false;
         }
 
         if (! $this->verify()) {
-            if (! $this->agent->getConfig()->value("core_agent_download")) {
+            if (! $this->agent->getConfig()->get("core_agent_download")) {
                 $this->agent->getLogger()->debug(
-                    "Not attempting to download Core Agent due ".
-                    "to 'core_agent_download' setting."
+                    "Not attempting to download Core Agent due to 'core_agent_download' setting."
                 );
                 return false;
             }
@@ -78,8 +78,8 @@ class CoreAgentManager
     public function verify()
     {
         // Check for a well formed manifest
-        $manifest = new CoreAgentManifest($this->core_agent_dir . "/manifest.json", $this->agent);
-        if (! $manifest.isValid()) {
+        $manifest = new CoreAgentManifest($this->coreAgentDir . "/manifest.json", $this->agent);
+        if (! $manifest->isValid()) {
             $this->agent->getLogger()->debug("Core Agent verification failed: CoreAgentManifest is not valid.");
             $this->core_agent_bin_path = null;
             $this->core_agent_bin_version = null;
@@ -87,7 +87,7 @@ class CoreAgentManager
         }
 
         // Check that the hash matches
-        $binPath = $this->core_agent_dir + "/" + $manifest->binName;
+        $binPath = $this->coreAgentDir . "/" . $manifest->binName;
         if (hash("sha256", file_get_contents($binPath)) == $manifest->sha256) {
             $this->core_agent_bin_path = $binPath;
             $this->core_agent_bin_version = $manifest->binVersion;
@@ -151,7 +151,7 @@ class CoreAgentManager
     }
     public function socket_path()
     {
-        return "--socket " . $this->agent->getConfig()->value('socket_path');
+        return "--socket " . $this->agent->getConfig()->get('socket_path');
     }
 }
 
@@ -164,17 +164,20 @@ class CoreAgentManager
 class CoreAgentDownloader
 {
     /**
-     * @param $core_agent_dir
-     * @param $core_agent_full_name
+     * @param $coreAgentDir
+     * @param $coreAgentFullName
      * @param $agent
      */
-    public function __construct($core_agent_dir, $core_agent_full_name, $agent)
+    public function __construct($coreAgentDir, $coreAgentFullName, $agent)
     {
-        $this->core_agent_dir = $core_agent_dir;
-        $this->core_agent_full_name = $core_agent_full_name;
+        $this->coreAgentDir = $coreAgentDir;
+        $this->coreAgentFullName = $coreAgentFullName;
         $this->agent = $agent;
+        $this->stale_download_secs = 120;
 
-        $this->package_location = $core_agent_dir . "/". $core_agent_full_name . ".tgz";
+        $this->package_location = $coreAgentDir . "/". $coreAgentFullName . ".tgz";
+        $this->download_lock_path = $coreAgentDir . "/download.lock";
+        $this->download_lock_fd = null;
     }
 
     public function download()
@@ -200,9 +203,11 @@ class CoreAgentDownloader
         try {
             $permissions = 0777; // TODO: AgentContext.instance.config.core_agent_permissions()
             $recursive = true;
-            $destination = $this->core_agent_dir;
+            $destination = $this->coreAgentDir;
 
-            mkdir($destination, $permissions, $recursive);
+            if (!is_dir($destination)) {
+                mkdir($destination, $permissions, $recursive);
+            }
         } catch (Exception $e) {
             $this->agent->getLogger()->error("Failed to create directory: " . $destination);
         }
@@ -213,9 +218,10 @@ class CoreAgentDownloader
         $this->clean_stale_download_lock();
 
         try {
-            $this->download_lock_fd = dio_open(
+            $this->download_lock_fd = fopen(
                 $this->download_lock_path,
-                O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK
+                "x+" // This is the same as O_RDWR | O_EXCL | O_CREAT
+                // O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK
             );
         } catch (Exception $e) {
             $this->agent->getLogger()->debug("Could not obtain download lock on ".$this->download_lock_path . ": ". $e);
@@ -226,12 +232,12 @@ class CoreAgentDownloader
     public function clean_stale_download_lock()
     {
         try {
-            $delta = time.time() - os.stat(self.download_lock_path).st_ctime;
-            if (delta > self.stale_download_secs) {
+            $delta = time() - filectime($this->download_lock_path);
+            if ($delta > $this->stale_download_secs) {
                 $this->agent->getLogger()->debug("Clearing stale download lock file.");
                 unlink($this->download_lock_path);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Log this
         }
     }
@@ -239,7 +245,7 @@ class CoreAgentDownloader
     public function release_download_lock()
     {
         if ($this->download_lock_fd != null) {
-            dio_close($this->download_lock_fd);
+            fclose($this->download_lock_fd);
             unlink($this->download_lock_path);
         }
     }
@@ -254,14 +260,14 @@ class CoreAgentDownloader
 
     public function untar()
     {
-        $destination = $this->core_agent_dir;
+        $destination = $this->coreAgentDir;
 
         // Uncompress the .tgz
         $phar = new PharData($this->package_location);
         $phar->decompress();
 
         // Extract it to destination
-        $tar_location = basename($this->package_location, '.tgz') . '.tar';
+        $tar_location = dirname($this->package_location) . "/" . basename($this->package_location, '.tgz') . '.tar';
         $phar = new PharData($tar_location);
         $phar->extractTo($destination);
     }
@@ -269,8 +275,8 @@ class CoreAgentDownloader
     // The URL to download the agent package from
     public function full_url()
     {
-        $root_url = $this->agent->getConfig()->value("download_url");
-        return $root_url . "/" . $this->core_agent_full_name . ".tgz";
+        $root_url = $this->agent->getConfig()->get("download_url");
+        return $root_url . "/" . $this->coreAgentFullName . ".tgz";
     }
 }
 

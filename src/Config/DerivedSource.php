@@ -22,6 +22,9 @@ class DerivedSource
     {
         $this->config = $config;
         $this->handlers = [
+            "core_agent_triple",
+            "core_agent_full_name",
+            "socket_path",
             "testing", // Used for testing. Should be removed and test converted to a real value once we have one.
         ];
     }
@@ -52,6 +55,34 @@ class DerivedSource
         }
 
         return $this->$key();
+    }
+
+    ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+    // Derived Keys below this spot.
+    //
+    public function socket_path()
+    {
+        $dir = $this->config->get("core_agent_dir");
+        $fullName = $this->config->get("core_agent_full_name");
+
+        return $dir . "/" . $fullName . "/core-agent.sock";
+    }
+
+    public function core_agent_full_name()
+    {
+        $name = "scout_apm_core";
+        $version = $this->config->get("core_agent_version");
+        $triple = $this->config->get("core_agent_triple");
+        return $name . "-" . $version . "-" . $triple;
+    }
+
+    public function core_agent_triple()
+    {
+        $arch = "i686";
+        $platform = "unknown-linux-gnu";
+        return $arch . "-" . $platform;
     }
 
     /**
