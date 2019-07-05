@@ -25,13 +25,12 @@ class CoreAgentManager
 
         $this->downloader = new CoreAgentDownloader(
             $this->coreAgentDir,
-            $this->agent->getConfig()->get("core_agent_full_name")
+            $this->agent->getConfig()->get("core_agent_full_name"),
+            $agent
         );
     }
 
     /**
-     * undocumented function
-     *
      * @return void
      */
     public function launch()
@@ -76,6 +75,31 @@ class CoreAgentManager
         $this->downloader->download();
     }
 
+    public function verify()
+    {
+        // Check for a well formed manifest
+        $manifest = new CoreAgentManifest($this->core_agent_dir . "/manifest.json", $this->agent);
+        if (! $manifest.isValid()) {
+            $this->agent->getLogger()->debug("Core Agent verification failed: CoreAgentManifest is not valid.");
+            $this->core_agent_bin_path = null;
+            $this->core_agent_bin_version = null;
+            return false;
+        }
+
+        // Check that the hash matches
+        $binPath = $this->core_agent_dir + "/" + $manifest->binName;
+        if (hash("sha256", file_get_contents($binPath)) == $manifest->sha256) {
+            $this->core_agent_bin_path = $binPath;
+            $this->core_agent_bin_version = $manifest->binVersion;
+            return true;
+        } else {
+            $this->agent->getLogger()->debug("Core Agent verification failed: SHA mismatch.");
+            $this->core_agent_bin_path = null;
+            $this->core_agent_bin_version = null;
+            return false;
+        }
+    }
+
     /**
      *
      *
@@ -85,11 +109,11 @@ class CoreAgentManager
     {
         try {
             exec(
-                $this->agent_binary() .
-                $this->daemonize_flag() .
-                $this->log_level() .
-                $this->log_file() .
-                $this->config_file() .
+                $this->agent_binary() . "" .
+                $this->daemonize_flag() . "" .
+                $this->log_level() . "" .
+                $this->log_file() . "" .
+                $this->config_file() . "" .
                 $this->socket_path()
             );
             return true;
@@ -142,11 +166,15 @@ class CoreAgentDownloader
     /**
      * @param $core_agent_dir
      * @param $core_agent_full_name
+     * @param $agent
      */
-    public function __construct($core_agent_dir, $core_agent_full_name)
+    public function __construct($core_agent_dir, $core_agent_full_name, $agent)
     {
         $this->core_agent_dir = $core_agent_dir;
         $this->core_agent_full_name = $core_agent_full_name;
+        $this->agent = $agent;
+
+        $this->package_location = $core_agent_dir . "/". $core_agent_full_name . ".tgz";
     }
 
     public function download()
@@ -159,7 +187,7 @@ class CoreAgentDownloader
                 $this->download_package();
                 $this->untar();
             } catch (Exception $e) {
-                // logger.error("Exception raised while downloading Core Agent: %r", e)
+                $this->agent->getLogger()->error("Exception raised while downloading Core Agent: ". $e);
             } finally {
                 $this->release_download_lock();
             }
@@ -170,12 +198,13 @@ class CoreAgentDownloader
     public function create_core_agent_dir()
     {
         try {
-            os.makedirs(
-                self.destination,
-                AgentContext.instance.config.core_agent_permissions()
-            );
+            $permissions = 0777; // TODO: AgentContext.instance.config.core_agent_permissions()
+            $recursive = true;
+            $destination = $this->core_agent_dir;
+
+            mkdir($destination, $permissions, $recursive);
         } catch (Exception $e) {
-            // Log this
+            $this->agent->getLogger()->error("Failed to create directory: " . $destination);
         }
     }
 
@@ -184,12 +213,12 @@ class CoreAgentDownloader
         $this->clean_stale_download_lock();
 
         try {
-            $this->download_lock_fd = os.open(
-                self.download_lock_path,
-                os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NONBLOCK,
+            $this->download_lock_fd = dio_open(
+                $this->download_lock_path,
+                O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK
             );
         } catch (Exception $e) {
-            // logger.debug( "Could not obtain download lock on %s: %r", self.download_lock_path, e);
+            $this->agent->getLogger()->debug("Could not obtain download lock on ".$this->download_lock_path . ": ". $e);
             $this->download_lock_fd = null;
         }
     }
@@ -199,8 +228,8 @@ class CoreAgentDownloader
         try {
             $delta = time.time() - os.stat(self.download_lock_path).st_ctime;
             if (delta > self.stale_download_secs) {
-                // logger.debug("Clearing stale download lock file.");
-                os.unlink(self.download_lock_path);
+                $this->agent->getLogger()->debug("Clearing stale download lock file.");
+                unlink($this->download_lock_path);
             }
         } catch (Exception $e) {
             // Log this
@@ -210,76 +239,71 @@ class CoreAgentDownloader
     public function release_download_lock()
     {
         if ($this->download_lock_fd != null) {
-            os.unlink(self.download_lock_path);
-            os.close(self.download_lock_fd);
+            dio_close($this->download_lock_fd);
+            unlink($this->download_lock_path);
         }
     }
 
     public function download_package()
     {
-        // logger.debug("Downloading: %s to %s", self.full_url(), self.package_location)
-        // req = requests.get(self.full_url(), stream=True)
-        // with open(self.package_location, "wb") as f:
-        //     for chunk in req.iter_content(1024 * 1000):
-        //         f.write(chunk)
+        file_put_contents(
+            $this->package_location,
+            file_get_contents($this->full_url())
+        );
     }
 
     public function untar()
     {
-        $t = tarfile.open(self.package_location, "r");
-        $t.extractall(self.destination);
+        $destination = $this->core_agent_dir;
+
+        // Uncompress the .tgz
+        $phar = new PharData($this->package_location);
+        $phar->decompress();
+
+        // Extract it to destination
+        $tar_location = basename($this->package_location, '.tgz') . '.tar';
+        $phar = new PharData($tar_location);
+        $phar->extractTo($destination);
     }
 
+    // The URL to download the agent package from
     public function full_url()
     {
-        // return "{root_url}/{core_agent_full_name}.tgz".format(
-        //     root_url=self.root_url(), core_agent_full_name=self.core_agent_full_name
-        // )
-    }
-
-    public function root_url()
-    {
-        return $this->agent->getConfig()->value("download_url");
+        $root_url = $this->agent->getConfig()->value("download_url");
+        return $root_url . "/" . $this->core_agent_full_name . ".tgz";
     }
 }
 
+class CoreAgentManifest
+{
+    public function __construct($path, $agent)
+    {
+        $this->manifest_path = $path;
+        $this->agent = $agent;
 
-// class CoreAgentManifest(object):
-//     def __init__(self, path):
-//         self.manifest_path = path
-//         self.bin_name = None
-//         self.bin_version = None
-//         self.sha256 = None
-//         self.valid = False
-//         try:
-//             self.parse()
-//         except (ValueError, TypeError, OSError, IOError) as e:
-//             logger.debug("Error parsing Core Agent Manifest: %r", e)
+        try {
+            $this->parse();
+        } catch (\Exception $e) {
+            $this->valid = false;
+        }
+    }
 
-//     def parse(self):
-//         logger.debug("Parsing Core Agent manifest path: %s", self.manifest_path)
-//         with open(self.manifest_path) as manifest_file:
-//             self.raw = manifest_file.read()
-//             self.json = json.loads(self.raw)
-//             self.version = self.json["version"]
-//             self.bin_version = self.json["core_agent_version"]
-//             self.bin_name = self.json["core_agent_binary"]
-//             self.sha256 = self.json["core_agent_binary_sha256"]
-//             self.valid = True
-//             logger.debug("Core Agent manifest json: %s", self.json)
+    public function parse()
+    {
+        $this->agent->getLogger()->info("Parsing Core Agent Manifest at ". $this->manifest_path);
 
-//     def is_valid(self):
-//         return self.valid
+        $raw = file_get_contents($this->manifest_path);
+        $json = json_decode($raw, true); // decode the JSON into an associative array
 
+        $this->version = $json["version"];
+        $this->binVersion = $json["core_agent_version"];
+        $this->binName = $json["core_agent_binary"];
+        $this->sha256 = $json["core_agent_binary_sha256"];
+        $this->valid = true;
+    }
 
-// def sha256_digest(filename, block_size=65536):
-//     try:
-//         sha256 = hashlib.sha256()
-//         with open(filename, "rb") as f:
-//             for block in iter(lambda: f.read(block_size), b""):
-//                 sha256.update(block)
-//         return sha256.hexdigest()
-//     except OSError as e:
-//         logger.debug("Error on digest: %r", e)
-//         return None
-// }
+    public function isValid()
+    {
+        return $this->valid;
+    }
+}
