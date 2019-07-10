@@ -79,9 +79,9 @@ class Agent
         $this->request->stopSpan();
     }
 
-    public function instrument($name, Closure $block)
+    public function instrument($type, $name, Closure $block)
     {
-        $span = $this->startSpan($name);
+        $span = $this->startSpan($type . "/" . $name);
 
         try {
             return $block($span);

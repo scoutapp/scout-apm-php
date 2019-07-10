@@ -38,7 +38,7 @@ final class AgentTest extends TestCase
     public function testInstrument()
     {
         $agent = new Agent();
-        $retval = $agent->instrument("Custom/Test", function ($span) {
+        $retval = $agent->instrument("Custom", "Test", function ($span) {
             $span->tag("OMG", "Thingy");
 
             $this->assertEquals($span->getName(), "Custom/Test");
