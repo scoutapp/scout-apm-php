@@ -2,6 +2,7 @@
 
 namespace Scoutapm;
 
+use Closure;
 use Psr\Log\NullLogger;
 use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
@@ -76,6 +77,17 @@ class Agent
     public function stopSpan()
     {
         $this->request->stopSpan();
+    }
+
+    public function instrument($name, Closure $block)
+    {
+        $span = $this->startSpan($name);
+
+        try {
+            return $block($span);
+        } finally {
+            $this->stopSpan();
+        }
     }
 
     public function tagRequest(string $tag, string $value)

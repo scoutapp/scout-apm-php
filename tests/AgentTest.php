@@ -35,6 +35,29 @@ final class AgentTest extends TestCase
         $this->assertNotNull($agent);
     }
 
+    public function testInstrument()
+    {
+        $agent = new Agent();
+        $retval = $agent->instrument("Custom/Test", function ($span) {
+            $span->tag("OMG", "Thingy");
+
+            $this->assertEquals($span->getName(), "Custom/Test");
+            return "arbitrary return value";
+        });
+
+        // Check that the instrument helper propagates the return value
+        $this->assertEquals($retval, "arbitrary return value");
+
+        // Check that the span was stopped and tagged
+        $request = $agent->getRequest();
+        $events = $request->getEvents();
+        $foundSpan = end($events);
+        $this->assertInstanceOf(\Scoutapm\Events\Span::class, $foundSpan);
+        $this->assertNotNull($foundSpan->getStopTime());
+        $this->assertEquals($foundSpan->getTags()[0]->getTag(), "OMG");
+        $this->assertEquals($foundSpan->getTags()[0]->getValue(), "Thingy");
+    }
+
     public function testCanSetLogger()
     {
         $agent = new Agent();
