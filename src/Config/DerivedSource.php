@@ -80,8 +80,21 @@ class DerivedSource
 
     public function core_agent_triple()
     {
-        $arch = "i686";
+        $arch = 'unknown';
+        $unameArch = php_uname("m");
+        if ($unameArch == 'i686') {
+            $arch = 'i686';
+        }
+        if ($unameArch == 'x86_64') {
+            $arch = 'x86_64';
+        }
+
         $platform = "unknown-linux-gnu";
+        $unamePlatform = php_uname("s");
+        if ($unamePlatform == 'Darwin') {
+            $platform = 'apple-darwin';
+        }
+
         return $arch . "-" . $platform;
     }
 

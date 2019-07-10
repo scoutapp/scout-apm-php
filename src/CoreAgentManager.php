@@ -51,9 +51,10 @@ class CoreAgentManager
                 );
                 return false;
             }
+
+            $this->download();
         }
 
-        $this->download();
 
         if (! $this->verify()) {
             $this->agent->getLogger()->debug(
@@ -107,15 +108,16 @@ class CoreAgentManager
      */
     public function run()
     {
+        $this->agent->getLogger()->debug("Core Agent Launch in Progress");
         try {
-            exec(
-                $this->agent_binary() . "" .
-                $this->daemonize_flag() . "" .
-                $this->log_level() . "" .
-                $this->log_file() . "" .
-                $this->config_file() . "" .
-                $this->socket_path()
-            );
+            $command = $this->agent_binary() . " " .
+                $this->daemonize_flag() . " " .
+                $this->log_level() . " " .
+                $this->log_file() . " " .
+                $this->config_file() . " " .
+                $this->socket_path();
+            $this->agent->getLogger()->debug("Core Agent: ".$command);
+            exec($command);
             return true;
         } catch (Exception $e) {
             // TODO detect failure of launch properly

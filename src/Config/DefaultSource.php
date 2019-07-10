@@ -59,7 +59,6 @@ class DefaultSource
             'core_agent_download' => true,
             'core_agent_version' => 'latest',
             'core_agent_dir' => '/tmp/scout_apm_core',
-            'core_agent_full_name' => 'foo',
             'download_url' => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
 
         ];
