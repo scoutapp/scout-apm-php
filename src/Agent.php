@@ -24,7 +24,6 @@ class Agent
     {
         $this->config = new Config($this);
         $this->request = new Request($this, 'Request');
-
         $this->logger = new NullLogger();
     }
 
