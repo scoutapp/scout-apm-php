@@ -18,8 +18,13 @@ class Connector
         $this->config = $agent->getConfig();
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
-        socket_connect($this->socket, $this->config->get('socket_location'));
+        socket_connect($this->socket, $this->config->get('socket_path'));
         register_shutdown_function([&$this, 'shutdown']);
+    }
+
+    public function connected()
+    {
+        return true;
     }
 
     /**

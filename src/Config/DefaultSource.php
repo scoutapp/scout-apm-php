@@ -54,7 +54,7 @@ class DefaultSource
             'app_name' => null,
             'key' => null,
             'api_version' => '1.0',
-            'socket_location' => '/tmp/core-agent.sock',
+            'socket_path' => '/tmp/core-agent.sock',
             'core_agent_launch' => true,
             'core_agent_download' => true,
             'core_agent_version' => 'latest',
