@@ -7,8 +7,6 @@ use Scoutapm\Helper\Timer;
 
 class Request extends Event implements \JsonSerializable
 {
-    private $name;
-
     private $timer;
 
     private $events = [];
@@ -16,11 +14,10 @@ class Request extends Event implements \JsonSerializable
     /** @var The currently open / running Spans */
     private $openSpans = [];
 
-    public function __construct(\Scoutapm\Agent $agent, string $name)
+    public function __construct(\Scoutapm\Agent $agent)
     {
         parent::__construct($agent);
 
-        $this->name = $name;
         $this->timer = new Timer();
     }
 

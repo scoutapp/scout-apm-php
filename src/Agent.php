@@ -23,7 +23,7 @@ class Agent
     public function __construct()
     {
         $this->config = new Config($this);
-        $this->request = new Request($this, 'Request');
+        $this->request = new Request($this);
         $this->logger = new NullLogger();
     }
 
