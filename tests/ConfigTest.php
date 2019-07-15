@@ -38,4 +38,13 @@ final class ConfigTest extends TestCase
       
         $this->assertEquals("viaenvvar", $config->get("api_version"));
     }
+
+    public function testBooleanCoercionOfMonitor()
+    {
+        $config = new Config(new Agent());
+
+        // Set a user config. This won't be looked up
+        $config->set("monitor", "true");
+        $this->assertSame(true, $config->get("monitor"));
+    }
 }

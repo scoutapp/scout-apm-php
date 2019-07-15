@@ -11,6 +11,7 @@ class Config
     private $sources;
     private $userSettingsSource;
     private $agent;
+    private $coercions;
 
     public function __construct(\Scoutapm\Agent $agent)
     {
@@ -24,6 +25,10 @@ class Config
             new Config\DefaultSource(),
             new Config\NullSource(),
         ];
+
+        $this->coercions = [
+            "monitor" => Config\BoolCoercion::class,
+        ];
     }
 
 
@@ -35,9 +40,17 @@ class Config
     {
         foreach ($this->sources as $source) {
             if ($source->hasKey($key)) {
-                return $source->get($key);
+                $value = $source->get($key);
+                break;
             }
         }
+
+        if (array_key_exists($key, $this->coercions)) {
+            $coercion = new $this->coercions[$key];
+            $value = $coercion->coerce($value);
+        }
+
+        return $value;
     }
 
 
