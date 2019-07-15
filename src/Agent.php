@@ -27,6 +27,17 @@ class Agent
         $this->logger = new NullLogger();
     }
 
+    // Returns true/false on if the agent should attempt to start and collect data.
+    public function shouldStart() : bool
+    {
+        // TODO: Converts this to true/false. That should happen in the config stack.
+        if ($this->config->get('monitor')) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Sets the logger for the Agent to use
      *
@@ -35,6 +46,11 @@ class Agent
     public function setLogger(\Psr\Log\LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    public function setConfig(Config $config)
+    {
+        $this->config = $config;
     }
 
     /**

@@ -108,4 +108,18 @@ final class AgentTest extends TestCase
         $this->assertEquals("foo", $tag->getTag());
         $this->assertEquals("bar", $tag->getValue());
     }
+
+    public function testShouldStart()
+    {
+        // without affirmatively enabling, it's not enabled.
+        $agent = new Agent();
+        $this->assertEquals(false, $agent->shouldStart());
+
+        // but a config that has monitor = true, it is set
+        $config = new \Scoutapm\Config($agent);
+        $config->set("monitor", "true");
+        $agent->setConfig($config);
+
+        $this->assertEquals(true, $agent->shouldStart());
+    }
 }
