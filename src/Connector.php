@@ -45,7 +45,7 @@ class Connector
     {
         $registerMessage = $this->sendMessage([
             'Register' => [
-                'app' => $this->config->get('app_name'),
+                'app' => $this->config->get('name'),
                 'key' => $this->config->get('key'),
                 'api_version' => $this->config->get('api_version'),
             ]
