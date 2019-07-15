@@ -41,12 +41,7 @@ class Agent
     // Returns true/false on if the agent should attempt to start and collect data.
     public function shouldStart() : bool
     {
-        // TODO: Converts this to true/false. That should happen in the config stack.
-        if ($this->config->get('monitor')) {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->config->get('monitor');
     }
 
     /**
