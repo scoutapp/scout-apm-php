@@ -12,19 +12,30 @@ class Connector
 
     private $socket;
 
+    private $connected;
+
     public function __construct(\Scoutapm\Agent $agent)
     {
         $this->agent = $agent;
         $this->config = $agent->getConfig();
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
-        socket_connect($this->socket, $this->config->get('socket_path'));
+        $this->connect();
         register_shutdown_function([&$this, 'shutdown']);
+    }
+
+    public function connect()
+    {
+        try {
+            $this->connected = socket_connect($this->socket, $this->config->get('socket_path'));
+        } catch (\Exception $e) {
+            $this->connected = false;
+        }
     }
 
     public function connected()
     {
-        return true;
+        return $this->connected;
     }
 
     /**
@@ -32,6 +43,8 @@ class Connector
      */
     public function sendMessage($message)
     {
+        $message = json_encode($message);
+
         $size = strlen($message);
         socket_send($this->socket, pack('N', $size), 4, 0);
         socket_send($this->socket, $message, $size, 0);
@@ -65,7 +78,9 @@ class Connector
 
     public function shutdown()
     {
-        socket_shutdown($this->socket, 2);
-        socket_close($this->socket);
+        if ($this->connected == true) {
+            socket_shutdown($this->socket, 2);
+            socket_close($this->socket);
+        }
     }
 }

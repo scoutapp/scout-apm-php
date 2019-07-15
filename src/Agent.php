@@ -18,6 +18,8 @@ class Agent
 
     private $request;
 
+    private $connector;
+
     private $logger;
 
     public function __construct()
@@ -25,6 +27,15 @@ class Agent
         $this->config = new Config($this);
         $this->request = new Request($this);
         $this->logger = new NullLogger();
+    }
+
+    public function connect()
+    {
+        $this->connector = new Connector($this);
+        if (! $this->connector->isConnected() && $this->shouldStart()) {
+            $manager = new CoreAgentManager($this);
+            $manager->launch();
+        }
     }
 
     // Returns true/false on if the agent should attempt to start and collect data.
@@ -116,9 +127,7 @@ class Agent
             return true;
         }
 
-        $connector = new Connector($this);
-
-        $status = $connector->sendRequest($this->request);
+        $status = $this->connector->sendRequest($this->request);
 
         return $status;
     }
