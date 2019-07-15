@@ -96,7 +96,7 @@ class Agent
 
     public function send() : bool
     {
-        if ($this->config->get('active') === false) {
+        if ($this->config->get('monitor') === false) {
             return true;
         }
 
