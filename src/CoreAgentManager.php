@@ -144,13 +144,20 @@ class CoreAgentManager
         // TODO: Make this reflect chosen log file
         return "";
     }
+
+    // Allow a config file to be passed (this is distinct from the
+    // php configuration, this is only used for core-agent specific
+    // configs, mostly for debugging, or other niche cases)
     public function config_file()
     {
-        // TODO: Allow a config file to be passed (this is distinct from the
-        // php configuration, this is only used for core-agent specific
-        // configs, mostly for debugging)
-        return "";
+        $config = $this->agent->getConfig()->get('config_file');
+        if (!is_null($config)) {
+            return "--config-file " . $config;
+        } else {
+            return "";
+        }
     }
+
     public function socket_path()
     {
         return "--socket " . $this->agent->getConfig()->get('socket_path');
