@@ -51,16 +51,13 @@ class DefaultSource
     private function getDefaultConfig() : array
     {
         return [
-            'app_name' => null,
-            'key' => null,
             'api_version' => '1.0',
-            'socket_path' => '/tmp/core-agent.sock',
-            'core_agent_launch' => true,
-            'core_agent_download' => true,
-            'core_agent_version' => 'latest',
             'core_agent_dir' => '/tmp/scout_apm_core',
+            'core_agent_download' => true,
+            'core_agent_launch' => true,
+            'core_agent_version' => 'latest',
             'download_url' => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
-
+            'socket_path' => '/tmp/core-agent.sock',
         ];
     }
 }
