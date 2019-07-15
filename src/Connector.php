@@ -47,6 +47,7 @@ class Connector
             'Register' => [
                 'app' => $this->config->get('name'),
                 'key' => $this->config->get('key'),
+                'language' => 'php',
                 'api_version' => $this->config->get('api_version'),
             ]
         ]);
