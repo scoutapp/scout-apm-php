@@ -130,19 +130,32 @@ class CoreAgentManager
     {
         return $this->core_agent_bin_path . " start";
     }
+
     public function daemonize_flag()
     {
         return "--daemonize true";
     }
+
     public function log_level()
     {
-        // TODO: Make this reflect actual log level?
-        return "--log-level info";
+        $log_level = $this->agent->getConfig()->get('log_level');
+        if (!is_null($log_level)) {
+            return "--log-level " . $log_level;
+        } else {
+            return "";
+        }
     }
+
+    // Core Agent log file. Does not affect any logging in the PHP side of the
+    // agent. Useful only for debugging purposes.
     public function log_file()
     {
-        // TODO: Make this reflect chosen log file
-        return "";
+        $log_file = $this->agent->getConfig()->get('log_file');
+        if (!is_null($log_file)) {
+            return "--log-file " . $log_file;
+        } else {
+            return "";
+        }
     }
 
     // Allow a config file to be passed (this is distinct from the
