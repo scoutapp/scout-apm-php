@@ -32,14 +32,19 @@ class Agent
     public function connect()
     {
         $this->connector = new Connector($this);
-        if (! $this->connector->isConnected() && $this->shouldStart()) {
+        if (! $this->connector->connected() && $this->enabled()) {
+            $this->logger->info("Scout Core Agent Connection Failed, attempting to start");
             $manager = new CoreAgentManager($this);
             $manager->launch();
+
+            $this->connector->connect();
+        } else {
+            $this->logger->debug("Scout Core Agent Connected");
         }
     }
 
     // Returns true/false on if the agent should attempt to start and collect data.
-    public function shouldStart() : bool
+    public function enabled() : bool
     {
         return $this->config->get('monitor');
     }
@@ -118,7 +123,7 @@ class Agent
 
     public function send() : bool
     {
-        if ($this->config->get('monitor') === false) {
+        if ($this->enabled()) {
             return true;
         }
 
