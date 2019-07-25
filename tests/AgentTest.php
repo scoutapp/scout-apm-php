@@ -58,6 +58,32 @@ final class AgentTest extends TestCase
         $this->assertEquals($foundSpan->getTags()[0]->getValue(), "Thingy");
     }
 
+    public function testWebTransaction()
+    {
+        $agent = new Agent();
+        $retval = $agent->webTransaction("Test", function ($span) {
+            // Check span name is prefixed with "Controller"
+            $this->assertEquals($span->getName(), "Controller/Test");
+
+            return "arbitrary return value";
+        });
+        // Check that the instrument helper propagates the return value
+        $this->assertEquals($retval, "arbitrary return value");
+    }
+
+    public function testBackgroundTransaction()
+    {
+        $agent = new Agent();
+        $retval = $agent->backgroundTransaction("Test", function ($span) {
+            // Check span name is prefixed with "Job"
+            $this->assertEquals($span->getName(), "Job/Test");
+
+            return "arbitrary return value";
+        });
+        // Check that the instrument helper propagates the return value
+        $this->assertEquals($retval, "arbitrary return value");
+    }
+
     public function testCanSetLogger()
     {
         $agent = new Agent();
