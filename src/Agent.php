@@ -123,7 +123,7 @@ class Agent
 
     public function send() : bool
     {
-        if ($this->enabled()) {
+        if (! $this->enabled()) {
             return true;
         }
 
