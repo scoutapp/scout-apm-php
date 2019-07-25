@@ -1,9 +1,8 @@
 <?php
 
-namespace Scoutapm\Events;
-
 use Scoutapm\Exception\Timer\NotStartedException;
-use Scoutapm\Helper\Timer;
+
+namespace Scoutapm\Events;
 
 class Request extends Event implements \JsonSerializable
 {
@@ -18,7 +17,7 @@ class Request extends Event implements \JsonSerializable
     {
         parent::__construct($agent);
 
-        $this->timer = new Timer();
+        $this->timer = new \Scoutapm\Helper\Timer();
     }
 
     public function stop()
