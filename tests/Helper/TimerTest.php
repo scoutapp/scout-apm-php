@@ -40,4 +40,18 @@ final class TimerTest extends TestCase
         $this->assertEquals(1, preg_match($dateRegex, $timer->getStart()));
         $this->assertEquals(1, preg_match($dateRegex, $timer->getStop()));
     }
+
+    public function testDurationIsNullIfNotStopped()
+    {
+        $timer = new Timer();
+        $this->assertNull($timer->duration());
+    }
+
+    public function testDurationIsPositiveIfStopped()
+    {
+        $timer = new Timer();
+        sleep(0.01);
+        $timer->stop();
+        $this->assertTrue($timer->duration() > 0);
+    }
 }

@@ -49,4 +49,13 @@ class Timer
         $timestamp->setTimeZone(new \DateTimeZone('UTC'));
         return $timestamp->format('Y-m-d\TH:i:s.u\Z');
     }
+
+    public function duration()
+    {
+        if ($this->stop == null) {
+            return null;
+        }
+
+        return $this->stop-$this->start;
+    }
 }
