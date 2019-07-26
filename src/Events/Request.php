@@ -3,8 +3,8 @@
 namespace Scoutapm\Events;
 
 use Scoutapm\Exception\Timer\NotStartedException;
-use Scoutapm\Helper\Timer;
 use Scoutapm\Helper\Backtrace;
+use Scoutapm\Helper\Timer;
 
 class Request extends Event implements \JsonSerializable
 {

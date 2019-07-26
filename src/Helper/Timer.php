@@ -50,12 +50,12 @@ class Timer
         return $timestamp->format('Y-m-d\TH:i:s.u\Z');
     }
 
-    public function duration(){
+    public function duration()
+    {
         if ($this->stop == null) {
             return null;
         }
 
         return $this->stop-$this->start;
     }
-
 }
