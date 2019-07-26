@@ -69,6 +69,11 @@ class Span extends Event implements \JsonSerializable
         return $this->timer->getStop();
     }
 
+    public function duration()
+    {
+        return $this->timer->duration();
+    }
+
     public function getTags()
     {
         return $this->tags;
