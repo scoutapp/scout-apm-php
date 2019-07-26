@@ -54,6 +54,7 @@ class Request extends Event implements \JsonSerializable
         $threshold = 0.5;
         if ($span->duration() > $threshold) {
             $stack = Backtrace::capture();
+            $stack = array_slice($stack, 4);
             $span->tag("stack", $stack);
         }
 
