@@ -116,6 +116,16 @@ class Agent
         }
     }
 
+    public function webTransaction($name, Closure $block)
+    {
+        return $this->instrument("Controller", $name, $block);
+    }
+
+    public function backgroundTransaction($name, Closure $block)
+    {
+        return $this->instrument("Job", $name, $block);
+    }
+
     public function tagRequest(string $tag, string $value)
     {
         $this->request->tag($tag, $value);
@@ -123,7 +133,7 @@ class Agent
 
     public function send() : bool
     {
-        if ($this->enabled()) {
+        if (! $this->enabled()) {
             return true;
         }
 
