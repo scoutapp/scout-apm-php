@@ -1,9 +1,9 @@
 <?php
 
+namespace Scoutapm\Events;
+
 use Scoutapm\Exception\Timer\NotStartedException;
 use Scoutapm\Helper\Backtrace;
-
-namespace Scoutapm\Events;
 
 class Request extends Event implements \JsonSerializable
 {
