@@ -4,6 +4,7 @@ namespace Scoutapm\Events;
 
 use Scoutapm\Exception\Timer\NotStartedException;
 use Scoutapm\Helper\Timer;
+use Scoutapm\Helper\Backtrace;
 
 class Request extends Event implements \JsonSerializable
 {
@@ -49,8 +50,14 @@ class Request extends Event implements \JsonSerializable
         if ($span === null) {
             throw new NotStartedException();
         }
-
         $span->stop($overrideTimestamp);
+
+        $threshold = 0.5;
+        if ($span->duration() > $threshold) {
+            $stack = Backtrace::capture();
+            $span->tag("stack", $stack);
+        }
+
         $this->events[] = $span;
     }
 
