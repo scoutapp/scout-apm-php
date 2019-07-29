@@ -1,26 +1,29 @@
 # Scout PHP APM Agent
 
-This is still in development. Email us at support@ScoutAPM.com to get on the beta invite list!
+Email us at support@ScoutAPM.com to get on the beta invite list!
+
+Monitor the performance of PHP Laravel apps with Scout's 
+[PHP APM Agent](https://www.scoutapm.com).
+Detailed performance metrics and transaction traces are collected once the
+agent is installed and configured.
+
 
 ## Requirements
 
-PHP Versions:
-
-Scout APM works with the following frameworks:
-
-* Laravel
-
+PHP Versions: 7.1+
 
 ## Quick Start
 
-__A Scout account is required. [Signup for Scout](https://apm.scoutapp.com/users/sign_up).__
+This package is the base library for the various framework-specific packages.
+To install the ScoutAPM Agent for a specific framework, use the specific
+package instead.
 
+* [Laravel](https://github.com/scoutapp/scoutapm-laravel)
 
 ## Documentation
 
 For full installation and troubleshooting documentation, visit our
-[help site](http://help.apm.scoutapp.com/#python-agent).
-
+[help site](http://docs.scoutapm.com/#php-agent).
 
 ## Support
 
