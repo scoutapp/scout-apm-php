@@ -1,6 +1,11 @@
 {
     "name" : "scoutapp/scoutapm-php",
-    "description": "A PHP agent for Scout",
+    "description": "Scout Application Performance Monitoring Agent - https://scoutapm.com",
+
+    "homepage": "https://scoutapm.com/",
+    "license": "MIT",
+    "keywords": ["performance", "apm", "monitoring", "development"],
+
     "require" : {
         "php" : ">= 7.1",
         "ramsey/uuid": "^3.7",
@@ -23,10 +28,10 @@
         }
     },
     "autoload-dev": {
-    "psr-4": {
+      "psr-4": {
         "Scoutapm\\Tests\\": "tests/"
-    }
-  },
+      }
+    },
     "config" : {
         "optimize-autoloader" : true
     },
