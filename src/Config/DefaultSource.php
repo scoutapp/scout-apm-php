@@ -57,7 +57,6 @@ class DefaultSource
             'core_agent_launch' => true,
             'core_agent_version' => 'latest',
             'download_url' => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
-            'socket_path' => '/tmp/core-agent.sock',
         ];
     }
 }
