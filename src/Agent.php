@@ -126,9 +126,14 @@ class Agent
         return $this->instrument("Job", $name, $block);
     }
 
-    public function tagRequest(string $tag, string $value)
+    public function addContext(string $tag, $value)
     {
-        $this->request->tag($tag, $value);
+        return $this->tagRequest($tag, $value);
+    }
+
+    public function tagRequest(string $tag, $value)
+    {
+        return $this->request->tag($tag, $value);
     }
 
     public function send() : bool
