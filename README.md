@@ -18,7 +18,7 @@ This package is the base library for the various framework-specific packages.
 To install the ScoutAPM Agent for a specific framework, use the specific
 package instead.
 
-* [Laravel](https://github.com/scoutapp/scoutapm-laravel)
+* [Laravel](https://github.com/scoutapp/scout-apm-laravel)
 
 ## Documentation
 
