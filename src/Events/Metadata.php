@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
+use function gethostname;
 use Scoutapm\Agent;
 use Scoutapm\Helper\Timer;
-use function gethostname;
 
 // Also called AppServerLoad in other agents
 final class Metadata extends Event implements \JsonSerializable
