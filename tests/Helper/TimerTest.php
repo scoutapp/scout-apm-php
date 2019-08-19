@@ -1,57 +1,62 @@
 <?php
+declare(strict_types=1);
+
 namespace Scoutapm\Tests\Helper;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Helper\Timer;
+use function usleep;
 
 /**
- * Test Case for @see \Scoutapm\Helper\Timer
+ * @covers \Scoutapm\Helper\Timer
  */
 final class TimerTest extends TestCase
 {
-    public function testCreatingTheTimerSetsStartTime()
+    /**
+     * Matches date format like: "2019-05-23T17:03:41.260463Z"
+     * @link https://regex101.com/r/L85Mb2/1
+     */
+    private const DATE_FORMAT_VALIDATION_REGEX = '/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/';
+
+    public function testCreatingTheTimerSetsStartTime() : void
     {
         $timer = new Timer();
-        $this->assertNotNull($timer->getStart());
+        self::assertNotNull($timer->getStart());
     }
 
-    public function testStoppingSetsStopTime()
+    public function testStoppingSetsStopTime() : void
     {
         $timer = new Timer();
         $timer->stop();
-        $this->assertNotNull($timer->getStop());
+        self::assertNotNull($timer->getStop());
     }
 
-    public function testStopTimeIsNullIfNotStopped()
+    public function testStopTimeIsNullIfNotStopped() : void
     {
         $timer = new Timer();
-        $this->assertNull($timer->getStop());
+        self::assertNull($timer->getStop());
     }
 
-    public function testTimesAreFormatted()
+    public function testTimesAreFormatted() : void
     {
         $timer = new Timer();
         $timer->stop();
 
-        // Matches date format like: "2019-05-23T17:03:41.260463Z"
-        // https://regex101.com/r/L85Mb2/1
-        $dateRegex = '/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z/';
-
-        $this->assertEquals(1, preg_match($dateRegex, $timer->getStart()));
-        $this->assertEquals(1, preg_match($dateRegex, $timer->getStop()));
+        self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStart());
+        self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStop());
     }
 
-    public function testDurationIsNullIfNotStopped()
+    public function testDurationIsNullIfNotStopped() : void
     {
         $timer = new Timer();
-        $this->assertNull($timer->duration());
+        self::assertNull($timer->duration());
     }
 
-    public function testDurationIsPositiveIfStopped()
+    public function testDurationIsPositiveIfStopped() : void
     {
         $timer = new Timer();
-        sleep(0.01);
+        usleep(1);
         $timer->stop();
-        $this->assertTrue($timer->duration() > 0);
+        self::assertTrue($timer->duration() > 0);
     }
 }
