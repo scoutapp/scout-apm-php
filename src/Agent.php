@@ -27,7 +27,7 @@ class Agent
     private $ignoredEndpoints;
 
     // If this request was marked as ignored
-    private $ignored;
+    private $isIgnored;
 
     public function __construct()
     {
@@ -36,7 +36,7 @@ class Agent
         $this->logger = new NullLogger();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($this);
-        $this->ignored = false;
+        $this->isIgnored = false;
     }
 
     public function connect()
@@ -177,7 +177,7 @@ class Agent
     public function ignore()
     {
         $this->request = null;
-        $this->ignored = true;
+        $this->isIgnored = true;
     }
 
     // Returns true only if the request was sent onward to the core agent.
@@ -190,7 +190,7 @@ class Agent
         }
 
         // Don't send it if the request was ignored
-        if ($this->ignored()) {
+        if ($this->isIgnored) {
             return false;
         }
 
