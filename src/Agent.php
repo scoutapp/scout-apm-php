@@ -18,6 +18,7 @@ class Agent
 
     private $request;
 
+    /** @var Connector|null */
     private $connector;
 
     private $logger;
@@ -99,7 +100,7 @@ class Agent
     {
         return $this->request->startSpan($operation, $overrideTimestamp);
     }
-    
+
     public function stopSpan()
     {
         $this->request->stopSpan();

@@ -1,5 +1,5 @@
 <?php
-namespace Scoutapm\Tests;
+namespace Scoutapm\UnitTests;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Agent;
@@ -124,7 +124,7 @@ final class AgentTest extends TestCase
     {
         $agent = new Agent();
         $agent->tagRequest("foo", "bar");
-        
+
         $request = $agent->getRequest();
         $events = $request->getEvents();
 

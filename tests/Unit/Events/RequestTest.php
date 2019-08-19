@@ -1,5 +1,5 @@
 <?php
-namespace Scoutapm\Events\Tests;
+namespace Scoutapm\UnitTests\Events;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Agent;

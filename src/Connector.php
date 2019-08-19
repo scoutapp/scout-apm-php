@@ -1,20 +1,29 @@
 <?php
+declare(strict_types=1);
 
 namespace Scoutapm;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use function json_encode;
+use Scoutapm\Events\Metadata;
 use Scoutapm\Events\Request;
 
 class Connector
 {
+    /** @var Agent */
     private $agent;
 
+    /** @var Config */
     private $config;
 
+    /** @var resource */
     private $socket;
 
+    /** @var bool */
     private $connected;
 
-    public function __construct(\Scoutapm\Agent $agent)
+    public function __construct(Agent $agent)
     {
         $this->agent = $agent;
         $this->config = $agent->getConfig();
@@ -24,7 +33,7 @@ class Connector
         register_shutdown_function([&$this, 'shutdown']);
     }
 
-    public function connect()
+    public function connect() : void
     {
         try {
             $this->connected = socket_connect($this->socket, $this->config->get('socket_path'));
@@ -33,30 +42,31 @@ class Connector
         }
     }
 
-    public function connected()
+    public function connected() : bool
     {
         return $this->connected;
     }
 
     /**
-     * @param $message needs to be a single jsonable command
+     * @param $message array|\JsonSerializable needs to be a single jsonable command
      */
-    public function sendMessage($message)
+    private function sendMessage($message) : void
     {
-        $message = json_encode($message);
+        $serializedJsonString = json_encode($message);
 
-        $size = strlen($message);
+        $size = strlen($serializedJsonString);
         socket_send($this->socket, pack('N', $size), 4, 0);
-        socket_send($this->socket, $message, $size, 0);
+        socket_send($this->socket, $serializedJsonString, $size, 0);
 
         // Read the response back and drop it. Needed for socket liveness
         $responseLength = socket_read($this->socket, 4);
         socket_read($this->socket, unpack('N', $responseLength)[1]);
     }
-    
+
+    /** @throws \Exception */
     public function sendRequest(Request $request) : bool
     {
-        $registerMessage = $this->sendMessage([
+        $this->sendMessage([
             'Register' => [
                 'app' => $this->config->get('name'),
                 'key' => $this->config->get('key'),
@@ -65,20 +75,24 @@ class Connector
             ]
         ]);
 
+        $this->sendMessage(new Metadata(
+            $this->agent,
+            new DateTimeImmutable('now', new DateTimeZone('UTC'))
+        ));
+
         // Send the whole Request as a batch command
-        // TODO: Can I Remove the `->jsonSerialize()` call, is it implicit?
-        $request = $this->sendMessage([
+        $this->sendMessage([
             'BatchCommand' => [
-                'commands' => $request->jsonSerialize(),
+                'commands' => $request,
             ]
         ]);
-        
+
         return socket_last_error($this->socket) === 0;
     }
 
     public function shutdown()
     {
-        if ($this->connected == true) {
+        if ($this->connected === true) {
             socket_shutdown($this->socket, 2);
             socket_close($this->socket);
         }
