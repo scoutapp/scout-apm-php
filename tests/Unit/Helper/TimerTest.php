@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Scoutapm\Tests\Helper;
+namespace Scoutapm\UnitTests\Helper;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Helper\Timer;

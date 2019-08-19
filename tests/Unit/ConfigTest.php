@@ -1,5 +1,5 @@
 <?php
-namespace Scoutapm\Tests;
+namespace Scoutapm\UnitTests;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Agent;
@@ -22,7 +22,7 @@ final class ConfigTest extends TestCase
     {
         $config = new Config(new Agent());
         $config->set("api_version", "viauserconf");
-      
+
         $this->assertEquals("viauserconf", $config->get("api_version"));
     }
 
@@ -35,7 +35,7 @@ final class ConfigTest extends TestCase
 
         // And set the env var
         putEnv("SCOUT_API_VERSION=viaenvvar");
-      
+
         $this->assertEquals("viaenvvar", $config->get("api_version"));
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Events;
+namespace Scoutapm\UnitTests\Events;
 
 use DateTimeImmutable;
 use DateTimeZone;
@@ -12,6 +12,7 @@ use function json_decode;
 use function json_encode;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
+use Scoutapm\Events\Metadata;
 use Scoutapm\Helper\Timer;
 
 /** @covers \Scoutapm\Events\Metadata */

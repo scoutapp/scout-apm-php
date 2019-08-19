@@ -1,12 +1,13 @@
 <?php
-namespace Scoutapm\Tests\Config;
+namespace Scoutapm\UnitTests\Config;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Agent;
 use \Scoutapm\Config;
 use \Scoutapm\Config\DerivedSource;
 
-final class ConfigDerivedSourceTest extends TestCase
+/** @covers \Scoutapm\Config\DerivedSource */
+final class DerivedSourceTest extends TestCase
 {
     public function testHasKey()
     {

@@ -1,5 +1,5 @@
 <?php
-namespace Scoutapm\Tests\Config;
+namespace Scoutapm\UnitTests\Config;
 
 use \PHPUnit\Framework\TestCase;
 use \Scoutapm\Config\UserSettingsSource;
