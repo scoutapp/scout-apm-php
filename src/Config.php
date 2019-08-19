@@ -28,6 +28,7 @@ class Config
 
         $this->coercions = [
             "monitor" => Config\BoolCoercion::class,
+            "ignore" => Config\JSONCoercion::class,
         ];
     }
 

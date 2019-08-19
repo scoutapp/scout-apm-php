@@ -148,4 +148,13 @@ final class AgentTest extends TestCase
 
         $this->assertEquals(true, $agent->enabled());
     }
+
+    public function testIgnoredEndpoints()
+    {
+        $agent = new Agent();
+        $agent->getConfig()->set("ignore", ["/foo"]);
+
+        $this->assertEquals(true, $agent->ignored("/foo"));
+        $this->assertEquals(false, $agent->ignored("/bar"));
+    }
 }

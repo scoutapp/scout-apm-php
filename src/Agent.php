@@ -12,7 +12,7 @@ class Agent
 {
     const VERSION = '1.0';
 
-    const NAME = 'scoutapm-php';
+    const NAME = 'scout-apm-php';
 
     private $config;
 
@@ -23,11 +23,20 @@ class Agent
 
     private $logger;
 
+    // Class that helps check urls vs. the configured ignore list
+    private $ignoredEndpoints;
+
+    // If this request was marked as ignored
+    private $ignored;
+
     public function __construct()
     {
         $this->config = new Config($this);
         $this->request = new Request($this);
         $this->logger = new NullLogger();
+
+        $this->ignoredEndpoints = new IgnoredEndpoints($this);
+        $this->ignored = false;
     }
 
     public function connect()
@@ -137,14 +146,30 @@ class Agent
         return $this->request->tag($tag, $value);
     }
 
+    public function ignored(string $url) : bool
+    {
+        return $this->ignoredEndpoints->ignored($url);
+    }
+
+    public function ignore()
+    {
+        $this->ignored = true;
+    }
+
     public function send() : bool
     {
+        // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
             return true;
         }
 
-        $status = $this->connector->sendRequest($this->request);
+        // Don't send it if the request was ignored
+        if ($this->ignored()) {
+            return true;
+        }
 
+        // Send this request off to the CoreAgent
+        $status = $this->connector->sendRequest($this->request);
         return $status;
     }
 
