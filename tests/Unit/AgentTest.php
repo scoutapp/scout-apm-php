@@ -157,4 +157,34 @@ final class AgentTest extends TestCase
         $this->assertEquals(true, $agent->ignored("/foo"));
         $this->assertEquals(false, $agent->ignored("/bar"));
     }
+
+    // Many instrumentation calls are NOOPs when ignore is called. Make sure
+    // the sequence works as expected
+    public function testIgnoredAgentSequence()
+    {
+        $agent = new Agent();
+        $agent->ignore();
+
+        // Start a Parent Controller Span
+        $span = $agent->startSpan("Controller/Test");
+
+        // Tag Whole Request
+        $agent->tagRequest("uri", "example.com/foo/bar.php");
+
+        // Start a Child Span
+        $span = $agent->startSpan("SQL/Query");
+
+        // Tag the span
+        $span->tag("sql.query", "select * from foo");
+
+        // Finish Child Span
+        $agent->stopSpan();
+
+        // Stop Controller Span
+        $agent->stopSpan();
+
+        $agent->send();
+
+        $this->assertNotNull($agent);
+    }
 }
