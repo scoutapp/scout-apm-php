@@ -72,6 +72,7 @@ final class Agent
     }
 
     /**
+     * @todo alternative API to be discussed...
      * @deprecated Once getConfig is removed, you cannot overwrite config using this...
      */
     public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
