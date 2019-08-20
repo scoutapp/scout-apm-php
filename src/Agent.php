@@ -8,6 +8,7 @@ use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Scoutapm\CoreAgent\Manager;
 use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
 
@@ -58,7 +59,7 @@ class Agent
         $this->connector = new Connector($this);
         if (! $this->connector->connected() && $this->enabled()) {
             $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
-            $manager = new CoreAgentManager($this);
+            $manager = new Manager($this);
             $manager->launch();
 
             $this->connector->connect();

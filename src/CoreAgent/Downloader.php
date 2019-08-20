@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm;
+namespace Scoutapm\CoreAgent;
 
 use PharData;
+use Scoutapm\Agent;
 use Throwable;
 use function basename;
 use function copy;
@@ -18,10 +19,12 @@ use function time;
 use function unlink;
 
 /**
- * A helper class for the CoreAgentManager that handles downloading, verifying,
+ * A helper class for the Manager that handles downloading, verifying,
  * and unpacking the CoreAgent.
+ *
+ * @internal
  */
-class CoreAgentDownloader
+class Downloader
 {
     /** @var string */
     private $coreAgentDir;

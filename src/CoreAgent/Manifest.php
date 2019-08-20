@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm;
+namespace Scoutapm\CoreAgent;
 
+use Scoutapm\Agent;
 use Throwable;
 use function file_get_contents;
 use function json_decode;
 
-class CoreAgentManifest
+/** @internal */
+class Manifest
 {
     /** @var string */
     public $manifest_path;

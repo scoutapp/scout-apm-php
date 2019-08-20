@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm;
+namespace Scoutapm\CoreAgent;
 
+use Scoutapm\Agent;
 use Throwable;
 use function exec;
 use function file_get_contents;
 use function hash;
 
-class CoreAgentManager
+/** @internal */
+class Manager
 {
     /**
      * A reference to the agent, from which we can obtain the logger and config.
@@ -21,7 +23,7 @@ class CoreAgentManager
     /** @var string */
     private $coreAgentDir;
 
-    /** @var CoreAgentDownloader */
+    /** @var Downloader */
     private $downloader;
 
     /** @var string|null */
@@ -39,7 +41,7 @@ class CoreAgentManager
         $this->agent        = $agent;
         $this->coreAgentDir = $agent->getConfig()->get('core_agent_dir') . '/' . $agent->getConfig()->get('coreAgentFullName');
 
-        $this->downloader = new CoreAgentDownloader(
+        $this->downloader = new Downloader(
             $this->coreAgentDir,
             $this->agent->getConfig()->get('coreAgentFullName'),
             $agent
@@ -90,9 +92,9 @@ class CoreAgentManager
     public function verify() : bool
     {
         // Check for a well formed manifest
-        $manifest = new CoreAgentManifest($this->coreAgentDir . '/manifest.json', $this->agent);
+        $manifest = new Manifest($this->coreAgentDir . '/manifest.json', $this->agent);
         if (! $manifest->isValid()) {
-            $this->agent->getLogger()->debug('Core Agent verification failed: CoreAgentManifest is not valid.');
+            $this->agent->getLogger()->debug('Core Agent verification failed: Manifest is not valid.');
             $this->coreAgentBinPath    = null;
             $this->coreAgentBinVersion = null;
 

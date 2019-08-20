@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests;
+namespace Scoutapm\UnitTests\CoreAgent;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
-use Scoutapm\CoreAgentManager;
+use Scoutapm\CoreAgent\Manager;
 
-/** @covers \Scoutapm\CoreAgentManager*/
+/** @covers \Scoutapm\CoreAgent\Manager */
 final class CoreAgentManagerTest extends TestCase
 {
     public function testInitialize() : void
     {
         $agent = new Agent();
-        $cam   = new CoreAgentManager($agent);
+        $cam   = new Manager($agent);
 
         // Provided by the DefaultConfig
         self::assertNotNull($cam);
