@@ -6,8 +6,11 @@ namespace Scoutapm\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
+use Scoutapm\Connector\Connector;
+use Scoutapm\Events\Request\Request;
 use function getenv;
-use function sleep;
+use function json_decode;
+use function json_encode;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
@@ -22,7 +25,32 @@ final class AgentTest extends TestCase
             return;
         }
 
-        $agent = Agent::fromDefaults();
+        $connector = new class implements Connector {
+            /** @var Request */
+            public $sentRequest;
+
+            public function connect() : void
+            {
+            }
+
+            public function connected() : bool
+            {
+                return true;
+            }
+
+            public function sendRequest(Request $request) : bool
+            {
+                $this->sentRequest = $request;
+
+                return true;
+            }
+
+            public function shutdown() : void
+            {
+            }
+        };
+
+        $agent = Agent::fromDefaults(null, $connector);
 
         $config = $agent->getConfig();
 
@@ -31,9 +59,6 @@ final class AgentTest extends TestCase
         $config->set('monitor', true);
 
         $agent->connect();
-
-        // @todo currently have wait for agent to become available, not ideal, fix this...)
-        sleep(1);
 
         $agent->webTransaction('Yay', static function () use ($agent) : void {
             $agent->instrument('test', 'foo', static function () : void {
@@ -44,6 +69,41 @@ final class AgentTest extends TestCase
         });
 
         self::assertTrue($agent->send());
+
+        // @todo check the format of this matches up with expectations
+        self::markTestIncomplete(__METHOD__);
+        self::assertEquals(
+            [
+                [
+                    'StartRequest' => [],
+                ],
+                [
+                    'StartSpan' => [],
+                ],
+                [
+                    'StopSpan' => [],
+                ],
+                [
+                    'StartSpan' => [],
+                ],
+                [
+                    'StopSpan' => [],
+                ],
+                [
+                    'RequestTag' => [],
+                ],
+                [
+                    'StartSpan' => [],
+                ],
+                [
+                    'StopSpan' => [],
+                ],
+                [
+                    'FinishRequest' => [],
+                ],
+            ],
+            json_decode(json_encode($connector->sentRequest), true)
+        );
 
         // @todo perform more assertions - did we actually successfully send payload in the right format, etc.?
     }

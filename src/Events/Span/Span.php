@@ -111,9 +111,9 @@ class Span implements JsonSerializable
         $commands   = [];
         $commands[] = [
             'StartSpan' => [
-                'request_id' => $this->requestId,
+                'request_id' => $this->requestId->toString(),
                 'span_id' => $this->id->toString(),
-                'parent_id' => $this->parentId,
+                'parent_id' => $this->parentId ? $this->parentId->toString() : null,
                 'operation' => $this->name,
                 'timestamp' => $this->getStartTime(),
             ],
@@ -127,7 +127,7 @@ class Span implements JsonSerializable
 
         $commands[] = [
             'StopSpan' => [
-                'request_id' => $this->requestId,
+                'request_id' => $this->requestId->toString(),
                 'span_id' => $this->id->toString(),
                 'timestamp' => $this->getStopTime(),
             ],
