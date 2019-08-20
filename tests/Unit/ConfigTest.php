@@ -17,7 +17,7 @@ final class ConfigTest extends TestCase
         $config = new Config(new Agent());
 
         // Provided by the DefaultConfig
-        self::assertEquals('1.0', $config->get('api_version'));
+        self::assertSame('1.0', $config->get('api_version'));
     }
 
     public function testUserSettingsOverridesDefaults() : void
@@ -25,7 +25,7 @@ final class ConfigTest extends TestCase
         $config = new Config(new Agent());
         $config->set('api_version', 'viauserconf');
 
-        self::assertEquals('viauserconf', $config->get('api_version'));
+        self::assertSame('viauserconf', $config->get('api_version'));
     }
 
     public function testEnvOverridesAll() : void
@@ -38,7 +38,7 @@ final class ConfigTest extends TestCase
         // And set the env var
         putenv('SCOUT_API_VERSION=viaenvvar');
 
-        self::assertEquals('viaenvvar', $config->get('api_version'));
+        self::assertSame('viaenvvar', $config->get('api_version'));
     }
 
     public function testBooleanCoercionOfMonitor() : void

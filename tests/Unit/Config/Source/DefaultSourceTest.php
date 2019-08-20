@@ -20,6 +20,6 @@ final class DefaultSourceTest extends TestCase
     public function testGet() : void
     {
         $defaults = new DefaultSource();
-        self::assertEquals('1.0', $defaults->get('api_version'));
+        self::assertSame('1.0', $defaults->get('api_version'));
     }
 }

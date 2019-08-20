@@ -18,7 +18,7 @@ class Request extends Event implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var array<int, TagRequest|Span> */
+    /** @var TagRequest[]|Span[]|array<int, TagRequest|Span> */
     private $events = [];
 
     /** @var array<int, Span> */
@@ -124,7 +124,7 @@ class Request extends Event implements JsonSerializable
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @return array<int, Event>
+     * @return TagRequest[]|Span[]|array<int, TagRequest|Span>
      */
     public function getEvents() : array
     {

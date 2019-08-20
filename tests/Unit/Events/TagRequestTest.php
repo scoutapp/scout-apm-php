@@ -25,8 +25,8 @@ final class TagRequestTest extends TestCase
         self::assertArrayHasKey('TagRequest', $serialized[0]);
 
         $data = $serialized[0]['TagRequest'];
-        self::assertEquals('t', $data['tag']);
-        self::assertEquals('v', $data['value']);
-        self::assertEquals('reqid', $data['request_id']);
+        self::assertSame('t', $data['tag']);
+        self::assertSame('v', $data['value']);
+        self::assertSame('reqid', $data['request_id']);
     }
 }

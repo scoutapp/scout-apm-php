@@ -22,7 +22,7 @@ class Span extends Event implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var array<int, TagSpan> */
+    /** @var TagSpan[]|array<int, TagSpan> */
     private $tags;
 
     public function __construct(Agent $agent, string $name, string $requestId, ?float $override = null)
@@ -88,7 +88,7 @@ class Span extends Event implements JsonSerializable
         return $this->timer->duration();
     }
 
-    /** @return array<int, TagSpan> */
+    /** @return TagSpan[]|array<int, TagSpan> */
     public function getTags() : array
     {
         return $this->tags;

@@ -19,8 +19,8 @@ final class NullSourceTest extends TestCase
 
     public function testGet() : void
     {
-        $defaults = new \Scoutapm\Config\Source\NullSource();
-        self::assertEquals(null, $defaults->get('apiVersion'));
-        self::assertEquals(null, $defaults->get('weirdThing'));
+        $defaults = new NullSource();
+        self::assertNull($defaults->get('apiVersion'));
+        self::assertNull($defaults->get('weirdThing'));
     }
 }

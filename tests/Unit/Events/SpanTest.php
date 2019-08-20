@@ -41,9 +41,9 @@ final class SpanTest extends TestCase
     public function testSpanNameOverride() : void
     {
         $span = new Span(new Agent(), 'original', 'reqid');
-        self::assertEquals('original', $span->getName());
+        self::assertSame('original', $span->getName());
 
         $span->updateName('new');
-        self::assertEquals('new', $span->getName());
+        self::assertSame('new', $span->getName());
     }
 }

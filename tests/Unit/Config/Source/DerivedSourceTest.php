@@ -26,6 +26,6 @@ final class DerivedSourceTest extends TestCase
         $config  = new Config(new Agent());
         $derived = new DerivedSource($config);
 
-        self::assertEquals('derived api version: 1.0', $derived->get('testing'));
+        self::assertSame('derived api version: 1.0', $derived->get('testing'));
     }
 }

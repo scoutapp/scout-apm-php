@@ -22,27 +22,23 @@ final class IgnoredEndpointsTest extends TestCase
         $ignoredEndpoints = new IgnoredEndpoints($agent);
 
         // Exact Match
-        self::assertEquals(true, $ignoredEndpoints->ignored('/health'));
-        self::assertEquals(true, $ignoredEndpoints->ignored('/status'));
+        self::assertTrue($ignoredEndpoints->ignored('/health'));
+        self::assertTrue($ignoredEndpoints->ignored('/status'));
 
         // Prefix Match
-        self::assertEquals(true, $ignoredEndpoints->ignored('/health/database'));
-        self::assertEquals(true, $ignoredEndpoints->ignored('/status/time'));
+        self::assertTrue($ignoredEndpoints->ignored('/health/database'));
+        self::assertTrue($ignoredEndpoints->ignored('/status/time'));
 
         // No Match
-        self::assertEquals(false, $ignoredEndpoints->ignored('/signup'));
+        self::assertFalse($ignoredEndpoints->ignored('/signup'));
 
         // Not-prefix doesn't Match
-        self::assertEquals(false, $ignoredEndpoints->ignored('/hero/1/health'));
+        self::assertFalse($ignoredEndpoints->ignored('/hero/1/health'));
     }
 
     public function testWorksWithNullIgnoreSetting() : void
     {
-        $agent            = new Agent();
-        $config           = $agent->getConfig();
-        $ignoredEndpoints = new IgnoredEndpoints($agent);
-
         // No Match
-        self::assertEquals(false, $ignoredEndpoints->ignored('/signup'));
+        self::assertFalse((new IgnoredEndpoints(new Agent()))->ignored('/signup'));
     }
 }

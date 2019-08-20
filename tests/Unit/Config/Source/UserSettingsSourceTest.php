@@ -27,6 +27,6 @@ final class UserSettingsSourceTest extends TestCase
 
         $config->set('foo', 'bar');
 
-        self::assertEquals('bar', $config->get('foo'));
+        self::assertSame('bar', $config->get('foo'));
     }
 }

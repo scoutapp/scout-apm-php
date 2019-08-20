@@ -46,45 +46,45 @@ final class AgentTest extends TestCase
         $retval = $agent->instrument('Custom', 'Test', static function (Span $span) {
             $span->tag('OMG', 'Thingy');
 
-            self::assertEquals($span->getName(), 'Custom/Test');
+            self::assertSame($span->getName(), 'Custom/Test');
 
             return 'arbitrary return value';
         });
 
         // Check that the instrument helper propagates the return value
-        self::assertEquals($retval, 'arbitrary return value');
+        self::assertSame($retval, 'arbitrary return value');
 
         // Check that the span was stopped and tagged
         $events    = $agent->getRequest()->getEvents();
         $foundSpan = end($events);
         self::assertInstanceOf(Span::class, $foundSpan);
         self::assertNotNull($foundSpan->getStopTime());
-        self::assertEquals($foundSpan->getTags()[0]->getTag(), 'OMG');
-        self::assertEquals($foundSpan->getTags()[0]->getValue(), 'Thingy');
+        self::assertSame($foundSpan->getTags()[0]->getTag(), 'OMG');
+        self::assertSame($foundSpan->getTags()[0]->getValue(), 'Thingy');
     }
 
     public function testWebTransaction() : void
     {
-        $retval = (new Agent())->webTransaction('Test', function ($span) {
+        $retval = (new Agent())->webTransaction('Test', function (Span $span) {
             // Check span name is prefixed with "Controller"
-            $this->assertEquals($span->getName(), 'Controller/Test');
+            self::assertSame($span->getName(), 'Controller/Test');
 
             return 'arbitrary return value';
         });
         // Check that the instrument helper propagates the return value
-        self::assertEquals($retval, 'arbitrary return value');
+        self::assertSame($retval, 'arbitrary return value');
     }
 
     public function testBackgroundTransaction() : void
     {
-        $retval = (new Agent())->backgroundTransaction('Test', function ($span) {
+        $retval = (new Agent())->backgroundTransaction('Test', function (Span $span) {
             // Check span name is prefixed with "Job"
-            $this->assertEquals($span->getName(), 'Job/Test');
+            self::assertSame($span->getName(), 'Job/Test');
 
             return 'arbitrary return value';
         });
         // Check that the instrument helper propagates the return value
-        self::assertEquals($retval, 'arbitrary return value');
+        self::assertSame($retval, 'arbitrary return value');
     }
 
     public function testCanSetLogger() : void
@@ -97,16 +97,10 @@ final class AgentTest extends TestCase
         self::assertSame($agent->getLogger(), $logger);
     }
 
-    public function testCanGetConfig() : void
-    {
-        $config = (new Agent())->getConfig();
-        self::assertInstanceOf(Config::class, $config);
-    }
-
     public function testStartSpan() : void
     {
         $span  = (new Agent())->startSpan('foo/bar');
-        self::assertEquals('foo/bar', $span->getName());
+        self::assertSame('foo/bar', $span->getName());
     }
 
     public function testStopSpan() : void
@@ -130,8 +124,8 @@ final class AgentTest extends TestCase
         $tag = end($events);
 
         self::assertInstanceOf(TagRequest::class, $tag);
-        self::assertEquals('foo', $tag->getTag());
-        self::assertEquals('bar', $tag->getValue());
+        self::assertSame('foo', $tag->getTag());
+        self::assertSame('bar', $tag->getValue());
     }
 
     public function testEnabled() : void
@@ -153,8 +147,8 @@ final class AgentTest extends TestCase
         $agent = new Agent();
         $agent->getConfig()->set('ignore', ['/foo']);
 
-        self::assertEquals(true, $agent->ignored('/foo'));
-        self::assertEquals(false, $agent->ignored('/bar'));
+        self::assertTrue($agent->ignored('/foo'));
+        self::assertFalse($agent->ignored('/bar'));
     }
 
     /**

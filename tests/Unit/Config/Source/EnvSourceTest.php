@@ -31,7 +31,7 @@ final class EnvSourceTest extends TestCase
 
         putenv('SCOUT_TEST_CASE_BAR=thevalue');
 
-        self::assertEquals('thevalue', $config->get('test_case_bar'));
+        self::assertSame('thevalue', $config->get('test_case_bar'));
 
         // Clean up the var
         putenv('SCOUT_TEST_CASE_BAR');

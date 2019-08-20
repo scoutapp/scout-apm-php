@@ -25,9 +25,9 @@ final class TagSpanTest extends TestCase
         self::assertArrayHasKey('TagSpan', $serialized[0]);
 
         $data = $serialized[0]['TagSpan'];
-        self::assertEquals('t', $data['tag']);
-        self::assertEquals('v', $data['value']);
-        self::assertEquals('reqid', $data['request_id']);
-        self::assertEquals('spanid', $data['span_id']);
+        self::assertSame('t', $data['tag']);
+        self::assertSame('v', $data['value']);
+        self::assertSame('reqid', $data['request_id']);
+        self::assertSame('spanid', $data['span_id']);
     }
 }
