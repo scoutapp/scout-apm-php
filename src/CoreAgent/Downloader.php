@@ -6,7 +6,6 @@ namespace Scoutapm\CoreAgent;
 
 use PharData;
 use Psr\Log\LoggerInterface;
-use Scoutapm\Agent;
 use Throwable;
 use function basename;
 use function copy;
@@ -83,7 +82,7 @@ class Downloader
         }
     }
 
-    public function createCoreAgentDir() : void
+    private function createCoreAgentDir() : void
     {
         try {
             $permissions = 0777; // TODO: AgentContext.instance.config.core_agent_permissions()
@@ -98,7 +97,7 @@ class Downloader
         }
     }
 
-    public function obtainDownloadLock() : void
+    private function obtainDownloadLock() : void
     {
         $this->cleanStaleDownloadLock();
 
@@ -114,7 +113,7 @@ class Downloader
         }
     }
 
-    public function cleanStaleDownloadLock() : void
+    private function cleanStaleDownloadLock() : void
     {
         try {
             $delta = time() - filectime($this->download_lock_path);
@@ -127,7 +126,7 @@ class Downloader
         }
     }
 
-    public function releaseDownloadLock() : void
+    private function releaseDownloadLock() : void
     {
         if ($this->download_lock_fd === null) {
             return;
@@ -137,12 +136,12 @@ class Downloader
         unlink($this->download_lock_path);
     }
 
-    public function downloadPackage() : void
+    private function downloadPackage() : void
     {
         copy($this->fullUrl(), $this->package_location);
     }
 
-    public function untar() : void
+    private function untar() : void
     {
         $destination = $this->coreAgentDir;
 
@@ -159,7 +158,7 @@ class Downloader
     /**
      * The URL to download the agent package from
      */
-    public function fullUrl() : string
+    private function fullUrl() : string
     {
         return $this->downloadUrl . '/' . $this->coreAgentFullName . '.tgz';
     }

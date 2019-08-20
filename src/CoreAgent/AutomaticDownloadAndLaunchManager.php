@@ -29,17 +29,10 @@ final class AutomaticDownloadAndLaunchManager implements Manager
     /** @var string|null */
     private $coreAgentBinPath;
 
-    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.WriteOnlyProperty
-
-    /** @var string|null */
-    private $coreAgentBinVersion;
-
-    // phpcs:enable
-
     public function __construct(Config $config, LoggerInterface $logger, Downloader $downloader)
     {
-        $this->config = $config;
-        $this->logger = $logger;
+        $this->config       = $config;
+        $this->logger       = $logger;
         $this->coreAgentDir = $config->get('core_agent_dir') . '/' . $config->get('core_agent_full_name');
 
         $this->downloader = $downloader;
@@ -90,24 +83,30 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         $manifest = new Manifest($this->coreAgentDir . '/manifest.json', $this->logger);
         if (! $manifest->isValid()) {
             $this->logger->debug('Core Agent verification failed: Manifest is not valid.');
-            $this->coreAgentBinPath    = null;
-            $this->coreAgentBinVersion = null;
+            $this->coreAgentBinPath = null;
+
+            // @todo unused, do we need this?
+            //$this->coreAgentBinVersion = null;
 
             return false;
         }
 
         // Check that the hash matches
-        $binPath = $this->coreAgentDir . '/' . $manifest->binName;
-        if (hash('sha256', file_get_contents($binPath)) === $manifest->sha256) {
-            $this->coreAgentBinPath    = $binPath;
-            $this->coreAgentBinVersion = $manifest->binVersion;
+        $binPath = $this->coreAgentDir . '/' . $manifest->binaryName();
+        if (hash('sha256', file_get_contents($binPath)) === $manifest->hashOfBinary()) {
+            $this->coreAgentBinPath = $binPath;
+
+            // @todo unused, do we need this?
+            //$this->coreAgentBinVersion = $manifest->binaryVersion();
 
             return true;
         }
 
         $this->logger->debug('Core Agent verification failed: SHA mismatch.');
-        $this->coreAgentBinPath    = null;
-        $this->coreAgentBinVersion = null;
+        $this->coreAgentBinPath = null;
+
+        // @todo unused, do we need this?
+        //$this->coreAgentBinVersion = null;
 
         return false;
     }

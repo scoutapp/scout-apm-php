@@ -13,30 +13,27 @@ use function json_decode;
 class Manifest
 {
     /** @var string */
-    public $manifest_path;
+    private $manifestPath;
 
     /** @var LoggerInterface */
-    public $logger;
+    private $logger;
 
     /** @var bool */
-    public $valid;
+    private $valid;
 
     /** @var string */
-    public $version;
+    private $binVersion;
 
     /** @var string */
-    public $binVersion;
+    private $binName;
 
     /** @var string */
-    public $binName;
+    private $sha256;
 
-    /** @var string */
-    public $sha256;
-
-    public function __construct(string $path, LoggerInterface $logger)
+    public function __construct(string $manifestPath, LoggerInterface $logger)
     {
-        $this->manifest_path = $path;
-        $this->logger = $logger;
+        $this->manifestPath = $manifestPath;
+        $this->logger       = $logger;
 
         try {
             $this->parse();
@@ -45,14 +42,16 @@ class Manifest
         }
     }
 
-    public function parse() : void
+    private function parse() : void
     {
-        $this->logger->info('Parsing Core Agent Manifest at ' . $this->manifest_path);
+        $this->logger->info('Parsing Core Agent Manifest at ' . $this->manifestPath);
 
-        $raw  = file_get_contents($this->manifest_path);
+        $raw  = file_get_contents($this->manifestPath);
         $json = json_decode($raw, true); // decode the JSON into an associative array
 
-        $this->version    = $json['version'];
+        // @todo unused, do we need this?
+        //$this->version    = $json['version'];
+
         $this->binVersion = $json['core_agent_version'];
         $this->binName    = $json['core_agent_binary'];
         $this->sha256     = $json['core_agent_binary_sha256'];
@@ -62,5 +61,20 @@ class Manifest
     public function isValid() : bool
     {
         return $this->valid;
+    }
+
+    public function hashOfBinary() : string
+    {
+        return $this->sha256;
+    }
+
+    public function binaryName() : string
+    {
+        return $this->binName;
+    }
+
+    public function binaryVersion() : string
+    {
+        return $this->binVersion;
     }
 }
