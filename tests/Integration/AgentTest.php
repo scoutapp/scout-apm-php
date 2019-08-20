@@ -9,6 +9,7 @@ use Scoutapm\Agent;
 use function getenv;
 use function sleep;
 
+/** @coversNothing */
 final class AgentTest extends TestCase
 {
     public function testLoggingIsSent() : void
