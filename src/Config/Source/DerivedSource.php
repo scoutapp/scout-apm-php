@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
-use function in_array;
 use function php_uname;
 
 /** @internal */
@@ -22,18 +21,9 @@ class DerivedSource
     /** @var Config */
     private $config;
 
-    /** @var array<int, string> */
-    private $handlers;
-
     public function __construct(Config $config)
     {
-        $this->config   = $config;
-        $this->handlers = [
-            'coreAgentTriple',
-            'coreAgentFullName',
-            'socketPath',
-            'testing', // Used for testing. Should be removed and test converted to a real value once we have one.
-        ];
+        $this->config = $config;
     }
 
     /**
@@ -41,7 +31,7 @@ class DerivedSource
      */
     public function hasKey(string $key) : bool
     {
-        return in_array($key, $this->handlers);
+        return $this->get($key) !== null;
     }
 
     /**
@@ -53,35 +43,38 @@ class DerivedSource
      */
     public function get(string $key)
     {
-        // Whitelisted keys only
-        if (! $this->hasKey($key)) {
-            return null;
+        switch ($key) {
+            case 'socket_path':
+                return $this->socketPath();
+            case 'core_agent_full_name':
+                return $this->coreAgentFullName();
+            case 'core_agent_triple':
+                return $this->coreAgentTriple();
+            case 'testing':
+                return $this->testing();
         }
 
-        return $this->$key();
+        return null;
     }
 
-    /**
-     * Derived Keys below this spot.
-     */
-    public function socketPath() : string
+    private function socketPath() : string
     {
         $dir      = $this->config->get('core_agent_dir');
-        $fullName = $this->config->get('coreAgentFullName');
+        $fullName = $this->config->get('core_agent_full_name');
 
         return $dir . '/' . $fullName . '/core-agent.sock';
     }
 
-    public function coreAgentFullName() : string
+    private function coreAgentFullName() : string
     {
         $name    = 'scout_apm_core';
         $version = $this->config->get('core_agent_version');
-        $triple  = $this->config->get('coreAgentTriple');
+        $triple  = $this->config->get('core_agent_triple');
 
         return $name . '-' . $version . '-' . $triple;
     }
 
-    public function coreAgentTriple() : string
+    private function coreAgentTriple() : string
     {
         $arch      = 'unknown';
         $unameArch = php_uname('m');
@@ -101,8 +94,6 @@ class DerivedSource
         return $arch . '-' . $platform;
     }
 
-    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
-
     /**
      * Used for testing this class, not a real configuration.
      * We should remove this and adjust the test once we have a real use of this class.
@@ -113,5 +104,4 @@ class DerivedSource
 
         return 'derived api version: ' . $version;
     }
-    // phpcs:enable
 }

@@ -39,11 +39,11 @@ class Manager
     public function __construct(Agent $agent)
     {
         $this->agent        = $agent;
-        $this->coreAgentDir = $agent->getConfig()->get('core_agent_dir') . '/' . $agent->getConfig()->get('coreAgentFullName');
+        $this->coreAgentDir = $agent->getConfig()->get('core_agent_dir') . '/' . $agent->getConfig()->get('core_agent_full_name');
 
         $this->downloader = new Downloader(
             $this->coreAgentDir,
-            $this->agent->getConfig()->get('coreAgentFullName'),
+            $this->agent->getConfig()->get('core_agent_full_name'),
             $agent
         );
     }
