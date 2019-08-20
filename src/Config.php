@@ -64,7 +64,7 @@ class Config
             }
         }
 
-        if (!isset($value)) {
+        if (! isset($value)) {
             return null;
         }
 
@@ -79,8 +79,10 @@ class Config
 
     /**
      * Sets a value on the inner UserSettingsSource
+     *
+     * @param mixed $value
      */
-    public function set(string $key, ?string $value) : void
+    public function set(string $key, $value) : void
     {
         $this->userSettingsSource->set($key, $value);
     }

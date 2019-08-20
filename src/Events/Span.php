@@ -94,7 +94,7 @@ class Span extends Event implements JsonSerializable
         return $this->tags;
     }
 
-    /** @return array<int, array<string, (string|array|null|bool)>> */
+    /** @return array<int, array<string, (string|array|bool|null)>> */
     public function jsonSerialize() : array
     {
         $commands   = [];

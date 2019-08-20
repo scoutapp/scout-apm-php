@@ -23,7 +23,7 @@ class BoolCoercion
         }
 
         if (is_string($value)) {
-            return in_array(strtolower($value), ['yes', 't', 'true', '1']);
+            return in_array(strtolower($value), ['yes', 't', 'true', '1'], true);
         }
 
         return false;

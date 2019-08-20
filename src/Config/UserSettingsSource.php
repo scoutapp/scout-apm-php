@@ -15,7 +15,7 @@ use function array_key_exists;
 
 class UserSettingsSource
 {
-    /** @var array<string, string|null> */
+    /** @var array<string, mixed> */
     private $config;
 
     public function __construct()
@@ -43,7 +43,8 @@ class UserSettingsSource
         return $this->config[$key] ?? null;
     }
 
-    public function set(string $key, ?string $value) : void
+    /** @param mixed $value */
+    public function set(string $key, $value) : void
     {
         $this->config[$key] = $value;
     }

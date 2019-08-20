@@ -90,7 +90,7 @@ class Request extends Event implements JsonSerializable
     /**
      * turn this object into a list of commands to send to the CoreAgent
      *
-     * @return array<int, array<string, (string|array|null|bool)>>
+     * @return array<int, array<string, (string|array|bool|null)>>
      */
     public function jsonSerialize() : array
     {

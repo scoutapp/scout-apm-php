@@ -27,8 +27,12 @@ class CoreAgentManager
     /** @var string|null */
     private $coreAgentBinPath;
 
+    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.WriteOnlyProperty
+
     /** @var string|null */
     private $coreAgentBinVersion;
+
+    // phpcs:enable
 
     public function __construct(Agent $agent)
     {

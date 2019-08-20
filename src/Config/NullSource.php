@@ -27,7 +27,7 @@ class NullSource
      *
      * Only valid if the Source has previously returned "true" to `hasKey`
      *
-     * @return mixed
+     * @return null
      */
     public function get(string $key)
     {

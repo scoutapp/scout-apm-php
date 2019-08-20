@@ -99,4 +99,18 @@ class DerivedSource
 
         return $arch . '-' . $platform;
     }
+
+    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
+
+    /**
+     * Used for testing this class, not a real configuration.
+     * We should remove this and adjust the test once we have a real use of this class.
+     */
+    private function testing() : string
+    {
+        $version = $this->config->get('api_version');
+
+        return 'derived api version: ' . $version;
+    }
+    // phpcs:enable
 }
