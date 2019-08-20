@@ -11,7 +11,8 @@ use Psr\Log\NullLogger;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\SocketConnector;
-use Scoutapm\CoreAgent\Manager;
+use Scoutapm\CoreAgent\Downloader;
+use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
@@ -97,7 +98,16 @@ final class Agent
     {
         if (! $this->connector->connected() && $this->enabled()) {
             $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
-            $manager = new Manager($this);
+            $manager = new AutomaticDownloadAndLaunchManager(
+                $this->config,
+                $this->logger,
+                new Downloader(
+                    $this->getConfig()->get('core_agent_dir'),
+                    $this->getConfig()->get('core_agent_full_name'),
+                    $this,
+                    $this->getConfig()->get('download_url')
+                )
+            );
             $manager->launch();
 
             $this->connector->connect();

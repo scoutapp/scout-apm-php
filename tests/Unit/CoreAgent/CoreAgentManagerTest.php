@@ -6,14 +6,14 @@ namespace Scoutapm\UnitTests\CoreAgent;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
-use Scoutapm\CoreAgent\Manager;
+use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 
-/** @covers \Scoutapm\CoreAgent\Manager */
+/** @covers \Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager */
 final class CoreAgentManagerTest extends TestCase
 {
     public function testInitialize() : void
     {
-        $cam = new Manager(Agent::fromDefaults());
+        $cam = new AutomaticDownloadAndLaunchManager(Agent::fromDefaults());
 
         // Provided by the DefaultConfig
         self::assertNotNull($cam);

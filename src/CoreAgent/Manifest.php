@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\CoreAgent;
 
-use Scoutapm\Agent;
+use Psr\Log\LoggerInterface;
 use Throwable;
 use function file_get_contents;
 use function json_decode;
@@ -15,8 +15,8 @@ class Manifest
     /** @var string */
     public $manifest_path;
 
-    /** @var Agent */
-    public $agent;
+    /** @var LoggerInterface */
+    public $logger;
 
     /** @var bool */
     public $valid;
@@ -33,10 +33,10 @@ class Manifest
     /** @var string */
     public $sha256;
 
-    public function __construct(string $path, Agent $agent)
+    public function __construct(string $path, LoggerInterface $logger)
     {
         $this->manifest_path = $path;
-        $this->agent         = $agent;
+        $this->logger = $logger;
 
         try {
             $this->parse();
@@ -47,7 +47,7 @@ class Manifest
 
     public function parse() : void
     {
-        $this->agent->getLogger()->info('Parsing Core Agent Manifest at ' . $this->manifest_path);
+        $this->logger->info('Parsing Core Agent Manifest at ' . $this->manifest_path);
 
         $raw  = file_get_contents($this->manifest_path);
         $json = json_decode($raw, true); // decode the JSON into an associative array

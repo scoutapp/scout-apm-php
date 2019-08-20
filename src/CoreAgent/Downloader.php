@@ -19,7 +19,7 @@ use function time;
 use function unlink;
 
 /**
- * A helper class for the Manager that handles downloading, verifying,
+ * A helper class for the AutomaticDownloadAndLaunchManager that handles downloading, verifying,
  * and unpacking the CoreAgent.
  *
  * @internal
