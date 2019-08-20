@@ -102,10 +102,10 @@ final class Agent
                 $this->config,
                 $this->logger,
                 new Downloader(
-                    $this->getConfig()->get('core_agent_dir'),
-                    $this->getConfig()->get('core_agent_full_name'),
+                    $this->config->get('core_agent_dir'),
+                    $this->config->get('core_agent_full_name'),
                     $this,
-                    $this->getConfig()->get('download_url')
+                    $this->config->get('download_url')
                 )
             );
             $manager->launch();
@@ -154,16 +154,6 @@ final class Agent
     public function getLogger() : LoggerInterface
     {
         return $this->logger;
-    }
-
-    /**
-     * Returns the active configuration
-     *
-     * @deprecated will be deleted, do not rely on this externally - consumers within the library should have Config injected
-     */
-    public function getConfig() : Config
-    {
-        return $this->config;
     }
 
     /**
