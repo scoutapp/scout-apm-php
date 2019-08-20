@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm;
+namespace Scoutapm\Connector;
 
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Scoutapm\Agent;
+use Scoutapm\Config;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\Request;
 use Throwable;
@@ -25,9 +27,8 @@ use function socket_shutdown;
 use function strlen;
 use function unpack;
 
-// @todo needs interface
 /** @internal */
-class Connector
+final class SocketConnector implements Connector
 {
     /** @var Agent */
     private $agent;

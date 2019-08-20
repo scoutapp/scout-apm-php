@@ -13,6 +13,7 @@ use function gethostname;
 
 /**
  * Also called AppServerLoad in other agents
+ *
  * @internal
  */
 final class Metadata extends Event implements JsonSerializable

@@ -9,6 +9,7 @@ use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Scoutapm\Config\IgnoredEndpoints;
+use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\Manager;
 use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
@@ -26,7 +27,7 @@ class Agent
     /** @var Request|null */
     private $request;
 
-    /** @var Connector|null */
+    /** @var SocketConnector|null */
     private $connector;
 
     /** @var LoggerInterface */
@@ -48,6 +49,7 @@ class Agent
 
     public function __construct()
     {
+        // @todo refactor to using constructor injection
         $this->config  = new Config($this);
         $this->request = new Request($this);
         $this->logger  = new NullLogger();
@@ -58,7 +60,7 @@ class Agent
 
     public function connect() : void
     {
-        $this->connector = new Connector($this);
+        $this->connector = new SocketConnector($this);
         if (! $this->connector->connected() && $this->enabled()) {
             $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
             $manager = new Manager($this);
@@ -80,12 +82,17 @@ class Agent
 
     /**
      * Sets the logger for the Agent to use
+     *
+     * @deprecated move to constructor injection
      */
     public function setLogger(LoggerInterface $logger) : void
     {
         $this->logger = $logger;
     }
 
+    /**
+     * @deprecated move to constructor injection
+     */
     public function setConfig(Config $config) : void
     {
         $this->config = $config;
@@ -94,7 +101,11 @@ class Agent
     /**
      * returns the active logger
      *
+     * @deprecated will be deleted, do not rely on this externally - consumers within the library should have Logger injected
+     *
      * @return LoggerInterface compliant logger
+     *
+     * @private
      */
     public function getLogger() : LoggerInterface
     {
@@ -102,7 +113,9 @@ class Agent
     }
 
     /**
-     * returns the active configuration
+     * Returns the active configuration
+     *
+     * @deprecated will be deleted, do not rely on this externally - consumers within the library should have Config injected
      */
     public function getConfig() : Config
     {
@@ -229,6 +242,8 @@ class Agent
 
     /**
      * You probably don't need this, it's useful in testing
+     *
+     * @internal
      */
     public function getRequest() : ?Request
     {
