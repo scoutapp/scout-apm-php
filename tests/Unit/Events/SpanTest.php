@@ -6,7 +6,7 @@ namespace Scoutapm\UnitTests\Events;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 
 /** @covers \Scoutapm\Events\Span\Span */
@@ -15,14 +15,14 @@ final class SpanTest extends TestCase
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
-        $span = new Span('name', Uuid::uuid4());
+        $span = new Span('name', RequestId::new());
         self::assertNotNull($span);
     }
 
     /** @throws Exception */
     public function testCanBeStopped() : void
     {
-        $span = new Span('', Uuid::uuid4());
+        $span = new Span('', RequestId::new());
         $span->stop();
         self::assertNotNull($span);
     }
@@ -30,7 +30,7 @@ final class SpanTest extends TestCase
     /** @throws Exception */
     public function testJsonSerializes() : void
     {
-        $span = new Span('', Uuid::uuid4());
+        $span = new Span('', RequestId::new());
         $span->tag('Foo', 'Bar');
         $span->stop();
 
@@ -45,7 +45,7 @@ final class SpanTest extends TestCase
     /** @throws Exception */
     public function testSpanNameOverride() : void
     {
-        $span = new Span('original', Uuid::uuid4());
+        $span = new Span('original', RequestId::new());
         self::assertSame('original', $span->getName());
 
         $span->updateName('fromRequest');

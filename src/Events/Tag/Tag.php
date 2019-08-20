@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events\Tag;
 
-use Ramsey\Uuid\UuidInterface;
+use Scoutapm\Events\Request\RequestId;
 use function microtime;
 
 /** @internal */
 abstract class Tag
 {
-    /** @var UuidInterface */
+    /** @var RequestId */
     protected $requestId;
 
     /** @var string */
@@ -27,7 +27,7 @@ abstract class Tag
      *
      * @param mixed $value
      */
-    public function __construct(string $tag, $value, UuidInterface $requestId, ?float $timestamp = null)
+    public function __construct(string $tag, $value, RequestId $requestId, ?float $timestamp = null)
     {
         if ($timestamp === null) {
             $timestamp = microtime(true);

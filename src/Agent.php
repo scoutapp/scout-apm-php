@@ -8,12 +8,12 @@ use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Ramsey\Uuid\Uuid;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\Manager;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 
 // @todo needs interface
@@ -151,7 +151,7 @@ final class Agent
         if ($this->request === null) {
             // Must return a Span object to match API. This is a dummy span
             // that is not ever used for anything.
-            return new Span('Ignored', Uuid::uuid4());
+            return new Span('Ignored', RequestId::new());
         }
 
         return $this->request->startSpan($operation, $overrideTimestamp);

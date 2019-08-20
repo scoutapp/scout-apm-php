@@ -6,17 +6,18 @@ namespace Scoutapm\Events\Tag;
 
 use DateTime;
 use DateTimeZone;
-use Ramsey\Uuid\UuidInterface;
+use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Span\SpanId;
 use function sprintf;
 
 /** @internal */
 class SpanTag extends Tag
 {
-    /** @var UuidInterface */
+    /** @var SpanId */
     protected $spanId;
 
     /** @param mixed $value */
-    public function __construct(string $tag, $value, UuidInterface $requestId, UuidInterface $spanId, ?float $timestamp = null)
+    public function __construct(string $tag, $value, RequestId $requestId, SpanId $spanId, ?float $timestamp = null)
     {
         parent::__construct($tag, $value, $requestId, $timestamp);
         $this->spanId = $spanId;

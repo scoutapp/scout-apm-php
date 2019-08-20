@@ -6,8 +6,6 @@ namespace Scoutapm\Events\Request;
 
 use Exception;
 use JsonSerializable;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\RequestTag;
@@ -29,13 +27,13 @@ class Request implements JsonSerializable
     /** @var Span[]|array<int, Span> */
     private $openSpans = [];
 
-    /** @var UuidInterface */
+    /** @var RequestId */
     private $id;
 
     /** @throws Exception */
     public function __construct()
     {
-        $this->id = Uuid::uuid4();
+        $this->id = RequestId::new();
 
         $this->timer = new Timer();
     }

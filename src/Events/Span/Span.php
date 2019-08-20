@@ -6,18 +6,20 @@ namespace Scoutapm\Events\Span;
 
 use Exception;
 use JsonSerializable;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\SpanTag;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
 class Span implements JsonSerializable
 {
-    /** @var UuidInterface */
+    /** @var SpanId */
+    private $id;
+
+    /** @var RequestId */
     private $requestId;
 
-    /** @var UuidInterface|null */
+    /** @var SpanId|null */
     private $parentId;
 
     /** @var string */
@@ -29,13 +31,10 @@ class Span implements JsonSerializable
     /** @var SpanTag[]|array<int, SpanTag> */
     private $tags;
 
-    /** @var UuidInterface */
-    private $id;
-
     /** @throws Exception */
-    public function __construct(string $name, UuidInterface $requestId, ?float $override = null)
+    public function __construct(string $name, RequestId $requestId, ?float $override = null)
     {
-        $this->id = Uuid::uuid4();
+        $this->id = SpanId::new();
 
         $this->name      = $name;
         $this->requestId = $requestId;
@@ -45,7 +44,7 @@ class Span implements JsonSerializable
         $this->timer = new Timer($override);
     }
 
-    public function id() : UuidInterface
+    public function id() : SpanId
     {
         return $this->id;
     }
@@ -75,7 +74,7 @@ class Span implements JsonSerializable
         $this->tags[] = new SpanTag($tag, $value, $this->requestId, $this->id);
     }
 
-    public function setParentId(UuidInterface $parentId) : void
+    public function setParentId(SpanId $parentId) : void
     {
         $this->parentId = $parentId;
     }
