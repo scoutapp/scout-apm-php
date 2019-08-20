@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Events;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Agent;
 use Scoutapm\Events\Request;
 use function next;
 use function reset;
@@ -15,13 +14,13 @@ final class RequestTest extends TestCase
 {
     public function testCanBeInitialized() : void
     {
-        $request = new Request(new Agent());
+        $request = new Request();
         self::assertNotNull($request);
     }
 
     public function testCanBeStopped() : void
     {
-        $request = new Request(new Agent());
+        $request = new Request();
         $request->stop();
         self::assertNotNull($request);
     }
@@ -29,7 +28,7 @@ final class RequestTest extends TestCase
     public function testJsonSerializes() : void
     {
         // Make a request with some interesting content.
-        $request = new Request(new Agent());
+        $request = new Request();
         $request->tag('t', 'v');
         $span = $request->startSpan('foo');
         $span->tag('spantag', 'spanvalue');

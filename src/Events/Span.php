@@ -4,17 +4,19 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
+use Exception;
 use JsonSerializable;
-use Scoutapm\Agent;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
-class Span extends Event implements JsonSerializable
+class Span implements JsonSerializable
 {
-    /** @var string */
+    /** @var UuidInterface */
     private $requestId;
 
-    /** @var string|null */
+    /** @var UuidInterface|null */
     private $parentId;
 
     /** @var string */
@@ -26,9 +28,13 @@ class Span extends Event implements JsonSerializable
     /** @var TagSpan[]|array<int, TagSpan> */
     private $tags;
 
-    public function __construct(Agent $agent, string $name, string $requestId, ?float $override = null)
+    /** @var UuidInterface */
+    private $id;
+
+    /** @throws Exception */
+    public function __construct(string $name, UuidInterface $requestId, ?float $override = null)
     {
-        parent::__construct($agent);
+        $this->id = Uuid::uuid4();
 
         $this->name      = $name;
         $this->requestId = $requestId;
@@ -36,6 +42,11 @@ class Span extends Event implements JsonSerializable
         $this->tags = [];
 
         $this->timer = new Timer($override);
+    }
+
+    public function id() : UuidInterface
+    {
+        return $this->id;
     }
 
     /**
@@ -60,11 +71,10 @@ class Span extends Event implements JsonSerializable
     /** @param mixed $value */
     public function tag(string $tag, $value) : void
     {
-        $tagSpan      = new TagSpan($this->agent, $tag, $value, $this->requestId, $this->id);
-        $this->tags[] = $tagSpan;
+        $this->tags[] = new TagSpan($tag, $value, $this->requestId, $this->id);
     }
 
-    public function setParentId(string $parentId) : void
+    public function setParentId(UuidInterface $parentId) : void
     {
         $this->parentId = $parentId;
     }
@@ -102,7 +112,7 @@ class Span extends Event implements JsonSerializable
         $commands[] = [
             'StartSpan' => [
                 'request_id' => $this->requestId,
-                'span_id' => $this->id,
+                'span_id' => $this->id->toString(),
                 'parent_id' => $this->parentId,
                 'operation' => $this->name,
                 'timestamp' => $this->getStartTime(),
@@ -118,7 +128,7 @@ class Span extends Event implements JsonSerializable
         $commands[] = [
             'StopSpan' => [
                 'request_id' => $this->requestId,
-                'span_id' => $this->id,
+                'span_id' => $this->id->toString(),
                 'timestamp' => $this->getStopTime(),
             ],
         ];

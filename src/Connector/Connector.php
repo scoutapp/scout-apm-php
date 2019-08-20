@@ -6,7 +6,6 @@ namespace Scoutapm\Connector;
 
 use Scoutapm\Events\Request;
 
-/** @internal */
 interface Connector
 {
     public function connect() : void;

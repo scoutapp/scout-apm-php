@@ -6,7 +6,6 @@ namespace Scoutapm\Events;
 
 use DateTimeImmutable;
 use JsonSerializable;
-use Scoutapm\Agent;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function gethostname;
@@ -16,15 +15,13 @@ use function gethostname;
  *
  * @internal
  */
-final class Metadata extends Event implements JsonSerializable
+final class Metadata implements JsonSerializable
 {
     /** @var Timer */
     private $timer;
 
-    public function __construct(Agent $agent, DateTimeImmutable $now)
+    public function __construct(DateTimeImmutable $now)
     {
-        parent::__construct($agent);
-
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
         $this->timer = new Timer((float) $now->format('U.u'));

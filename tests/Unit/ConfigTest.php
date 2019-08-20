@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Agent;
 use Scoutapm\Config;
 use function putenv;
 
@@ -14,7 +13,7 @@ final class ConfigTest extends TestCase
 {
     public function testGetFallsBackToDefaults() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Provided by the DefaultConfig
         self::assertSame('1.0', $config->get('api_version'));
@@ -22,7 +21,7 @@ final class ConfigTest extends TestCase
 
     public function testUserSettingsOverridesDefaults() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
         $config->set('api_version', 'viauserconf');
 
         self::assertSame('viauserconf', $config->get('api_version'));
@@ -30,7 +29,7 @@ final class ConfigTest extends TestCase
 
     public function testEnvOverridesAll() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
         $config->set('api_version', 'viauserconf');
@@ -43,7 +42,7 @@ final class ConfigTest extends TestCase
 
     public function testBooleanCoercionOfMonitor() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
         $config->set('monitor', 'true');
@@ -52,7 +51,7 @@ final class ConfigTest extends TestCase
 
     public function testJSONCoercionOfIgnore() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
         $config->set('ignore', '["/foo", "/bar"]');

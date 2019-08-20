@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Config\Source;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\Source\DerivedSource;
 
@@ -14,8 +13,7 @@ final class DerivedSourceTest extends TestCase
 {
     public function testHasKey() : void
     {
-        $config  = new Config(new Agent());
-        $derived = new DerivedSource($config);
+        $derived = new DerivedSource(new Config());
 
         self::assertTrue($derived->hasKey('testing'));
         self::assertFalse($derived->hasKey('is_array'));
@@ -23,8 +21,7 @@ final class DerivedSourceTest extends TestCase
 
     public function testGet() : void
     {
-        $config  = new Config(new Agent());
-        $derived = new DerivedSource($config);
+        $derived = new DerivedSource(new Config());
 
         self::assertSame('derived api version: 1.0', $derived->get('testing'));
     }

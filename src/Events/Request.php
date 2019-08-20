@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
+use Exception;
 use JsonSerializable;
-use Scoutapm\Agent;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use Scoutapm\Exception\Timer\NotStarted;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
@@ -14,7 +16,7 @@ use function array_slice;
 use function end;
 
 /** @internal */
-class Request extends Event implements JsonSerializable
+class Request implements JsonSerializable
 {
     /** @var Timer */
     private $timer;
@@ -22,12 +24,16 @@ class Request extends Event implements JsonSerializable
     /** @var TagRequest[]|Span[]|array<int, TagRequest|Span> */
     private $events = [];
 
-    /** @var array<int, Span> */
+    /** @var Span[]|array<int, Span> */
     private $openSpans = [];
 
-    public function __construct(Agent $agent)
+    /** @var UuidInterface */
+    private $id;
+
+    /** @throws Exception */
+    public function __construct()
     {
-        parent::__construct($agent);
+        $this->id = Uuid::uuid4();
 
         $this->timer = new Timer();
     }
@@ -37,14 +43,15 @@ class Request extends Event implements JsonSerializable
         $this->timer->stop();
     }
 
+    /** @throws Exception */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
-        $span = new Span($this->agent, $operation, $this->id, $overrideTimestamp);
+        $span = new Span($operation, $this->id, $overrideTimestamp);
 
         $parent = end($this->openSpans);
         // Automatically wire up the parent of this span
-        if ($parent) {
-            $span->setParentId($parent->getId());
+        if ($parent instanceof Span) {
+            $span->setParentId($parent->id());
         }
 
         $this->openSpans[] = $span;
@@ -82,10 +89,9 @@ class Request extends Event implements JsonSerializable
     /**
      * Add a tag to the request as a whole
      */
-    public function tag(string $tag, string $value) : void
+    public function tag(string $tagName, string $value) : void
     {
-        $tag            = new TagRequest($this->agent, $tag, $value, $this->id);
-        $this->events[] = $tag;
+        $this->events[] = new TagRequest($tagName, $value, $this->id);
     }
 
     /**
@@ -98,7 +104,7 @@ class Request extends Event implements JsonSerializable
         $commands   = [];
         $commands[] = [
             'StartRequest' => [
-                'request_id' => $this->getId(),
+                'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStart(),
             ],
         ];
@@ -113,7 +119,7 @@ class Request extends Event implements JsonSerializable
 
         $commands[] = [
             'FinishRequest' => [
-                'request_id' => $this->getId(),
+                'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStop(),
             ],
         ];

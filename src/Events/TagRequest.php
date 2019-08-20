@@ -22,7 +22,7 @@ class TagRequest extends Tag
         return [
             [
                 'TagRequest' => [
-                    'request_id' => $this->requestId,
+                    'request_id' => $this->requestId->toString(),
                     'tag' => $this->tag,
                     'value' => $this->value,
                     'timestamp' => $timestamp,

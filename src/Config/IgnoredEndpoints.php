@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config;
 
-use Scoutapm\Agent;
 use Scoutapm\Config;
 use function strlen;
 use function substr;
@@ -15,9 +14,9 @@ final class IgnoredEndpoints
     /** @var Config */
     private $config;
 
-    public function __construct(Agent $agent)
+    public function __construct(Config $config)
     {
-        $this->config = $agent->getConfig();
+        $this->config = $config;
     }
 
     public function ignored(string $url) : bool

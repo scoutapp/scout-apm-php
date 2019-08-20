@@ -21,7 +21,7 @@ final class AgentTest extends TestCase
             return;
         }
 
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
 
         $config = $agent->getConfig();
 

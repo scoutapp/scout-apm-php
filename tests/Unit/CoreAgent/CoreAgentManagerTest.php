@@ -13,8 +13,7 @@ final class CoreAgentManagerTest extends TestCase
 {
     public function testInitialize() : void
     {
-        $agent = new Agent();
-        $cam   = new Manager($agent);
+        $cam = new Manager(Agent::fromDefaults());
 
         // Provided by the DefaultConfig
         self::assertNotNull($cam);

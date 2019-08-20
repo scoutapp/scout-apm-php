@@ -8,14 +8,16 @@ use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Ramsey\Uuid\Uuid;
 use Scoutapm\Config\IgnoredEndpoints;
+use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\Manager;
 use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
 
 // @todo needs interface
-class Agent
+final class Agent
 {
     public const VERSION = '1.0';
 
@@ -27,7 +29,7 @@ class Agent
     /** @var Request|null */
     private $request;
 
-    /** @var SocketConnector|null */
+    /** @var Connector */
     private $connector;
 
     /** @var LoggerInterface */
@@ -45,22 +47,33 @@ class Agent
      *
      * @var bool
      */
-    private $isIgnored;
+    private $isIgnored = false;
 
-    public function __construct()
+    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger)
     {
-        // @todo refactor to using constructor injection
-        $this->config  = new Config($this);
-        $this->request = new Request($this);
-        $this->logger  = new NullLogger();
+        $this->config    = $configuration;
+        $this->connector = $connector;
+        $this->logger    = $logger;
 
-        $this->ignoredEndpoints = new IgnoredEndpoints($this);
-        $this->isIgnored        = false;
+        $this->request = new Request();
+
+        // @todo this seems to really be part of "config"? some kind of reader pattern?
+        $this->ignoredEndpoints = new IgnoredEndpoints($configuration);
+    }
+
+    public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    {
+        $config = new Config();
+
+        return new self(
+            $config,
+            $connector ?? new SocketConnector($config),
+            $logger ?? new NullLogger()
+        );
     }
 
     public function connect() : void
     {
-        $this->connector = new SocketConnector($this);
         if (! $this->connector->connected() && $this->enabled()) {
             $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
             $manager = new Manager($this);
@@ -130,13 +143,15 @@ class Agent
      *
      * @param string $operation         The "name" of the span, something like "Controller/User" or "SQL/Query"
      * @param ?float $overrideTimestamp If you need to set the start time to something specific
+     *
+     * @throws Exception
      */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
         if ($this->request === null) {
             // Must return a Span object to match API. This is a dummy span
             // that is not ever used for anything.
-            return new Span($this, 'Ignored', 'ignored-request');
+            return new Span('Ignored', Uuid::uuid4());
         }
 
         return $this->request->startSpan($operation, $overrideTimestamp);
@@ -228,11 +243,6 @@ class Agent
 
         if ($this->request === null) {
             // @todo throw exception? return false?
-            return false;
-        }
-
-        if ($this->connector === null) {
-            // @todo throw exception? return false? call ->connect() ?
             return false;
         }
 

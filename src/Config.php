@@ -30,7 +30,7 @@ class Config
     /** @var CoerceType[]|array<string, CoerceType> */
     private $coercions;
 
-    public function __construct(Agent $agent)
+    public function __construct()
     {
         $this->userSettingsSource = new UserSettingsSource();
 

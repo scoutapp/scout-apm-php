@@ -7,7 +7,6 @@ namespace Scoutapm\Connector;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\Request;
@@ -30,9 +29,6 @@ use function unpack;
 /** @internal */
 final class SocketConnector implements Connector
 {
-    /** @var Agent */
-    private $agent;
-
     /** @var Config */
     private $config;
 
@@ -42,10 +38,9 @@ final class SocketConnector implements Connector
     /** @var bool */
     private $connected = false;
 
-    public function __construct(Agent $agent)
+    public function __construct(Config $config)
     {
-        $this->agent  = $agent;
-        $this->config = $agent->getConfig();
+        $this->config = $config;
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
         $this->connect();
@@ -95,7 +90,6 @@ final class SocketConnector implements Connector
         ]);
 
         $this->sendMessage(new Metadata(
-            $this->agent,
             new DateTimeImmutable('now', new DateTimeZone('UTC'))
         ));
 

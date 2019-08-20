@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Events\Span;
@@ -17,7 +16,7 @@ final class AgentTest extends TestCase
 {
     public function testFullAgentSequence() : void
     {
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
 
         // Start a Parent Controller Span
         $agent->startSpan('Controller/Test');
@@ -42,7 +41,7 @@ final class AgentTest extends TestCase
 
     public function testInstrument() : void
     {
-        $agent  = new Agent();
+        $agent  = Agent::fromDefaults();
         $retval = $agent->instrument('Custom', 'Test', static function (Span $span) {
             $span->tag('OMG', 'Thingy');
 
@@ -65,7 +64,7 @@ final class AgentTest extends TestCase
 
     public function testWebTransaction() : void
     {
-        $retval = (new Agent())->webTransaction('Test', static function (Span $span) {
+        $retval = Agent::fromDefaults()->webTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Controller"
             self::assertSame($span->getName(), 'Controller/Test');
 
@@ -77,7 +76,7 @@ final class AgentTest extends TestCase
 
     public function testBackgroundTransaction() : void
     {
-        $retval = (new Agent())->backgroundTransaction('Test', static function (Span $span) {
+        $retval = Agent::fromDefaults()->backgroundTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Job"
             self::assertSame($span->getName(), 'Job/Test');
 
@@ -87,25 +86,15 @@ final class AgentTest extends TestCase
         self::assertSame($retval, 'arbitrary return value');
     }
 
-    public function testCanSetLogger() : void
-    {
-        $agent  = new Agent();
-        $logger = new NullLogger();
-
-        $agent->setLogger($logger);
-
-        self::assertSame($agent->getLogger(), $logger);
-    }
-
     public function testStartSpan() : void
     {
-        $span = (new Agent())->startSpan('foo/bar');
+        $span = Agent::fromDefaults()->startSpan('foo/bar');
         self::assertSame('foo/bar', $span->getName());
     }
 
     public function testStopSpan() : void
     {
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
         $span  = $agent->startSpan('foo/bar');
         self::assertNull($span->getStopTime());
 
@@ -116,7 +105,7 @@ final class AgentTest extends TestCase
 
     public function testTagRequest() : void
     {
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
         $agent->tagRequest('foo', 'bar');
 
         $events = $agent->getRequest()->getEvents();
@@ -131,11 +120,11 @@ final class AgentTest extends TestCase
     public function testEnabled() : void
     {
         // without affirmatively enabling, it's not enabled.
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
         self::assertFalse($agent->enabled());
 
         // but a config that has monitor = true, it is set
-        $config = new Config($agent);
+        $config = new Config();
         $config->set('monitor', 'true');
         $agent->setConfig($config);
 
@@ -144,7 +133,7 @@ final class AgentTest extends TestCase
 
     public function testIgnoredEndpoints() : void
     {
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
         $agent->getConfig()->set('ignore', ['/foo']);
 
         self::assertTrue($agent->ignored('/foo'));
@@ -156,7 +145,7 @@ final class AgentTest extends TestCase
      */
     public function testIgnoredAgentSequence() : void
     {
-        $agent = new Agent();
+        $agent = Agent::fromDefaults();
         $agent->ignore();
 
         // Start a Parent Controller Span
