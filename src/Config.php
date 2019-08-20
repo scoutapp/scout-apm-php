@@ -8,12 +8,13 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
-use Scoutapm\Config\BoolCoercion;
 use Scoutapm\Config\DefaultSource;
 use Scoutapm\Config\DerivedSource;
 use Scoutapm\Config\EnvSource;
-use Scoutapm\Config\JSONCoercion;
 use Scoutapm\Config\NullSource;
+use Scoutapm\Config\TypeCoercion\CoerceBoolean;
+use Scoutapm\Config\TypeCoercion\CoerceJson;
+use Scoutapm\Config\TypeCoercion\CoerceType;
 use Scoutapm\Config\UserSettingsSource;
 use function array_key_exists;
 
@@ -25,10 +26,7 @@ class Config
     /** @var UserSettingsSource */
     private $userSettingsSource;
 
-    /**
-     * @var array<string, string>
-     * @psalm-var array<string, BoolCoercion::class|JSONCoercion::class>
-     */
+    /** @var CoerceType[]|array<string, CoerceType> */
     private $coercions;
 
     public function __construct(Agent $agent)
@@ -44,8 +42,8 @@ class Config
         ];
 
         $this->coercions = [
-            'monitor' => BoolCoercion::class,
-            'ignore' => JSONCoercion::class,
+            'monitor' => new CoerceBoolean(),
+            'ignore' => new CoerceJson(),
         ];
     }
 
@@ -69,9 +67,7 @@ class Config
         }
 
         if (array_key_exists($key, $this->coercions)) {
-            /** @var JSONCoercion|BoolCoercion $coercion */
-            $coercion = new $this->coercions[$key]();
-            $value    = $coercion->coerce($value);
+            $value = $this->coercions[$key]->coerce($value);
         }
 
         return $value ?? null;

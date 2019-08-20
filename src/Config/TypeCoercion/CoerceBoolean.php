@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Config;
+namespace Scoutapm\Config\TypeCoercion;
 
 use function in_array;
 use function is_bool;
 use function is_string;
 use function strtolower;
 
-class BoolCoercion
+final class CoerceBoolean implements CoerceType
 {
-    /** @param mixed $value */
+    /** {@inheritDoc} */
     public function coerce($value) : bool
     {
         if ($value === null) {

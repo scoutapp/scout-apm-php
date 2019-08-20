@@ -2,18 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Config;
+namespace Scoutapm\Config\TypeCoercion;
 
 use function is_string;
 use function json_decode;
 
-class JSONCoercion
+final class CoerceJson implements CoerceType
 {
-    /**
-     * @param mixed $value
-     *
-     * @return mixed
-     */
+    /** {@inheritDoc} */
     public function coerce($value)
     {
         if (is_string($value)) {
