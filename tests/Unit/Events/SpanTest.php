@@ -48,7 +48,7 @@ final class SpanTest extends TestCase
         $span = new Span('original', Uuid::uuid4());
         self::assertSame('original', $span->getName());
 
-        $span->updateName('new');
-        self::assertSame('new', $span->getName());
+        $span->updateName('fromRequest');
+        self::assertSame('fromRequest', $span->getName());
     }
 }

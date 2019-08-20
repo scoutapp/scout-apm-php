@@ -136,7 +136,7 @@ final class Agent
     }
 
     /**
-     * Starts a new span on the current request.
+     * Starts a fromRequest span on the current request.
      *
      * NOTE: Do not call stop on the span itself, use the stopSpan() function
      * here to ensure the whole system knows its stopped

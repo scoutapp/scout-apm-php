@@ -8,7 +8,7 @@ use Exception;
 use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
-use Scoutapm\Exception\Timer\NotStarted;
+use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
 use function array_pop;
@@ -63,7 +63,7 @@ class Request implements JsonSerializable
      * Stop the currently "running" span.
      * You can still tag it if needed up until the request as a whole is finished.
      *
-     * @throws NotStarted
+     * @throws SpanHasNotBeenStarted
      */
     public function stopSpan(?float $overrideTimestamp = null) : void
     {
@@ -71,7 +71,7 @@ class Request implements JsonSerializable
         $span = array_pop($this->openSpans);
 
         if ($span === null) {
-            throw new NotStarted();
+            throw SpanHasNotBeenStarted::fromRequest($this->id);
         }
 
         $span->stop($overrideTimestamp);
