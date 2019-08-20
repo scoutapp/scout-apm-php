@@ -9,6 +9,10 @@ use Monolog\Logger as MonologLogger;
 use Psr\Log\LoggerInterface;
 use function class_exists;
 
+/**
+ * @deprecated Not used, marked for deletion.
+ * @internal
+ */
 class LoggerSelector
 {
     /**

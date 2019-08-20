@@ -13,6 +13,10 @@ use function print_r;
 use function sprintf;
 use function time;
 
+/**
+ * @deprecated It doesn't make sense to maintain our own logger. If we provide a default, it should be a NullLogger
+ * @internal
+ */
 class Logger implements LoggerInterface
 {
     /** @var string */

@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm;
+namespace Scoutapm\Config;
 
+use Scoutapm\Agent;
+use Scoutapm\Config;
 use function strlen;
 use function substr;
 
-class IgnoredEndpoints
+/** @internal */
+final class IgnoredEndpoints
 {
     /** @var Config */
     private $config;

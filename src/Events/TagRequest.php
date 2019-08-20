@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeZone;
 use function sprintf;
 
+/** @internal */
 class TagRequest extends Tag
 {
     /** @return array<int, array<string, (string|array|bool|null)>> */

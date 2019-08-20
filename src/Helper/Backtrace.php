@@ -7,7 +7,8 @@ namespace Scoutapm\Helper;
 use function array_push;
 use function debug_backtrace;
 
-class Backtrace
+/** @internal */
+final class Backtrace
 {
     /** @return array<int, array<string, string>> */
     public static function capture() : array

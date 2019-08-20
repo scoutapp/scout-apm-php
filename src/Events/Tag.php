@@ -7,6 +7,7 @@ namespace Scoutapm\Events;
 use Scoutapm\Agent;
 use function microtime;
 
+/** @internal */
 class Tag extends Event
 {
     /** @var string */

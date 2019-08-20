@@ -9,6 +9,7 @@ use DateTimeZone;
 use Scoutapm\Agent;
 use function sprintf;
 
+/** @internal */
 class TagSpan extends Tag
 {
     /** @var string */

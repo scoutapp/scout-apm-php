@@ -8,6 +8,7 @@ use JsonSerializable;
 use Scoutapm\Agent;
 use Scoutapm\Helper\Timer;
 
+/** @internal */
 class Span extends Event implements JsonSerializable
 {
     /** @var string */

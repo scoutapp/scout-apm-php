@@ -18,6 +18,7 @@ use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
 use function array_key_exists;
 
+// @todo needs interface
 class Config
 {
     /** @var array<int, (EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource)> */

@@ -25,6 +25,8 @@ use function socket_shutdown;
 use function strlen;
 use function unpack;
 
+// @todo needs interface
+/** @internal */
 class Connector
 {
     /** @var Agent */

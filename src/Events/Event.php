@@ -7,6 +7,10 @@ namespace Scoutapm\Events;
 use Ramsey\Uuid\Uuid;
 use Scoutapm\Agent;
 
+/**
+ * @internal
+ * @deprecated Subclasses of this don't really share a common semantic meaning, this should be deprecated.
+ */
 abstract class Event
 {
     /** @var Agent */

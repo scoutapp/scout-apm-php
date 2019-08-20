@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests;
+namespace Scoutapm\UnitTests\Config;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
-use Scoutapm\IgnoredEndpoints;
+use Scoutapm\Config\IgnoredEndpoints;
 
-/** @covers \Scoutapm\IgnoredEndpoints */
+/** @covers \Scoutapm\Config\IgnoredEndpoints */
 final class IgnoredEndpointsTest extends TestCase
 {
     public function testIgnoresEndpoints() : void

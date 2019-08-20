@@ -13,6 +13,7 @@ use function array_pop;
 use function array_slice;
 use function end;
 
+/** @internal */
 class Request extends Event implements JsonSerializable
 {
     /** @var Timer */

@@ -8,10 +8,12 @@ use Closure;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\CoreAgent\Manager;
 use Scoutapm\Events\Request;
 use Scoutapm\Events\Span;
 
+// @todo needs interface
 class Agent
 {
     public const VERSION = '1.0';

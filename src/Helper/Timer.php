@@ -9,7 +9,8 @@ use DateTimeZone;
 use function microtime;
 use function sprintf;
 
-class Timer
+/** @internal */
+final class Timer
 {
     private const MICROTIME_FLOAT_FORMAT           = 'U.u';
     private const FORMAT_FLOAT_TO_6_DECIMAL_PLACES = '%.6F';
