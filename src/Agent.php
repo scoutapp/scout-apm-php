@@ -61,6 +61,16 @@ final class Agent
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration);
     }
 
+    private static function createConnectorFromConfig(Config $config) : SocketConnector
+    {
+        return new SocketConnector(
+            $config->get('socket_path'),
+            (string) $config->get('name'),
+            (string) $config->get('key'),
+            $config->get('api_version')
+        );
+    }
+
     /**
      * @deprecated Once getConfig is removed, you cannot overwrite config using this...
      */
@@ -70,7 +80,7 @@ final class Agent
 
         return new self(
             $config,
-            $connector ?? new SocketConnector($config),
+            $connector ?? self::createConnectorFromConfig($config),
             $logger ?? new NullLogger()
         );
     }
@@ -79,7 +89,7 @@ final class Agent
     {
         return new self(
             $config,
-            $connector ?? new SocketConnector($config),
+            $connector ?? self::createConnectorFromConfig($config),
             $logger ?? new NullLogger()
         );
     }

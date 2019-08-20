@@ -7,7 +7,6 @@ namespace Scoutapm\Connector;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use Scoutapm\Config;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\Request\Request;
 use Throwable;
@@ -29,18 +28,30 @@ use function unpack;
 /** @internal */
 final class SocketConnector implements Connector
 {
-    /** @var Config */
-    private $config;
-
     /** @var resource */
     private $socket;
 
     /** @var bool */
     private $connected = false;
 
-    public function __construct(Config $config)
+    /** @var string */
+    private $socketPath;
+
+    /** @var string */
+    private $appName;
+
+    /** @var string */
+    private $appKey;
+
+    /** @var string */
+    private $apiVersion;
+
+    public function __construct(string $socketPath, string $appName, string $appKey, string $apiVersion)
     {
-        $this->config = $config;
+        $this->socketPath = $socketPath;
+        $this->appName    = $appName;
+        $this->appKey     = $appKey;
+        $this->apiVersion = $apiVersion;
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
         $this->connect();
@@ -50,7 +61,7 @@ final class SocketConnector implements Connector
     public function connect() : void
     {
         try {
-            $this->connected = socket_connect($this->socket, $this->config->get('socketPath'));
+            $this->connected = socket_connect($this->socket, $this->socketPath);
         } catch (Throwable $e) {
             $this->connected = false;
         }
@@ -82,10 +93,10 @@ final class SocketConnector implements Connector
     {
         $this->sendMessage([
             'Register' => [
-                'app' => $this->config->get('name'),
-                'key' => $this->config->get('key'),
+                'app' => $this->appName,
+                'key' => $this->appKey,
                 'language' => 'php',
-                'api_version' => $this->config->get('api_version'),
+                'api_version' => $this->apiVersion,
             ],
         ]);
 
