@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Exception\Request;
 
 use Exception;
+use Throwable;
 use function sprintf;
 
 class DuplicateRequestName extends Exception

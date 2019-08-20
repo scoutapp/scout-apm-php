@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
+use Throwable;
 use function exec;
 use function file_get_contents;
 use function hash;
@@ -23,8 +24,11 @@ class CoreAgentManager
     /** @var CoreAgentDownloader */
     private $downloader;
 
-    /** @var string */
-    private $core_agent_bin_path;
+    /** @var string|null */
+    private $coreAgentBinPath;
+
+    /** @var string|null */
+    private $coreAgentBinVersion;
 
     public function __construct(Agent $agent)
     {
@@ -85,8 +89,8 @@ class CoreAgentManager
         $manifest = new CoreAgentManifest($this->coreAgentDir . '/manifest.json', $this->agent);
         if (! $manifest->isValid()) {
             $this->agent->getLogger()->debug('Core Agent verification failed: CoreAgentManifest is not valid.');
-            $this->core_agent_bin_path    = null;
-            $this->core_agent_bin_version = null;
+            $this->coreAgentBinPath    = null;
+            $this->coreAgentBinVersion = null;
 
             return false;
         }
@@ -94,15 +98,15 @@ class CoreAgentManager
         // Check that the hash matches
         $binPath = $this->coreAgentDir . '/' . $manifest->binName;
         if (hash('sha256', file_get_contents($binPath)) === $manifest->sha256) {
-            $this->core_agent_bin_path    = $binPath;
-            $this->core_agent_bin_version = $manifest->binVersion;
+            $this->coreAgentBinPath    = $binPath;
+            $this->coreAgentBinVersion = $manifest->binVersion;
 
             return true;
         }
 
         $this->agent->getLogger()->debug('Core Agent verification failed: SHA mismatch.');
-        $this->core_agent_bin_path    = null;
-        $this->core_agent_bin_version = null;
+        $this->coreAgentBinPath    = null;
+        $this->coreAgentBinVersion = null;
 
         return false;
     }
@@ -121,7 +125,7 @@ class CoreAgentManager
             exec($command);
 
             return true;
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             // TODO detect failure of launch properly
             // logger.error("Error running Core Agent: %r", e);
             return false;
@@ -130,7 +134,12 @@ class CoreAgentManager
 
     public function agentBinary() : string
     {
-        return $this->core_agent_bin_path . ' start';
+        // @todo should this be an exception...?
+        if ($this->coreAgentBinPath === null) {
+            return ' start';
+        }
+
+        return $this->coreAgentBinPath . ' start';
     }
 
     public function daemonizeFlag() : string

@@ -47,8 +47,10 @@ class DerivedSource
      * Returns the value for this configuration key.
      *
      * Only valid if the Source has previously returned "true" to `hasKey`
+     *
+     * @return mixed
      */
-    public function get(string $key) : ?string
+    public function get(string $key)
     {
         // Whitelisted keys only
         if (! $this->hasKey($key)) {

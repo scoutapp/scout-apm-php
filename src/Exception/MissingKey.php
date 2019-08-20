@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Exception;
 
 use Exception;
+use Throwable;
 use function sprintf;
 
 class MissingKey extends Exception

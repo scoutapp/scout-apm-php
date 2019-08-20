@@ -37,7 +37,7 @@ class Connector
     private $socket;
 
     /** @var bool */
-    private $connected;
+    private $connected = false;
 
     public function __construct(Agent $agent)
     {

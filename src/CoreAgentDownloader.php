@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
+use PharData;
 use Throwable;
 use function basename;
 use function copy;

@@ -18,7 +18,7 @@ class Logger implements LoggerInterface
     /** @var string */
     private $name;
 
-    /** @var string|null */
+    /** @var string */
     private $logPath;
 
     public function __construct(string $name, ?string $logPath = null)
@@ -113,7 +113,7 @@ class Logger implements LoggerInterface
     }
 
     /**
-     * @param string  $level
+     * @param mixed   $level
      * @param string  $message
      * @param mixed[] $context
      */

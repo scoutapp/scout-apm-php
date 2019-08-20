@@ -18,7 +18,7 @@ class Request extends Event implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var array<int, Event> */
+    /** @var array<int, TagRequest|Span> */
     private $events = [];
 
     /** @var array<int, Span> */
@@ -54,14 +54,18 @@ class Request extends Event implements JsonSerializable
     /**
      * Stop the currently "running" span.
      * You can still tag it if needed up until the request as a whole is finished.
+     *
+     * @throws NotStarted
      */
     public function stopSpan(?float $overrideTimestamp = null) : void
     {
+        /** @var Span|null $span */
         $span = array_pop($this->openSpans);
 
         if ($span === null) {
             throw new NotStarted();
         }
+
         $span->stop($overrideTimestamp);
 
         $threshold = 0.5;
@@ -86,7 +90,7 @@ class Request extends Event implements JsonSerializable
     /**
      * turn this object into a list of commands to send to the CoreAgent
      *
-     * @return array<string, array<string, (string|array|null)>>
+     * @return array<int, array<string, (string|array|null|bool)>>
      */
     public function jsonSerialize() : array
     {

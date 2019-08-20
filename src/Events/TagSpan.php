@@ -14,14 +14,15 @@ class TagSpan extends Tag
     /** @var string */
     protected $spanId;
 
-    public function __construct(Agent $agent, string $tag, string $value, string $requestId, string $spanId, ?float $timestamp = null)
+    /** @param mixed $value */
+    public function __construct(Agent $agent, string $tag, $value, string $requestId, string $spanId, ?float $timestamp = null)
     {
         parent::__construct($agent, $tag, $value, $requestId, $timestamp);
         $this->spanId = $spanId;
     }
 
     /**
-     * @return array<string, array<string, (string|array|null)>>
+     * @return array<int, array<string, (string|array|null|bool)>>
      */
     public function jsonSerialize() : array
     {

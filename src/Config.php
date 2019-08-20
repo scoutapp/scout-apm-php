@@ -25,7 +25,10 @@ class Config
     /** @var UserSettingsSource */
     private $userSettingsSource;
 
-    /** @var array<string, BoolCoercion|JSONCoercion */
+    /**
+     * @var array<string, string>
+     * @psalm-var array<string, BoolCoercion::class|JSONCoercion::class>
+     */
     private $coercions;
 
     public function __construct(Agent $agent)
@@ -49,8 +52,10 @@ class Config
     /**
      * Looks through all available sources for the first that can handle this
      * key, then returns the value from that source.
+     *
+     * @return mixed
      */
-    public function get(string $key) : ?string
+    public function get(string $key)
     {
         foreach ($this->sources as $source) {
             if ($source->hasKey($key)) {
@@ -59,7 +64,12 @@ class Config
             }
         }
 
+        if (!isset($value)) {
+            return null;
+        }
+
         if (array_key_exists($key, $this->coercions)) {
+            /** @var JSONCoercion|BoolCoercion $coercion */
             $coercion = new $this->coercions[$key]();
             $value    = $coercion->coerce($value);
         }

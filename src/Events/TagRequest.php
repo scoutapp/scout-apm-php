@@ -10,7 +10,7 @@ use function sprintf;
 
 class TagRequest extends Tag
 {
-    /** @return array<string, array<string, (string|array|null)>> */
+    /** @return array<int, array<string, (string|array|null|bool)>> */
     public function jsonSerialize() : array
     {
         // Format the timestamp

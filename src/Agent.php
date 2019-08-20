@@ -20,7 +20,7 @@ class Agent
     /** @var Config */
     private $config;
 
-    /** @var Request */
+    /** @var Request|null */
     private $request;
 
     /** @var Connector|null */
@@ -129,7 +129,7 @@ class Agent
     public function stopSpan() : void
     {
         if ($this->request === null) {
-            return null;
+            return;
         }
 
         $this->request->stopSpan();
@@ -210,6 +210,16 @@ class Agent
             return false;
         }
 
+        if ($this->request === null) {
+            // @todo throw exception? return false?
+            return false;
+        }
+
+        if ($this->connector === null) {
+            // @todo throw exception? return false? call ->connect() ?
+            return false;
+        }
+
         // Send this request off to the CoreAgent
         return $this->connector->sendRequest($this->request);
     }
@@ -217,7 +227,7 @@ class Agent
     /**
      * You probably don't need this, it's useful in testing
      */
-    public function getRequest() : Request
+    public function getRequest() : ?Request
     {
         return $this->request;
     }

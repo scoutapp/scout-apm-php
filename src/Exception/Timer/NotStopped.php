@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Exception\Timer;
 
 use Exception;
+use Throwable;
 
 class NotStopped extends Exception
 {

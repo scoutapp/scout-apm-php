@@ -15,16 +15,18 @@ class Tag extends Event
     /** @var string */
     protected $tag;
 
-    /** @var string */
+    /** @var mixed */
     protected $value;
 
-    /** @var float|null */
+    /** @var float */
     protected $timestamp;
 
     /**
      * Value can be any jsonable structure
+     *
+     * @param mixed $value
      */
-    public function __construct(Agent $agent, string $tag, string $value, string $requestId, ?float $timestamp = null)
+    public function __construct(Agent $agent, string $tag, $value, string $requestId, ?float $timestamp = null)
     {
         parent::__construct($agent);
 

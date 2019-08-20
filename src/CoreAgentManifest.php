@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
+use Throwable;
 use function file_get_contents;
 use function json_decode;
 

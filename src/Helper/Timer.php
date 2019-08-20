@@ -17,7 +17,7 @@ class Timer
     // @todo this doesn't feel like the right place for this, unless a Timer itself is serializable
     public const FORMAT_FOR_CORE_AGENT = 'Y-m-d\TH:i:s.u\Z';
 
-    /** @var float|null */
+    /** @var float */
     private $start;
 
     /** @var float|null */

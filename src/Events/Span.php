@@ -56,7 +56,8 @@ class Span extends Event implements JsonSerializable
         $this->name = $name;
     }
 
-    public function tag(string $tag, string $value) : void
+    /** @param mixed $value */
+    public function tag(string $tag, $value) : void
     {
         $tagSpan      = new TagSpan($this->agent, $tag, $value, $this->requestId, $this->id);
         $this->tags[] = $tagSpan;
@@ -93,7 +94,7 @@ class Span extends Event implements JsonSerializable
         return $this->tags;
     }
 
-    /** @return mixed[] */
+    /** @return array<int, array<string, (string|array|null|bool)>> */
     public function jsonSerialize() : array
     {
         $commands   = [];
