@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Events;
+namespace Scoutapm\UnitTests\Events\Tag;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanId;
-use Scoutapm\Events\Tag\SpanTag;
+use Scoutapm\Events\Tag\TagSpan;
 
-/** @covers \Scoutapm\Events\Tag\SpanTag */
+/** @covers \Scoutapm\Events\Tag\TagSpan */
 final class TagSpanTest extends TestCase
 {
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
-        $tag = new SpanTag('t', 'v', RequestId::new(), SpanId::new());
+        $tag = new TagSpan('t', 'v', RequestId::new(), SpanId::new());
         self::assertNotNull($tag);
     }
 
@@ -26,7 +26,7 @@ final class TagSpanTest extends TestCase
         $requestId = RequestId::new();
         $spanId    = SpanId::new();
 
-        $serialized = (new SpanTag('t', 'v', $requestId, $spanId))->jsonSerialize();
+        $serialized = (new TagSpan('t', 'v', $requestId, $spanId))->jsonSerialize();
 
         self::assertIsArray($serialized);
         self::assertArrayHasKey('TagSpan', $serialized[0]);

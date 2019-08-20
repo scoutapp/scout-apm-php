@@ -90,7 +90,7 @@ final class AgentTest extends TestCase
                     'StopSpan' => [],
                 ],
                 [
-                    'RequestTag' => [],
+                    'TagRequest' => [],
                 ],
                 [
                     'StartSpan' => [],

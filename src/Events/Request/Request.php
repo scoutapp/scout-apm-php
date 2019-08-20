@@ -8,7 +8,7 @@ use Exception;
 use JsonSerializable;
 use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
 use Scoutapm\Events\Span\Span;
-use Scoutapm\Events\Tag\RequestTag;
+use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
 use function array_pop;
@@ -21,7 +21,7 @@ class Request implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var RequestTag[]|Span[]|array<int, (RequestTag|Span)> */
+    /** @var TagRequest[]|Span[]|array<int, (TagRequest|Span)> */
     private $events = [];
 
     /** @var Span[]|array<int, Span> */
@@ -91,7 +91,7 @@ class Request implements JsonSerializable
      */
     public function tag(string $tagName, string $value) : void
     {
-        $this->events[] = new RequestTag($tagName, $value, $this->id);
+        $this->events[] = new TagRequest($tagName, $value, $this->id);
     }
 
     /**
@@ -131,7 +131,7 @@ class Request implements JsonSerializable
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @return RequestTag[]|Span[]|array<int, (RequestTag|Span)>
+     * @return TagRequest[]|Span[]|array<int, (TagRequest|Span)>
      */
     public function getEvents() : array
     {

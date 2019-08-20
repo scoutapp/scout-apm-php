@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Events;
+namespace Scoutapm\UnitTests\Events\Request;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\Request;
@@ -38,7 +38,7 @@ final class RequestTest extends TestCase
         $serialized = $request->jsonSerialize();
         self::assertIsArray($serialized);
         self::assertArrayHasKey('StartRequest', reset($serialized));
-        self::assertArrayHasKey('RequestTag', next($serialized));
+        self::assertArrayHasKey('TagRequest', next($serialized));
 
         self::assertArrayHasKey('StartSpan', next($serialized));
         self::assertArrayHasKey('TagSpan', next($serialized));

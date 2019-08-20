@@ -8,7 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Events\Span\Span;
-use Scoutapm\Events\Tag\RequestTag;
+use Scoutapm\Events\Tag\TagRequest;
 use function end;
 
 /** @covers \Scoutapm\Agent */
@@ -112,7 +112,7 @@ final class AgentTest extends TestCase
 
         $tag = end($events);
 
-        self::assertInstanceOf(RequestTag::class, $tag);
+        self::assertInstanceOf(TagRequest::class, $tag);
         self::assertSame('foo', $tag->getTag());
         self::assertSame('bar', $tag->getValue());
     }

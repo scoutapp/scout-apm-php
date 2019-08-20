@@ -6,12 +6,26 @@ namespace Scoutapm\Events\Tag;
 
 use DateTime;
 use DateTimeZone;
+use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Span\SpanId;
 use function sprintf;
 
 /** @internal */
-class RequestTag extends Tag
+class TagSpan extends Tag
 {
-    /** @return array<int, array<string, (string|array|bool|null)>> */
+    /** @var SpanId */
+    protected $spanId;
+
+    /** @param mixed $value */
+    public function __construct(string $tag, $value, RequestId $requestId, SpanId $spanId, ?float $timestamp = null)
+    {
+        parent::__construct($tag, $value, $requestId, $timestamp);
+        $this->spanId = $spanId;
+    }
+
+    /**
+     * @return array<int, array<string, (string|array|bool|null)>>
+     */
     public function jsonSerialize() : array
     {
         // Format the timestamp
@@ -21,8 +35,9 @@ class RequestTag extends Tag
 
         return [
             [
-                'RequestTag' => [
+                'TagSpan' => [
                     'request_id' => $this->requestId->toString(),
+                    'span_id' => $this->spanId->toString(),
                     'tag' => $this->tag,
                     'value' => $this->value,
                     'timestamp' => $timestamp,

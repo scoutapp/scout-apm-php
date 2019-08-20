@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Events;
+namespace Scoutapm\UnitTests\Events\Span;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
