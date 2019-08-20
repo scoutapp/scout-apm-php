@@ -61,10 +61,22 @@ final class Agent
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration);
     }
 
+    /**
+     * @deprecated Once getConfig is removed, you cannot overwrite config using this...
+     */
     public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
     {
         $config = new Config();
 
+        return new self(
+            $config,
+            $connector ?? new SocketConnector($config),
+            $logger ?? new NullLogger()
+        );
+    }
+
+    public static function fromConfig(Config $config, ?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    {
         return new self(
             $config,
             $connector ?? new SocketConnector($config),

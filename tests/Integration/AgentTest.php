@@ -6,6 +6,7 @@ namespace Scoutapm\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
+use Scoutapm\Config;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Events\Request\Request;
 use function getenv;
@@ -50,13 +51,12 @@ final class AgentTest extends TestCase
             }
         };
 
-        $agent = Agent::fromDefaults(null, $connector);
-
-        $config = $agent->getConfig();
-
+        $config = new Config();
         $config->set('name', 'Agent integration test');
         $config->set('key', $scoutApmKey);
         $config->set('monitor', true);
+
+        $agent = Agent::fromConfig($config, null, $connector);
 
         $agent->connect();
 
