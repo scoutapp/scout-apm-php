@@ -254,6 +254,7 @@ final class Agent
      * You probably don't need this, it's useful in testing
      *
      * @internal
+     * @deprecated
      */
     public function getRequest() : ?Request
     {
