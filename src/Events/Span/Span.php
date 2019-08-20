@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Events;
+namespace Scoutapm\Events\Span;
 
 use Exception;
 use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
+use Scoutapm\Events\Tag\SpanTag;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
@@ -25,7 +26,7 @@ class Span implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var TagSpan[]|array<int, TagSpan> */
+    /** @var SpanTag[]|array<int, SpanTag> */
     private $tags;
 
     /** @var UuidInterface */
@@ -71,7 +72,7 @@ class Span implements JsonSerializable
     /** @param mixed $value */
     public function tag(string $tag, $value) : void
     {
-        $this->tags[] = new TagSpan($tag, $value, $this->requestId, $this->id);
+        $this->tags[] = new SpanTag($tag, $value, $this->requestId, $this->id);
     }
 
     public function setParentId(UuidInterface $parentId) : void
@@ -99,7 +100,7 @@ class Span implements JsonSerializable
         return $this->timer->duration();
     }
 
-    /** @return TagSpan[]|array<int, TagSpan> */
+    /** @return SpanTag[]|array<int, SpanTag> */
     public function getTags() : array
     {
         return $this->tags;

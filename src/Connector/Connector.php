@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Connector;
 
-use Scoutapm\Events\Request;
+use Scoutapm\Events\Request\Request;
 
 interface Connector
 {

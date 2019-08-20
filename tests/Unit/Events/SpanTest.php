@@ -7,9 +7,9 @@ namespace Scoutapm\UnitTests\Events;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Scoutapm\Events\Span;
+use Scoutapm\Events\Span\Span;
 
-/** @covers \Scoutapm\Events\Span */
+/** @covers \Scoutapm\Events\Span\Span */
 final class SpanTest extends TestCase
 {
     /** @throws Exception */

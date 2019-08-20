@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Events;
+namespace Scoutapm\Events\Tag;
 
 use Ramsey\Uuid\UuidInterface;
 use function microtime;
 
 /** @internal */
-class Tag
+abstract class Tag
 {
     /** @var UuidInterface */
     protected $requestId;

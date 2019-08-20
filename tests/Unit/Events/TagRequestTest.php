@@ -7,15 +7,15 @@ namespace Scoutapm\UnitTests\Events;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Scoutapm\Events\TagRequest;
+use Scoutapm\Events\Tag\RequestTag;
 
-/** @covers \Scoutapm\Events\TagRequest */
+/** @covers \Scoutapm\Events\Tag\RequestTag */
 final class TagRequestTest extends TestCase
 {
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
-        $tag = new TagRequest('t', 'v', Uuid::uuid4());
+        $tag = new RequestTag('t', 'v', Uuid::uuid4());
         self::assertNotNull($tag);
     }
 
@@ -23,12 +23,12 @@ final class TagRequestTest extends TestCase
     public function testJsonSerializes() : void
     {
         $requestId  = Uuid::uuid4();
-        $serialized = (new TagRequest('t', 'v', $requestId))->jsonSerialize();
+        $serialized = (new RequestTag('t', 'v', $requestId))->jsonSerialize();
 
         self::assertIsArray($serialized);
-        self::assertArrayHasKey('TagRequest', $serialized[0]);
+        self::assertArrayHasKey('RequestTag', $serialized[0]);
 
-        $data = $serialized[0]['TagRequest'];
+        $data = $serialized[0]['RequestTag'];
         self::assertSame('t', $data['tag']);
         self::assertSame('v', $data['value']);
         self::assertSame($requestId->toString(), $data['request_id']);

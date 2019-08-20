@@ -7,15 +7,15 @@ namespace Scoutapm\UnitTests\Events;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Scoutapm\Events\TagSpan;
+use Scoutapm\Events\Tag\SpanTag;
 
-/** @covers \Scoutapm\Events\TagSpan */
+/** @covers \Scoutapm\Events\Tag\SpanTag */
 final class TagSpanTest extends TestCase
 {
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
-        $tag = new TagSpan('t', 'v', Uuid::uuid4(), Uuid::uuid4());
+        $tag = new SpanTag('t', 'v', Uuid::uuid4(), Uuid::uuid4());
         self::assertNotNull($tag);
     }
 
@@ -25,7 +25,7 @@ final class TagSpanTest extends TestCase
         $requestId = Uuid::uuid4();
         $spanId    = Uuid::uuid4();
 
-        $serialized = (new TagSpan('t', 'v', $requestId, $spanId))->jsonSerialize();
+        $serialized = (new SpanTag('t', 'v', $requestId, $spanId))->jsonSerialize();
 
         self::assertIsArray($serialized);
         self::assertArrayHasKey('TagSpan', $serialized[0]);

@@ -13,8 +13,8 @@ use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\Manager;
-use Scoutapm\Events\Request;
-use Scoutapm\Events\Span;
+use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Span\Span;
 
 // @todo needs interface
 final class Agent

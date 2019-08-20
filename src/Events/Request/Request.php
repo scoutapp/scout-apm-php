@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Events;
+namespace Scoutapm\Events\Request;
 
 use Exception;
 use JsonSerializable;
 use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
+use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Tag\RequestTag;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
 use function array_pop;
@@ -21,7 +23,7 @@ class Request implements JsonSerializable
     /** @var Timer */
     private $timer;
 
-    /** @var TagRequest[]|Span[]|array<int, TagRequest|Span> */
+    /** @var RequestTag[]|Span[]|array<int, (RequestTag|Span)> */
     private $events = [];
 
     /** @var Span[]|array<int, Span> */
@@ -91,7 +93,7 @@ class Request implements JsonSerializable
      */
     public function tag(string $tagName, string $value) : void
     {
-        $this->events[] = new TagRequest($tagName, $value, $this->id);
+        $this->events[] = new RequestTag($tagName, $value, $this->id);
     }
 
     /**
@@ -131,7 +133,7 @@ class Request implements JsonSerializable
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @return TagRequest[]|Span[]|array<int, TagRequest|Span>
+     * @return RequestTag[]|Span[]|array<int, (RequestTag|Span)>
      */
     public function getEvents() : array
     {

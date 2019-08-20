@@ -9,7 +9,7 @@ use DateTimeZone;
 use Exception;
 use Scoutapm\Config;
 use Scoutapm\Events\Metadata;
-use Scoutapm\Events\Request;
+use Scoutapm\Events\Request\Request;
 use Throwable;
 use const AF_UNIX;
 use const SOCK_STREAM;
