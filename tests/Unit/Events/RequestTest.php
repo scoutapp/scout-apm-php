@@ -10,28 +10,26 @@ use Scoutapm\Events\Request;
 use function next;
 use function reset;
 
-/**
- * Test Case for @see \Scoutapm\Events\Request
- */
+/** @covers \Scoutapm\Events\Request */
 final class RequestTest extends TestCase
 {
     public function testCanBeInitialized() : void
     {
-        $request = new Request(new Agent(), '');
-        $this->assertNotNull($request);
+        $request = new Request(new Agent());
+        self::assertNotNull($request);
     }
 
     public function testCanBeStopped() : void
     {
-        $request = new Request(new Agent(), '');
+        $request = new Request(new Agent());
         $request->stop();
-        $this->assertNotNull($request);
+        self::assertNotNull($request);
     }
 
     public function testJsonSerializes() : void
     {
         // Make a request with some interesting content.
-        $request = new Request(new Agent(), '');
+        $request = new Request(new Agent());
         $request->tag('t', 'v');
         $span = $request->startSpan('foo');
         $span->tag('spantag', 'spanvalue');
@@ -39,14 +37,14 @@ final class RequestTest extends TestCase
         $request->stop();
 
         $serialized = $request->jsonSerialize();
-        $this->assertIsArray($serialized);
-        $this->assertArrayHasKey('StartRequest', reset($serialized));
-        $this->assertArrayHasKey('TagRequest', next($serialized));
+        self::assertIsArray($serialized);
+        self::assertArrayHasKey('StartRequest', reset($serialized));
+        self::assertArrayHasKey('TagRequest', next($serialized));
 
-        $this->assertArrayHasKey('StartSpan', next($serialized));
-        $this->assertArrayHasKey('TagSpan', next($serialized));
-        $this->assertArrayHasKey('StopSpan', next($serialized));
+        self::assertArrayHasKey('StartSpan', next($serialized));
+        self::assertArrayHasKey('TagSpan', next($serialized));
+        self::assertArrayHasKey('StopSpan', next($serialized));
 
-        $this->assertArrayHasKey('FinishRequest', next($serialized));
+        self::assertArrayHasKey('FinishRequest', next($serialized));
     }
 }

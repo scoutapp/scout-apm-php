@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Tests;
+namespace Scoutapm\UnitTests;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
 use Scoutapm\IgnoredEndpoints;
 
-/**
- * Test Case for @see \Scoutapm\IgnoredEndpoints
- */
+/** @covers \Scoutapm\IgnoredEndpoints */
 final class IgnoredEndpointsTest extends TestCase
 {
     public function testIgnoresEndpoints() : void
@@ -24,18 +22,18 @@ final class IgnoredEndpointsTest extends TestCase
         $ignoredEndpoints = new IgnoredEndpoints($agent);
 
         // Exact Match
-        $this->assertEquals(true, $ignoredEndpoints->ignored('/health'));
-        $this->assertEquals(true, $ignoredEndpoints->ignored('/status'));
+        self::assertEquals(true, $ignoredEndpoints->ignored('/health'));
+        self::assertEquals(true, $ignoredEndpoints->ignored('/status'));
 
         // Prefix Match
-        $this->assertEquals(true, $ignoredEndpoints->ignored('/health/database'));
-        $this->assertEquals(true, $ignoredEndpoints->ignored('/status/time'));
+        self::assertEquals(true, $ignoredEndpoints->ignored('/health/database'));
+        self::assertEquals(true, $ignoredEndpoints->ignored('/status/time'));
 
         // No Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored('/signup'));
+        self::assertEquals(false, $ignoredEndpoints->ignored('/signup'));
 
         // Not-prefix doesn't Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored('/hero/1/health'));
+        self::assertEquals(false, $ignoredEndpoints->ignored('/hero/1/health'));
     }
 
     public function testWorksWithNullIgnoreSetting() : void
@@ -45,6 +43,6 @@ final class IgnoredEndpointsTest extends TestCase
         $ignoredEndpoints = new IgnoredEndpoints($agent);
 
         // No Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored('/signup'));
+        self::assertEquals(false, $ignoredEndpoints->ignored('/signup'));
     }
 }

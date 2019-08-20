@@ -8,9 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Helper\Timer;
 use function usleep;
 
-/**
- * @covers \Scoutapm\Helper\Timer
- */
+/** @covers \Scoutapm\Helper\Timer */
 final class TimerTest extends TestCase
 {
     /**
