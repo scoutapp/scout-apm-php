@@ -44,7 +44,8 @@ class Manager
         $this->downloader = new Downloader(
             $this->coreAgentDir,
             $this->agent->getConfig()->get('core_agent_full_name'),
-            $agent
+            $agent,
+            $this->agent->getConfig()->get('download_url')
         );
     }
 

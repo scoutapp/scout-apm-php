@@ -47,7 +47,10 @@ class Downloader
     /** @var resource|null */
     private $download_lock_fd;
 
-    public function __construct(string $coreAgentDir, string $coreAgentFullName, Agent $agent)
+    /** @var string */
+    private $downloadUrl;
+
+    public function __construct(string $coreAgentDir, string $coreAgentFullName, Agent $agent, string $downloadUrl)
     {
         $this->coreAgentDir        = $coreAgentDir;
         $this->coreAgentFullName   = $coreAgentFullName;
@@ -56,6 +59,7 @@ class Downloader
 
         $this->package_location   = $coreAgentDir . '/' . $coreAgentFullName . '.tgz';
         $this->download_lock_path = $coreAgentDir . '/download.lock';
+        $this->downloadUrl        = $downloadUrl;
     }
 
     public function download() : void
@@ -155,8 +159,6 @@ class Downloader
      */
     public function fullUrl() : string
     {
-        $root_url = $this->agent->getConfig()->get('download_url');
-
-        return $root_url . '/' . $this->coreAgentFullName . '.tgz';
+        return $this->downloadUrl . '/' . $this->coreAgentFullName . '.tgz';
     }
 }

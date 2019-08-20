@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config;
 
+use function strpos;
+
 /** @internal */
 final class IgnoredEndpoints
 {
-    /**
-     * @var array|string[]
-     */
+    /** @var array|string[] */
     private $ignoredPaths;
 
     /** @param string[]|array<int, string> $ignoredPaths */
