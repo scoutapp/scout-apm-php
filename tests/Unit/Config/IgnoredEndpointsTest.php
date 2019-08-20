@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Config;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Config;
 use Scoutapm\Config\IgnoredEndpoints;
 
 /** @covers \Scoutapm\Config\IgnoredEndpoints */
@@ -13,12 +12,10 @@ final class IgnoredEndpointsTest extends TestCase
 {
     public function testIgnoresEndpoints() : void
     {
-        $config = new Config();
-        $config->set('ignore', [
+        $ignoredEndpoints = new IgnoredEndpoints([
             '/health',
             '/status',
         ]);
-        $ignoredEndpoints = new IgnoredEndpoints($config);
 
         // Exact Match
         self::assertTrue($ignoredEndpoints->ignored('/health'));
@@ -38,6 +35,6 @@ final class IgnoredEndpointsTest extends TestCase
     public function testWorksWithNullIgnoreSetting() : void
     {
         // No Match
-        self::assertFalse((new IgnoredEndpoints(new Config()))->ignored('/signup'));
+        self::assertFalse((new IgnoredEndpoints([]))->ignored('/signup'));
     }
 }

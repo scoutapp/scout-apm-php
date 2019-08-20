@@ -57,8 +57,7 @@ final class Agent
 
         $this->request = new Request();
 
-        // @todo this seems to really be part of "config"? some kind of reader pattern?
-        $this->ignoredEndpoints = new IgnoredEndpoints($configuration);
+        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get('ignore') ?: []);
     }
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector

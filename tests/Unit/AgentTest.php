@@ -133,8 +133,10 @@ final class AgentTest extends TestCase
 
     public function testIgnoredEndpoints() : void
     {
-        $agent = Agent::fromDefaults();
-        $agent->getConfig()->set('ignore', ['/foo']);
+        $config = new Config();
+        $config->set('ignore', ['/foo']);
+
+        $agent = Agent::fromConfig($config);
 
         self::assertTrue($agent->ignored('/foo'));
         self::assertFalse($agent->ignored('/bar'));

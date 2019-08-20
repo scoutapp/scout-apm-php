@@ -4,30 +4,24 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config;
 
-use Scoutapm\Config;
-use function strlen;
-use function substr;
-
 /** @internal */
 final class IgnoredEndpoints
 {
-    /** @var Config */
-    private $config;
+    /**
+     * @var array|string[]
+     */
+    private $ignoredPaths;
 
-    public function __construct(Config $config)
+    /** @param string[]|array<int, string> $ignoredPaths */
+    public function __construct(array $ignoredPaths)
     {
-        $this->config = $config;
+        $this->ignoredPaths = $ignoredPaths;
     }
 
     public function ignored(string $url) : bool
     {
-        $ignored = $this->config->get('ignore');
-        if ($ignored === null) {
-            return false;
-        }
-
-        foreach ($ignored as $ignore) {
-            if (substr($url, 0, strlen($ignore)) === $ignore) {
+        foreach ($this->ignoredPaths as $ignore) {
+            if (strpos($url, $ignore) === 0) {
                 return true;
             }
         }
