@@ -47,4 +47,13 @@ final class ConfigTest extends TestCase
         $config->set("monitor", "true");
         $this->assertSame(true, $config->get("monitor"));
     }
+
+    public function testJSONCoercionOfIgnore()
+    {
+        $config = new Config(new Agent());
+
+        // Set a user config. This won't be looked up
+        $config->set("ignore", '["/foo", "/bar"]');
+        $this->assertSame(["/foo", "/bar"], $config->get("ignore"));
+    }
 }

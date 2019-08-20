@@ -12,7 +12,7 @@ class Agent
 {
     const VERSION = '1.0';
 
-    const NAME = 'scoutapm-php';
+    const NAME = 'scout-apm-php';
 
     private $config;
 
@@ -23,11 +23,20 @@ class Agent
 
     private $logger;
 
+    // Class that helps check incoming http paths vs. the configured ignore list
+    private $ignoredEndpoints;
+
+    // If this request was marked as ignored
+    private $isIgnored;
+
     public function __construct()
     {
         $this->config = new Config($this);
         $this->request = new Request($this);
         $this->logger = new NullLogger();
+
+        $this->ignoredEndpoints = new IgnoredEndpoints($this);
+        $this->isIgnored = false;
     }
 
     public function connect()
@@ -98,11 +107,21 @@ class Agent
      */
     public function startSpan(string $operation, float $overrideTimestamp = null)
     {
+        if ($this->request === null) {
+            // Must return a Span object to match API. This is a dummy span
+            // that is not ever used for anything.
+            return new Span($this, "Ignored", "ignored-request");
+        }
+
         return $this->request->startSpan($operation, $overrideTimestamp);
     }
 
     public function stopSpan()
     {
+        if ($this->request === null) {
+            return null;
+        }
+
         $this->request->stopSpan();
     }
 
@@ -134,17 +153,49 @@ class Agent
 
     public function tagRequest(string $tag, $value)
     {
+        if ($this->request === null) {
+            return null;
+        }
+
         return $this->request->tag($tag, $value);
     }
 
+    /*
+     * Check if a given URL was configured as ignored.
+     * Does not alter the running request. If you wish to abort tracing of this
+     * request, use ignore()
+     */
+    public function ignored(string $path) : bool
+    {
+        return $this->ignoredEndpoints->ignored($path);
+    }
+
+    /*
+     * Mark the running request as ignored. Triggers optimizations in various
+     * tracing and tagging methods to turn them into NOOPs
+     */
+    public function ignore()
+    {
+        $this->request = null;
+        $this->isIgnored = true;
+    }
+
+    // Returns true only if the request was sent onward to the core agent.
+    // False otherwise.
     public function send() : bool
     {
+        // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
-            return true;
+            return false;
         }
 
-        $status = $this->connector->sendRequest($this->request);
+        // Don't send it if the request was ignored
+        if ($this->isIgnored) {
+            return false;
+        }
 
+        // Send this request off to the CoreAgent
+        $status = $this->connector->sendRequest($this->request);
         return $status;
     }
 
