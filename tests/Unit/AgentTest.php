@@ -120,15 +120,15 @@ final class AgentTest extends TestCase
     public function testEnabled() : void
     {
         // without affirmatively enabling, it's not enabled.
-        $agent = Agent::fromDefaults();
-        self::assertFalse($agent->enabled());
+        $agentWithoutEnabling = Agent::fromDefaults();
+        self::assertFalse($agentWithoutEnabling->enabled());
 
         // but a config that has monitor = true, it is set
         $config = new Config();
         $config->set('monitor', 'true');
-        $agent->setConfig($config);
 
-        self::assertTrue($agent->enabled());
+        $enabledAgent = Agent::fromConfig($config);
+        self::assertTrue($enabledAgent->enabled());
     }
 
     public function testIgnoredEndpoints() : void

@@ -135,14 +135,6 @@ final class Agent
     }
 
     /**
-     * @deprecated move to constructor injection
-     */
-    public function setConfig(Config $config) : void
-    {
-        $this->config = $config;
-    }
-
-    /**
      * returns the active logger
      *
      * @deprecated will be deleted, do not rely on this externally - consumers within the library should have Logger injected
