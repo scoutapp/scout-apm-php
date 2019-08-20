@@ -20,10 +20,10 @@ use function array_key_exists;
 
 class Config
 {
-    /** @var array<int, \Scoutapm\Config\Source\EnvSource|\Scoutapm\Config\Source\UserSettingsSource|DerivedSource|\Scoutapm\Config\Source\DefaultSource|NullSource> */
+    /** @var array<int, (EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource)> */
     private $sources;
 
-    /** @var \Scoutapm\Config\Source\UserSettingsSource */
+    /** @var UserSettingsSource */
     private $userSettingsSource;
 
     /** @var CoerceType[]|array<string, CoerceType> */

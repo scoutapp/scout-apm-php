@@ -13,7 +13,7 @@ final class EnvSourceTest extends TestCase
 {
     public function testHasKey() : void
     {
-        $config = new \Scoutapm\Config\Source\EnvSource();
+        $config = new EnvSource();
         self::assertFalse($config->hasKey('test_case_foo'));
 
         putenv('SCOUT_TEST_CASE_FOO=thevalue');

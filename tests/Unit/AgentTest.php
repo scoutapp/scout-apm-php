@@ -65,7 +65,7 @@ final class AgentTest extends TestCase
 
     public function testWebTransaction() : void
     {
-        $retval = (new Agent())->webTransaction('Test', function (Span $span) {
+        $retval = (new Agent())->webTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Controller"
             self::assertSame($span->getName(), 'Controller/Test');
 
@@ -77,7 +77,7 @@ final class AgentTest extends TestCase
 
     public function testBackgroundTransaction() : void
     {
-        $retval = (new Agent())->backgroundTransaction('Test', function (Span $span) {
+        $retval = (new Agent())->backgroundTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Job"
             self::assertSame($span->getName(), 'Job/Test');
 
@@ -99,7 +99,7 @@ final class AgentTest extends TestCase
 
     public function testStartSpan() : void
     {
-        $span  = (new Agent())->startSpan('foo/bar');
+        $span = (new Agent())->startSpan('foo/bar');
         self::assertSame('foo/bar', $span->getName());
     }
 
@@ -119,7 +119,7 @@ final class AgentTest extends TestCase
         $agent = new Agent();
         $agent->tagRequest('foo', 'bar');
 
-        $events  = $agent->getRequest()->getEvents();
+        $events = $agent->getRequest()->getEvents();
 
         $tag = end($events);
 
