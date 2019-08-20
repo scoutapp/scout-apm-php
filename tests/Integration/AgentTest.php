@@ -6,16 +6,18 @@ namespace Scoutapm\IntegrationTests;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
+use function getenv;
 use function sleep;
 
 final class AgentTest extends TestCase
 {
     public function testLoggingIsSent() : void
     {
-        $scoutApmKey = \getenv('SCOUT_APM_KEY');
+        $scoutApmKey = getenv('SCOUT_APM_KEY');
 
         if ($scoutApmKey === false) {
             self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
+
             return;
         }
 
@@ -32,10 +34,10 @@ final class AgentTest extends TestCase
         // @todo currently have wait for agent to become available, not ideal, fix this...)
         sleep(1);
 
-        $agent->webTransaction('Yay', function () use ($agent) {
-            $agent->instrument('test', 'foo', function () {
+        $agent->webTransaction('Yay', static function () use ($agent) : void {
+            $agent->instrument('test', 'foo', static function () : void {
             });
-            $agent->instrument('test', 'foo2', function () {
+            $agent->instrument('test', 'foo2', static function () : void {
             });
             $agent->tagRequest('testtag', '1.23');
         });

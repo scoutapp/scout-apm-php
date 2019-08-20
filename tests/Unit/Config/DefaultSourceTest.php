@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Config;
@@ -11,16 +12,16 @@ use Scoutapm\Config\DefaultSource;
  */
 final class DefaultSourceTest extends TestCase
 {
-    public function testHasKey()
+    public function testHasKey() : void
     {
         $defaults = new DefaultSource();
-        self::assertTrue($defaults->hasKey("api_version"));
-        self::assertFalse($defaults->hasKey("notAValue"));
+        self::assertTrue($defaults->hasKey('api_version'));
+        self::assertFalse($defaults->hasKey('notAValue'));
     }
 
-    public function testGet()
+    public function testGet() : void
     {
         $defaults = new DefaultSource();
-        self::assertEquals("1.0", $defaults->get("api_version"));
+        self::assertEquals('1.0', $defaults->get('api_version'));
     }
 }

@@ -1,25 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scoutapm;
 
-/**
- * Class IgnoredEndpoints
- */
+use function strlen;
+use function substr;
+
 class IgnoredEndpoints
 {
-    private $agent;
+    /** @var Config */
     private $config;
 
-    public function __construct($agent)
+    public function __construct(Agent $agent)
     {
-        $this->agent = $agent;
         $this->config = $agent->getConfig();
     }
-    
+
     public function ignored(string $url) : bool
     {
-        $ignored = $this->config->get("ignore");
-        if ($ignored == null) {
+        $ignored = $this->config->get('ignore');
+        if ($ignored === null) {
             return false;
         }
 
@@ -28,7 +29,7 @@ class IgnoredEndpoints
                 return true;
             }
         }
-        
+
         // None Matched
         return false;
     }

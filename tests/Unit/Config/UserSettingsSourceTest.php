@@ -1,28 +1,31 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Scoutapm\UnitTests\Config;
 
-use \PHPUnit\Framework\TestCase;
-use \Scoutapm\Config\UserSettingsSource;
+use PHPUnit\Framework\TestCase;
+use Scoutapm\Config\UserSettingsSource;
 
-final class ConfigUserSettingsSourceTest extends TestCase
+final class UserSettingsSourceTest extends TestCase
 {
-    public function testHasKeyAfterBeingSet()
+    public function testHasKeyAfterBeingSet() : void
     {
         $config = new UserSettingsSource();
-        $this->assertFalse($config->hasKey("foo"));
+        $this->assertFalse($config->hasKey('foo'));
 
-        $config->set("foo", "bar");
+        $config->set('foo', 'bar');
 
-        $this->assertTrue($config->hasKey("foo"));
+        $this->assertTrue($config->hasKey('foo'));
     }
 
-    public function testGet()
+    public function testGet() : void
     {
         $config = new UserSettingsSource();
-        $this->assertNull($config->get("foo"));
+        $this->assertNull($config->get('foo'));
 
-        $config->set("foo", "bar");
+        $config->set('foo', 'bar');
 
-        $this->assertEquals("bar", $config->get("foo"));
+        $this->assertEquals('bar', $config->get('foo'));
     }
 }

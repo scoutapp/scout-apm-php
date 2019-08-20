@@ -1,24 +1,35 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scoutapm\Loggers;
 
 use Psr\Log\LoggerInterface;
+use function fclose;
+use function fopen;
+use function fwrite;
+use function preg_replace;
+use function print_r;
+use function sprintf;
+use function time;
 
 class Logger implements LoggerInterface
 {
+    /** @var string */
     private $name;
 
+    /** @var string|null */
     private $logPath;
 
     public function __construct(string $name, ?string $logPath = null)
     {
         if ($logPath === null) {
-            $alphaName = preg_replace("/[^A-Za-z0-9 ]/", '', $name);
+            $alphaName = preg_replace('/[^A-Za-z0-9 ]/', '', $name);
             $timestamp = time();
-            $logPath = "scout-$alphaName-$timestamp.txt";
+            $logPath   = sprintf('scout-%s-%s.txt', $alphaName, $timestamp);
         }
 
-        $this->name = $name;
+        $this->name    = $name;
         $this->logPath = $logPath;
     }
 
@@ -27,51 +38,91 @@ class Logger implements LoggerInterface
         return $this->name;
     }
 
-    public function emergency($message, array $context = [])
+    //phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.MissingParameterTypeHint
+
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function emergency($message, array $context = []) : void
     {
         $this->log('EMERGENCY', $message, $context);
     }
 
-    public function alert($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function alert($message, array $context = []) : void
     {
         $this->log('ALERT', $message, $context);
     }
 
-    public function critical($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function critical($message, array $context = []) : void
     {
         $this->log('CRITICAL', $message, $context);
     }
 
-    public function error($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function error($message, array $context = []) : void
     {
         $this->log('ERROR', $message, $context);
     }
 
-    public function warning($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function warning($message, array $context = []) : void
     {
         $this->log('WARNING', $message, $context);
     }
 
-    public function notice($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function notice($message, array $context = []) : void
     {
         $this->log('NOTICE', $message, $context);
     }
 
-    public function info($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function info($message, array $context = []) : void
     {
         $this->log('INFO', $message, $context);
     }
 
-    public function debug($message, array $context = [])
+    /**
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function debug($message, array $context = []) : void
     {
         $this->log('DEBUG', $message, $context);
     }
 
-    public function log($level, $message, array $context = [])
+    /**
+     * @param string  $level
+     * @param string  $message
+     * @param mixed[] $context
+     */
+    public function log($level, $message, array $context = []) : void
     {
-        $handle = fopen($this->logPath, 'a');
-        fwrite($handle, "$level: $message");
+        $handle = fopen($this->logPath, 'ab');
+        fwrite($handle, sprintf('%s: %s', $level, $message));
         fwrite($handle, print_r($context, true));
         fclose($handle);
     }
+    // phpcs:enable
 }

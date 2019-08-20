@@ -1,47 +1,50 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Scoutapm\Tests;
 
-use \PHPUnit\Framework\TestCase;
-use \Scoutapm\Agent;
-use \Scoutapm\IgnoredEndpoints;
+use PHPUnit\Framework\TestCase;
+use Scoutapm\Agent;
+use Scoutapm\IgnoredEndpoints;
 
 /**
  * Test Case for @see \Scoutapm\IgnoredEndpoints
  */
 final class IgnoredEndpointsTest extends TestCase
 {
-    public function testIgnoresEndpoints()
+    public function testIgnoresEndpoints() : void
     {
-        $agent = new Agent();
+        $agent  = new Agent();
         $config = $agent->getConfig();
-        $config->set("ignore", [
-            "/health",
-            "/status",
+        $config->set('ignore', [
+            '/health',
+            '/status',
         ]);
         $ignoredEndpoints = new IgnoredEndpoints($agent);
 
         // Exact Match
-        $this->assertEquals(true, $ignoredEndpoints->ignored("/health"));
-        $this->assertEquals(true, $ignoredEndpoints->ignored("/status"));
+        $this->assertEquals(true, $ignoredEndpoints->ignored('/health'));
+        $this->assertEquals(true, $ignoredEndpoints->ignored('/status'));
 
         // Prefix Match
-        $this->assertEquals(true, $ignoredEndpoints->ignored("/health/database"));
-        $this->assertEquals(true, $ignoredEndpoints->ignored("/status/time"));
+        $this->assertEquals(true, $ignoredEndpoints->ignored('/health/database'));
+        $this->assertEquals(true, $ignoredEndpoints->ignored('/status/time'));
 
         // No Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored("/signup"));
+        $this->assertEquals(false, $ignoredEndpoints->ignored('/signup'));
 
         // Not-prefix doesn't Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored("/hero/1/health"));
+        $this->assertEquals(false, $ignoredEndpoints->ignored('/hero/1/health'));
     }
 
-    public function testWorksWithNullIgnoreSetting()
+    public function testWorksWithNullIgnoreSetting() : void
     {
-        $agent = new Agent();
-        $config = $agent->getConfig();
+        $agent            = new Agent();
+        $config           = $agent->getConfig();
         $ignoredEndpoints = new IgnoredEndpoints($agent);
 
         // No Match
-        $this->assertEquals(false, $ignoredEndpoints->ignored("/signup"));
+        $this->assertEquals(false, $ignoredEndpoints->ignored('/signup'));
     }
 }

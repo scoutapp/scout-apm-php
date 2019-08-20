@@ -1,18 +1,26 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scoutapm\Helper;
 
-class BackTrace
+use function array_push;
+use function debug_backtrace;
+
+class Backtrace
 {
-    public static function capture()
+    /** @return array<int, array<string, string>> */
+    public static function capture() : array
     {
         $stack = debug_backtrace();
-        
+
         $formatted_stack = [];
         foreach ($stack as $frame) {
-            if (isset($frame["file"]) && isset($frame["line"]) && isset($frame["function"])) {
-                array_push($formatted_stack, ["file" => $frame["file"], "line" => $frame["line"], "function" => $frame["function"]]);
+            if (! isset($frame['file']) || ! isset($frame['line']) || ! isset($frame['function'])) {
+                continue;
             }
+
+            array_push($formatted_stack, ['file' => $frame['file'], 'line' => $frame['line'], 'function' => $frame['function']]);
         }
 
         return $formatted_stack;

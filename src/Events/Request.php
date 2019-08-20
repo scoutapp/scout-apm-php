@@ -1,37 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scoutapm\Events;
 
-use Scoutapm\Exception\Timer\NotStartedException;
+use JsonSerializable;
+use Scoutapm\Agent;
+use Scoutapm\Exception\Timer\NotStarted;
 use Scoutapm\Helper\Backtrace;
+use Scoutapm\Helper\Timer;
+use function array_pop;
+use function array_slice;
+use function end;
 
-class Request extends Event implements \JsonSerializable
+class Request extends Event implements JsonSerializable
 {
+    /** @var Timer */
     private $timer;
 
+    /** @var array<int, Event> */
     private $events = [];
 
-    /** @var The currently open / running Spans */
+    /** @var array<int, Span> */
     private $openSpans = [];
 
-    public function __construct(\Scoutapm\Agent $agent)
+    public function __construct(Agent $agent)
     {
         parent::__construct($agent);
 
-        $this->timer = new \Scoutapm\Helper\Timer();
+        $this->timer = new Timer();
     }
 
-    public function stop()
+    public function stop() : void
     {
         $this->timer->stop();
     }
 
-    public function startSpan(string $operation, $overrideTimestamp = null)
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
         $span = new Span($this->agent, $operation, $this->id, $overrideTimestamp);
 
+        $parent = end($this->openSpans);
         // Automatically wire up the parent of this span
-        if ($parent = end($this->openSpans)) {
+        if ($parent) {
             $span->setParentId($parent->getId());
         }
 
@@ -40,14 +51,16 @@ class Request extends Event implements \JsonSerializable
         return $span;
     }
 
-    // Stop the currently "running" span.
-    // You can still tag it if needed up until the request as a whole is finished.
-    public function stopSpan($overrideTimestamp = null)
+    /**
+     * Stop the currently "running" span.
+     * You can still tag it if needed up until the request as a whole is finished.
+     */
+    public function stopSpan(?float $overrideTimestamp = null) : void
     {
         $span = array_pop($this->openSpans);
 
         if ($span === null) {
-            throw new NotStartedException();
+            throw new NotStarted();
         }
         $span->stop($overrideTimestamp);
 
@@ -55,31 +68,35 @@ class Request extends Event implements \JsonSerializable
         if ($span->duration() > $threshold) {
             $stack = Backtrace::capture();
             $stack = array_slice($stack, 4);
-            $span->tag("stack", $stack);
+            $span->tag('stack', $stack);
         }
 
         $this->events[] = $span;
     }
 
-    // Add a tag to the request as a whole
-    public function tag(string $tag, $value)
+    /**
+     * Add a tag to the request as a whole
+     */
+    public function tag(string $tag, string $value) : void
     {
-        $tag = new TagRequest($this->agent, $tag, $value, $this->id);
+        $tag            = new TagRequest($this->agent, $tag, $value, $this->id);
         $this->events[] = $tag;
     }
 
     /**
      * turn this object into a list of commands to send to the CoreAgent
      *
-     * @return array[core agent commands]
+     * @return array<string, array<string, (string|array|null)>>
      */
     public function jsonSerialize() : array
     {
-        $commands = [];
-        $commands[] = ['StartRequest' => [
-            'request_id' => $this->getId(),
-            'timestamp' => $this->timer->getStart(),
-        ]];
+        $commands   = [];
+        $commands[] = [
+            'StartRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $this->timer->getStart(),
+            ],
+        ];
 
         foreach ($this->events as $event) {
             $array = $event->jsonSerialize();
@@ -89,10 +106,12 @@ class Request extends Event implements \JsonSerializable
             }
         }
 
-        $commands[] = ['FinishRequest' => [
-            'request_id' => $this->getId(),
-            'timestamp' => $this->timer->getStop(),
-        ]];
+        $commands[] = [
+            'FinishRequest' => [
+                'request_id' => $this->getId(),
+                'timestamp' => $this->timer->getStop(),
+            ],
+        ];
 
         return $commands;
     }
@@ -101,7 +120,7 @@ class Request extends Event implements \JsonSerializable
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @return array[Events]
+     * @return array<int, Event>
      */
     public function getEvents() : array
     {

@@ -1,43 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Public API for accessing configuration
  */
 
 namespace Scoutapm;
 
+use Scoutapm\Config\BoolCoercion;
+use Scoutapm\Config\DefaultSource;
+use Scoutapm\Config\DerivedSource;
+use Scoutapm\Config\EnvSource;
+use Scoutapm\Config\JSONCoercion;
+use Scoutapm\Config\NullSource;
+use Scoutapm\Config\UserSettingsSource;
+use function array_key_exists;
+
 class Config
 {
+    /** @var array<int, EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource> */
     private $sources;
+
+    /** @var UserSettingsSource */
     private $userSettingsSource;
-    private $agent;
+
+    /** @var array<string, BoolCoercion|JSONCoercion */
     private $coercions;
 
-    public function __construct(\Scoutapm\Agent $agent)
+    public function __construct(Agent $agent)
     {
-        $this->agent = $agent;
-        $this->userSettingsSource = new Config\UserSettingsSource();
+        $this->userSettingsSource = new UserSettingsSource();
 
         $this->sources = [
-            new Config\EnvSource(),
+            new EnvSource(),
             $this->userSettingsSource,
-            new Config\DerivedSource($this),
-            new Config\DefaultSource(),
-            new Config\NullSource(),
+            new DerivedSource($this),
+            new DefaultSource(),
+            new NullSource(),
         ];
 
         $this->coercions = [
-            "monitor" => Config\BoolCoercion::class,
-            "ignore" => Config\JSONCoercion::class,
+            'monitor' => BoolCoercion::class,
+            'ignore' => JSONCoercion::class,
         ];
     }
-
 
     /**
      * Looks through all available sources for the first that can handle this
      * key, then returns the value from that source.
      */
-    public function get(string $key)
+    public function get(string $key) : ?string
     {
         foreach ($this->sources as $source) {
             if ($source->hasKey($key)) {
@@ -47,20 +60,17 @@ class Config
         }
 
         if (array_key_exists($key, $this->coercions)) {
-            $coercion = new $this->coercions[$key];
-            $value = $coercion->coerce($value);
+            $coercion = new $this->coercions[$key]();
+            $value    = $coercion->coerce($value);
         }
 
-        return $value;
+        return $value ?? null;
     }
-
 
     /**
      * Sets a value on the inner UserSettingsSource
-     *
-     * @return void
      */
-    public function set(string $key, $value)
+    public function set(string $key, ?string $value) : void
     {
         $this->userSettingsSource->set($key, $value);
     }

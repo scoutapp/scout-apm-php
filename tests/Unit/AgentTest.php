@@ -1,30 +1,37 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Scoutapm\UnitTests;
 
-use \PHPUnit\Framework\TestCase;
-use \Scoutapm\Agent;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Scoutapm\Agent;
+use Scoutapm\Config;
+use Scoutapm\Events\Span;
+use Scoutapm\Events\TagRequest;
+use function end;
 
 /**
  * Test Case for @see \Scoutapm\Agent
  */
 final class AgentTest extends TestCase
 {
-    public function testFullAgentSequence()
+    public function testFullAgentSequence() : void
     {
         $agent = new Agent();
 
         // Start a Parent Controller Span
-        $span = $agent->startSpan("Controller/Test");
+        $span = $agent->startSpan('Controller/Test');
 
         // Tag Whole Request
-        $agent->tagRequest("uri", "example.com/foo/bar.php");
+        $agent->tagRequest('uri', 'example.com/foo/bar.php');
 
         // Start a Child Span
-        $span = $agent->startSpan("SQL/Query");
+        $span = $agent->startSpan('SQL/Query');
 
         // Tag the span
-        $span->tag("sql.query", "select * from foo");
+        $span->tag('sql.query', 'select * from foo');
 
         // Finish Child Span
         $agent->stopSpan();
@@ -35,58 +42,59 @@ final class AgentTest extends TestCase
         $this->assertNotNull($agent);
     }
 
-    public function testInstrument()
+    public function testInstrument() : void
     {
-        $agent = new Agent();
-        $retval = $agent->instrument("Custom", "Test", function ($span) {
-            $span->tag("OMG", "Thingy");
+        $agent  = new Agent();
+        $retval = $agent->instrument('Custom', 'Test', function ($span) {
+            $span->tag('OMG', 'Thingy');
 
-            $this->assertEquals($span->getName(), "Custom/Test");
-            return "arbitrary return value";
+            $this->assertEquals($span->getName(), 'Custom/Test');
+
+            return 'arbitrary return value';
         });
 
         // Check that the instrument helper propagates the return value
-        $this->assertEquals($retval, "arbitrary return value");
+        $this->assertEquals($retval, 'arbitrary return value');
 
         // Check that the span was stopped and tagged
-        $request = $agent->getRequest();
-        $events = $request->getEvents();
+        $request   = $agent->getRequest();
+        $events    = $request->getEvents();
         $foundSpan = end($events);
-        $this->assertInstanceOf(\Scoutapm\Events\Span::class, $foundSpan);
+        $this->assertInstanceOf(Span::class, $foundSpan);
         $this->assertNotNull($foundSpan->getStopTime());
-        $this->assertEquals($foundSpan->getTags()[0]->getTag(), "OMG");
-        $this->assertEquals($foundSpan->getTags()[0]->getValue(), "Thingy");
+        $this->assertEquals($foundSpan->getTags()[0]->getTag(), 'OMG');
+        $this->assertEquals($foundSpan->getTags()[0]->getValue(), 'Thingy');
     }
 
-    public function testWebTransaction()
+    public function testWebTransaction() : void
     {
-        $agent = new Agent();
-        $retval = $agent->webTransaction("Test", function ($span) {
+        $agent  = new Agent();
+        $retval = $agent->webTransaction('Test', function ($span) {
             // Check span name is prefixed with "Controller"
-            $this->assertEquals($span->getName(), "Controller/Test");
+            $this->assertEquals($span->getName(), 'Controller/Test');
 
-            return "arbitrary return value";
+            return 'arbitrary return value';
         });
         // Check that the instrument helper propagates the return value
-        $this->assertEquals($retval, "arbitrary return value");
+        $this->assertEquals($retval, 'arbitrary return value');
     }
 
-    public function testBackgroundTransaction()
+    public function testBackgroundTransaction() : void
     {
-        $agent = new Agent();
-        $retval = $agent->backgroundTransaction("Test", function ($span) {
+        $agent  = new Agent();
+        $retval = $agent->backgroundTransaction('Test', function ($span) {
             // Check span name is prefixed with "Job"
-            $this->assertEquals($span->getName(), "Job/Test");
+            $this->assertEquals($span->getName(), 'Job/Test');
 
-            return "arbitrary return value";
+            return 'arbitrary return value';
         });
         // Check that the instrument helper propagates the return value
-        $this->assertEquals($retval, "arbitrary return value");
+        $this->assertEquals($retval, 'arbitrary return value');
     }
 
-    public function testCanSetLogger()
+    public function testCanSetLogger() : void
     {
-        $agent = new Agent();
+        $agent  = new Agent();
         $logger = new NullLogger();
 
         $agent->setLogger($logger);
@@ -94,25 +102,25 @@ final class AgentTest extends TestCase
         $this->assertEquals($agent->getLogger(), $logger);
     }
 
-    public function testCanGetConfig()
+    public function testCanGetConfig() : void
     {
-        $agent = new Agent();
+        $agent  = new Agent();
         $config = $agent->getConfig();
-        $this->assertInstanceOf(\Scoutapm\Config::class, $config);
+        $this->assertInstanceOf(Config::class, $config);
     }
 
-    public function testStartSpan()
+    public function testStartSpan() : void
     {
         $agent = new Agent();
-        $span = $agent->startSpan("foo/bar");
-        $this->assertEquals("foo/bar", $span->getName());
-        $this->assertInstanceOf(\Scoutapm\Events\Span::class, $span);
+        $span  = $agent->startSpan('foo/bar');
+        $this->assertEquals('foo/bar', $span->getName());
+        $this->assertInstanceOf(Span::class, $span);
     }
 
-    public function testStopSpan()
+    public function testStopSpan() : void
     {
         $agent = new Agent();
-        $span = $agent->startSpan("foo/bar");
+        $span  = $agent->startSpan('foo/bar');
         $this->assertNull($span->getStopTime());
 
         $agent->stopSpan();
@@ -120,62 +128,63 @@ final class AgentTest extends TestCase
         $this->assertNotNull($span->getStopTime());
     }
 
-    public function testTagRequest()
+    public function testTagRequest() : void
     {
         $agent = new Agent();
-        $agent->tagRequest("foo", "bar");
+        $agent->tagRequest('foo', 'bar');
 
         $request = $agent->getRequest();
-        $events = $request->getEvents();
+        $events  = $request->getEvents();
 
         $tag = end($events);
 
-        $this->assertInstanceOf(\Scoutapm\Events\TagRequest::class, $tag);
-        $this->assertEquals("foo", $tag->getTag());
-        $this->assertEquals("bar", $tag->getValue());
+        $this->assertInstanceOf(TagRequest::class, $tag);
+        $this->assertEquals('foo', $tag->getTag());
+        $this->assertEquals('bar', $tag->getValue());
     }
 
-    public function testEnabled()
+    public function testEnabled() : void
     {
         // without affirmatively enabling, it's not enabled.
         $agent = new Agent();
         $this->assertEquals(false, $agent->enabled());
 
         // but a config that has monitor = true, it is set
-        $config = new \Scoutapm\Config($agent);
-        $config->set("monitor", "true");
+        $config = new Config($agent);
+        $config->set('monitor', 'true');
         $agent->setConfig($config);
 
         $this->assertEquals(true, $agent->enabled());
     }
 
-    public function testIgnoredEndpoints()
+    public function testIgnoredEndpoints() : void
     {
         $agent = new Agent();
-        $agent->getConfig()->set("ignore", ["/foo"]);
+        $agent->getConfig()->set('ignore', ['/foo']);
 
-        $this->assertEquals(true, $agent->ignored("/foo"));
-        $this->assertEquals(false, $agent->ignored("/bar"));
+        $this->assertEquals(true, $agent->ignored('/foo'));
+        $this->assertEquals(false, $agent->ignored('/bar'));
     }
 
-    // Many instrumentation calls are NOOPs when ignore is called. Make sure
-    // the sequence works as expected
-    public function testIgnoredAgentSequence()
+    /**
+     * Many instrumentation calls are NOOPs when ignore is called. Make sure the sequence works as expected
+     */
+    public function testIgnoredAgentSequence() : void
     {
         $agent = new Agent();
         $agent->ignore();
 
         // Start a Parent Controller Span
-        $span = $agent->startSpan("Controller/Test");
+        $span = $agent->startSpan('Controller/Test');
 
         // Tag Whole Request
-        $agent->tagRequest("uri", "example.com/foo/bar.php");
+        $agent->tagRequest('uri', 'example.com/foo/bar.php');
 
         // Start a Child Span
-        $span = $agent->startSpan("SQL/Query");
+        $span = $agent->startSpan('SQL/Query');
 
         // Tag the span
-        $span->tag("sql.query", "select * from foo");
+        $span->tag('sql.query', 'select * from foo');
 
         // Finish Child Span
         $agent->stopSpan();

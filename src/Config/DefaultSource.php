@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Default Values Config source
  *
@@ -8,8 +10,11 @@
 
 namespace Scoutapm\Config;
 
+use function array_key_exists;
+
 class DefaultSource
 {
+    /** @var array<string, string|bool> */
     private $defaults;
 
     public function __construct()
@@ -19,14 +24,11 @@ class DefaultSource
 
     /**
      * Returns true iff this config source knows for certain it has an answer for this key
-     *
-     * @return bool
      */
     public function hasKey(string $key) : bool
     {
         return array_key_exists($key, $this->defaults);
     }
-    
 
     /**
      * Returns the value for this configuration key.
@@ -35,18 +37,17 @@ class DefaultSource
      *
      * @return The value requested
      */
-    public function get(string $key)
+    public function get(string $key) : The
     {
-        return ($this->defaults[$key]) ?? null;
+        return $this->defaults[$key] ?? null;
     }
-
 
     /**
      * Returns the value for this configuration key.
      *
      * Only valid if the Source has previously returned "true" to `hasKey`
      *
-     * @return The value requested
+     * @return array<string, string|bool>
      */
     private function getDefaultConfig() : array
     {

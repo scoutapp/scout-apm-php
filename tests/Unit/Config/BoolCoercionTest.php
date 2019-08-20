@@ -1,15 +1,18 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Scoutapm\UnitTests\Config;
 
-use \PHPUnit\Framework\TestCase;
-use \Scoutapm\Config\BoolCoercion;
+use PHPUnit\Framework\TestCase;
+use Scoutapm\Config\BoolCoercion;
 
 /**
  * Test Case for @see \Scoutapm\Config
  */
 final class BoolCoercionTest extends TestCase
 {
-    public function testParsesStrings()
+    public function testParsesStrings() : void
     {
         $c = new BoolCoercion();
 
@@ -28,7 +31,7 @@ final class BoolCoercionTest extends TestCase
         $this->assertEquals(false, $c->coerce('0'));
     }
 
-    public function testIgnoresBooleans()
+    public function testIgnoresBooleans() : void
     {
         $c = new BoolCoercion();
 
@@ -36,14 +39,14 @@ final class BoolCoercionTest extends TestCase
         $this->assertEquals(false, $c->coerce(false));
     }
 
-    public function testNullIsFalse()
+    public function testNullIsFalse() : void
     {
         $c = new BoolCoercion();
 
         $this->assertEquals(false, $c->coerce(null));
     }
 
-    public function testAnythingElseIsFalse()
+    public function testAnythingElseIsFalse() : void
     {
         $c = new BoolCoercion();
 

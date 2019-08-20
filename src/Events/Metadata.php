@@ -1,18 +1,23 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
-use function gethostname;
+use DateTimeImmutable;
+use JsonSerializable;
 use Scoutapm\Agent;
 use Scoutapm\Helper\Timer;
+use const PHP_VERSION;
+use function gethostname;
 
 // Also called AppServerLoad in other agents
-final class Metadata extends Event implements \JsonSerializable
+final class Metadata extends Event implements JsonSerializable
 {
+    /** @var Timer */
     private $timer;
 
-    public function __construct(Agent $agent, \DateTimeImmutable $now)
+    public function __construct(Agent $agent, DateTimeImmutable $now)
     {
         parent::__construct($agent);
 
@@ -22,9 +27,9 @@ final class Metadata extends Event implements \JsonSerializable
     }
 
     /**
-     * @return array<string, string|null|array<int, string>>
+     * @return array<string, (string|array<int, string>|null)>
      */
-    private function data()
+    private function data() : array
     {
         return [
             'language' => 'php',
@@ -47,20 +52,20 @@ final class Metadata extends Event implements \JsonSerializable
     }
 
     /**
-     * @TODO: Return an array of arrays: [["package name", "package version"], ....]
-     *
      * @return array<int, array<int, string>>
+     *
+     * @TODO: Return an array of arrays: [["package name", "package version"], ....]
      */
-    private function getLibraries() : array
-    {
-        // $composer = require __DIR__ . "/vendor/autoload.php";
-        return [];
-    }
+//    private function getLibraries() : array
+//    {
+//         $composer = require __DIR__ . "/vendor/autoload.php";
+//        return [];
+//    }
 
     /**
      * Turn this object into a list of commands to send to the CoreAgent
      *
-     * @return array<string, array<string, string|null|array>>
+     * @return array<string, array<string, (string|array|null)>>
      */
     public function jsonSerialize() : array
     {

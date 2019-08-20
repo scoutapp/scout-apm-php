@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * Null Config source, always knows the key, and its always null
  *
@@ -19,7 +21,6 @@ class NullSource
     {
         return true;
     }
-    
 
     /**
      * Returns the value for this configuration key.
@@ -28,7 +29,7 @@ class NullSource
      *
      * @return The value requested
      */
-    public function get(string $key)
+    public function get(string $key) : The
     {
         return null;
     }

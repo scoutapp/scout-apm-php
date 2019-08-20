@@ -1,13 +1,29 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Scoutapm;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use function json_encode;
+use Exception;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\Request;
+use Throwable;
+use const AF_UNIX;
+use const SOCK_STREAM;
+use function json_encode;
+use function pack;
+use function register_shutdown_function;
+use function socket_close;
+use function socket_connect;
+use function socket_create;
+use function socket_last_error;
+use function socket_read;
+use function socket_send;
+use function socket_shutdown;
+use function strlen;
+use function unpack;
 
 class Connector
 {
@@ -25,7 +41,7 @@ class Connector
 
     public function __construct(Agent $agent)
     {
-        $this->agent = $agent;
+        $this->agent  = $agent;
         $this->config = $agent->getConfig();
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
@@ -36,8 +52,8 @@ class Connector
     public function connect() : void
     {
         try {
-            $this->connected = socket_connect($this->socket, $this->config->get('socket_path'));
-        } catch (\Exception $e) {
+            $this->connected = socket_connect($this->socket, $this->config->get('socketPath'));
+        } catch (Throwable $e) {
             $this->connected = false;
         }
     }
@@ -48,7 +64,7 @@ class Connector
     }
 
     /**
-     * @param $message array|\JsonSerializable needs to be a single jsonable command
+     * @param mixed $message
      */
     private function sendMessage($message) : void
     {
@@ -63,7 +79,7 @@ class Connector
         socket_read($this->socket, unpack('N', $responseLength)[1]);
     }
 
-    /** @throws \Exception */
+    /** @throws Exception */
     public function sendRequest(Request $request) : bool
     {
         $this->sendMessage([
@@ -72,7 +88,7 @@ class Connector
                 'key' => $this->config->get('key'),
                 'language' => 'php',
                 'api_version' => $this->config->get('api_version'),
-            ]
+            ],
         ]);
 
         $this->sendMessage(new Metadata(
@@ -82,19 +98,19 @@ class Connector
 
         // Send the whole Request as a batch command
         $this->sendMessage([
-            'BatchCommand' => [
-                'commands' => $request,
-            ]
+            'BatchCommand' => ['commands' => $request],
         ]);
 
         return socket_last_error($this->socket) === 0;
     }
 
-    public function shutdown()
+    public function shutdown() : void
     {
-        if ($this->connected === true) {
-            socket_shutdown($this->socket, 2);
-            socket_close($this->socket);
+        if ($this->connected !== true) {
+            return;
         }
+
+        socket_shutdown($this->socket, 2);
+        socket_close($this->socket);
     }
 }
