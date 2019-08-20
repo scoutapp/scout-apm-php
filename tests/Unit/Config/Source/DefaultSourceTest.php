@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Config;
+namespace Scoutapm\UnitTests\Config\Source;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Config\DefaultSource;
+use Scoutapm\Config\Source\DefaultSource;
 
-/**
- * @covers \Scoutapm\Config\DefaultSource
- */
+/** @covers \Scoutapm\Config\Source\DefaultSource */
 final class DefaultSourceTest extends TestCase
 {
     public function testHasKey() : void

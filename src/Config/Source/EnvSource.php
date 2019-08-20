@@ -9,11 +9,12 @@ declare(strict_types=1);
  * Internal to Config - see Scoutapm\Config for the public API.
  */
 
-namespace Scoutapm\Config;
+namespace Scoutapm\Config\Source;
 
 use function getenv;
 use function strtoupper;
 
+/** @internal */
 class EnvSource
 {
     /**

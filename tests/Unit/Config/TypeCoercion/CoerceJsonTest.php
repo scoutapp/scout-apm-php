@@ -7,9 +7,7 @@ namespace Scoutapm\UnitTests\Config\TypeCoercion;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 
-/**
- * @covers \Scoutapm\Config\TypeCoercion\CoerceJson
- */
+/** @covers \Scoutapm\Config\TypeCoercion\CoerceJson */
 final class CoerceJsonTest extends TestCase
 {
     public function testParsesJSON() : void

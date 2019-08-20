@@ -7,9 +7,7 @@ namespace Scoutapm\UnitTests\Config\TypeCoercion;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 
-/**
- * @covers \Scoutapm\Config\TypeCoercion\CoerceBoolean
- */
+/** @covers \Scoutapm\Config\TypeCoercion\CoerceBoolean */
 final class CoerceBooleanTest extends TestCase
 {
     public function testParsesStrings() : void

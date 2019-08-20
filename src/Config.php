@@ -8,22 +8,22 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
-use Scoutapm\Config\DefaultSource;
-use Scoutapm\Config\DerivedSource;
-use Scoutapm\Config\EnvSource;
-use Scoutapm\Config\NullSource;
+use Scoutapm\Config\Source\DefaultSource;
+use Scoutapm\Config\Source\DerivedSource;
+use Scoutapm\Config\Source\EnvSource;
+use Scoutapm\Config\Source\NullSource;
+use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
-use Scoutapm\Config\UserSettingsSource;
 use function array_key_exists;
 
 class Config
 {
-    /** @var array<int, EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource> */
+    /** @var array<int, \Scoutapm\Config\Source\EnvSource|\Scoutapm\Config\Source\UserSettingsSource|DerivedSource|\Scoutapm\Config\Source\DefaultSource|NullSource> */
     private $sources;
 
-    /** @var UserSettingsSource */
+    /** @var \Scoutapm\Config\Source\UserSettingsSource */
     private $userSettingsSource;
 
     /** @var CoerceType[]|array<string, CoerceType> */

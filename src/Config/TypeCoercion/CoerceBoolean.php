@@ -9,6 +9,7 @@ use function is_bool;
 use function is_string;
 use function strtolower;
 
+/** @internal */
 final class CoerceBoolean implements CoerceType
 {
     /** {@inheritDoc} */

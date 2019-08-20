@@ -10,12 +10,13 @@ declare(strict_types=1);
  * Internal to Config - see Scoutapm\Config for the public API.
  */
 
-namespace Scoutapm\Config;
+namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use function in_array;
 use function php_uname;
 
+/** @internal */
 class DerivedSource
 {
     /** @var Config */
