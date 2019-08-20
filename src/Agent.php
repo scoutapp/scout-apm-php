@@ -104,7 +104,7 @@ final class Agent
                 new Downloader(
                     $this->config->get('core_agent_dir'),
                     $this->config->get('core_agent_full_name'),
-                    $this,
+                    $this->logger,
                     $this->config->get('download_url')
                 )
             );
@@ -122,30 +122,6 @@ final class Agent
     public function enabled() : bool
     {
         return $this->config->get('monitor');
-    }
-
-    /**
-     * Sets the logger for the Agent to use
-     *
-     * @deprecated move to constructor injection
-     */
-    public function setLogger(LoggerInterface $logger) : void
-    {
-        $this->logger = $logger;
-    }
-
-    /**
-     * returns the active logger
-     *
-     * @deprecated will be deleted, do not rely on this externally - consumers within the library should have Logger injected
-     *
-     * @return LoggerInterface compliant logger
-     *
-     * @private
-     */
-    public function getLogger() : LoggerInterface
-    {
-        return $this->logger;
     }
 
     /**

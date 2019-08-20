@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\CoreAgent;
 
 use PharData;
+use Psr\Log\LoggerInterface;
 use Scoutapm\Agent;
 use Throwable;
 use function basename;
@@ -32,8 +33,8 @@ class Downloader
     /** @var string */
     private $coreAgentFullName;
 
-    /** @var Agent */
-    private $agent;
+    /** @var LoggerInterface */
+    private $logger;
 
     /** @var int */
     private $stale_download_secs;
@@ -50,11 +51,12 @@ class Downloader
     /** @var string */
     private $downloadUrl;
 
-    public function __construct(string $coreAgentDir, string $coreAgentFullName, Agent $agent, string $downloadUrl)
+    public function __construct(string $coreAgentDir, string $coreAgentFullName, LoggerInterface $logger, string $downloadUrl)
     {
+        $this->logger = $logger;
+
         $this->coreAgentDir        = $coreAgentDir;
         $this->coreAgentFullName   = $coreAgentFullName;
-        $this->agent               = $agent;
         $this->stale_download_secs = 120;
 
         $this->package_location   = $coreAgentDir . '/' . $coreAgentFullName . '.tgz';
@@ -75,7 +77,7 @@ class Downloader
             $this->downloadPackage();
             $this->untar();
         } catch (Throwable $e) {
-            $this->agent->getLogger()->error('Exception raised while downloading Core Agent: ' . $e);
+            $this->logger->error('Exception raised while downloading Core Agent: ' . $e);
         } finally {
             $this->releaseDownloadLock();
         }
@@ -92,7 +94,7 @@ class Downloader
                 mkdir($destination, $permissions, $recursive);
             }
         } catch (Throwable $e) {
-            $this->agent->getLogger()->error('Failed to create directory: ' . $destination);
+            $this->logger->error('Failed to create directory: ' . $destination);
         }
     }
 
@@ -107,7 +109,7 @@ class Downloader
                 // O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK
             );
         } catch (Throwable $e) {
-            $this->agent->getLogger()->debug('Could not obtain download lock on ' . $this->download_lock_path . ': ' . $e);
+            $this->logger->debug('Could not obtain download lock on ' . $this->download_lock_path . ': ' . $e);
             $this->download_lock_fd = null;
         }
     }
@@ -117,7 +119,7 @@ class Downloader
         try {
             $delta = time() - filectime($this->download_lock_path);
             if ($delta > $this->stale_download_secs) {
-                $this->agent->getLogger()->debug('Clearing stale download lock file.');
+                $this->logger->debug('Clearing stale download lock file.');
                 unlink($this->download_lock_path);
             }
         } catch (Throwable $e) {
