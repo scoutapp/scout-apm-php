@@ -84,6 +84,7 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         if (! $manifest->isValid()) {
             $this->logger->debug('Core Agent verification failed: Manifest is not valid.');
             $this->coreAgentBinPath = null;
+
             return false;
         }
 
