@@ -62,7 +62,7 @@ final class Agent
 
         $this->request = new Request();
 
-        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get('ignore') ?: []);
+        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get('ignore'));
     }
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector

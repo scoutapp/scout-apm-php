@@ -57,4 +57,9 @@ final class ConfigTest extends TestCase
         $config->set('ignore', '["/foo", "/bar"]');
         self::assertSame(['/foo', '/bar'], $config->get('ignore'));
     }
+
+    public function testIgnoreDefaultsToEmptyArray() : void
+    {
+        self::assertSame([], (new Config())->get('ignore'));
+    }
 }
