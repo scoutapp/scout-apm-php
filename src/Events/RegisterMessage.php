@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
-use Scoutapm\Connector\SerializableMessage;
+use Scoutapm\Connector\Command;
 
 /** @internal */
-final class RegisterMessage implements SerializableMessage
+final class RegisterMessage implements Command
 {
     /** @var string */
     private $appName;

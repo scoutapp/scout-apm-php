@@ -236,7 +236,7 @@ final class Agent
             return false;
         }
 
-        if (! $this->connector->sendMessage(new RegisterMessage(
+        if (! $this->connector->sendCommand(new RegisterMessage(
             (string) $this->config->get('name'),
             (string) $this->config->get('key'),
             $this->config->get('api_version')
@@ -244,13 +244,13 @@ final class Agent
             return false;
         }
 
-        if (! $this->connector->sendMessage(new Metadata(
+        if (! $this->connector->sendCommand(new Metadata(
             new DateTimeImmutable('now', new DateTimeZone('UTC'))
         ))) {
             return false;
         }
 
-        return $this->connector->sendMessage($this->request);
+        return $this->connector->sendCommand($this->request);
     }
 
     /**

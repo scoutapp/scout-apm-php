@@ -68,7 +68,7 @@ final class SocketConnector implements Connector
         return $this->connected;
     }
 
-    public function sendMessage(SerializableMessage $message) : bool
+    public function sendCommand(Command $message) : bool
     {
         if (! $this->connected()) {
             throw NotConnected::fromSocketPath($this->socketPath);

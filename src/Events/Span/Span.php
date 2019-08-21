@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Scoutapm\Events\Span;
 
 use Exception;
-use Scoutapm\Connector\SerializableMessage;
+use Scoutapm\Connector\Command;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
-class Span implements SerializableMessage
+class Span implements Command
 {
     /** @var SpanId */
     private $id;

@@ -15,7 +15,7 @@ interface Connector
     public function connected() : bool;
 
     /** @throws NotConnected */
-    public function sendMessage(SerializableMessage $message) : bool;
+    public function sendCommand(Command $message) : bool;
 
     public function shutdown() : void;
 }

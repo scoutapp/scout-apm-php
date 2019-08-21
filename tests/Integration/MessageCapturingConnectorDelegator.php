@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Scoutapm\IntegrationTests;
 
+use Scoutapm\Connector\Command;
 use Scoutapm\Connector\Connector;
-use Scoutapm\Connector\SerializableMessage;
 
 final class MessageCapturingConnectorDelegator implements Connector
 {
-    /** @var SerializableMessage[] */
+    /** @var Command[] */
     public $sentMessages = [];
 
     /** @var Connector */
@@ -30,11 +30,11 @@ final class MessageCapturingConnectorDelegator implements Connector
         return $this->delegate->connected();
     }
 
-    public function sendMessage(SerializableMessage $message) : bool
+    public function sendCommand(Command $message) : bool
     {
         $this->sentMessages[] = $message;
 
-        return $this->delegate->sendMessage($message);
+        return $this->delegate->sendCommand($message);
     }
 
     public function shutdown() : void

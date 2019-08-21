@@ -6,6 +6,6 @@ namespace Scoutapm\Connector;
 
 use JsonSerializable;
 
-interface SerializableMessage extends JsonSerializable
+interface Command extends JsonSerializable
 {
 }

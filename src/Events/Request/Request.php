@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Events\Request;
 
 use Exception;
-use Scoutapm\Connector\SerializableMessage;
+use Scoutapm\Connector\Command;
 use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
@@ -16,7 +16,7 @@ use function array_slice;
 use function end;
 
 /** @internal */
-class Request implements SerializableMessage
+class Request implements Command
 {
     /** @var Timer */
     private $timer;
