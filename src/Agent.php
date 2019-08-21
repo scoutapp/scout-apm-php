@@ -103,7 +103,7 @@ final class Agent
                 $this->config,
                 $this->logger,
                 new Downloader(
-                    $this->config->get('core_agent_dir'),
+                    $this->config->get('core_agent_dir') . '/' . $this->config->get('core_agent_full_name'),
                     $this->config->get('core_agent_full_name'),
                     $this->logger,
                     $this->config->get('download_url')

@@ -36,12 +36,7 @@ final class AgentTest extends TestCase
 
         $agent = Agent::fromConfig($config, null, $connector);
 
-        // @todo connection is not happening, seems to be a mismatch with path expectations currently...
-        self::markTestIncomplete(__METHOD__);
         $agent->connect();
-
-        // @todo seems that we need to wait a moment before the core agent starts :/ find a better way to do this
-        sleep(1);
 
         $agent->webTransaction('Yay', static function () use ($agent) : void {
             $agent->instrument('test', 'foo', static function () : void {

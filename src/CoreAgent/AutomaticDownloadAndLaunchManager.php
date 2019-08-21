@@ -178,6 +178,6 @@ final class AutomaticDownloadAndLaunchManager implements Manager
 
     private function socketPath() : string
     {
-        return '--socket ' . $this->config->get('socketPath');
+        return '--socket ' . $this->config->get('socket_path');
     }
 }
