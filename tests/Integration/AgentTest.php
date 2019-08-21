@@ -6,6 +6,7 @@ namespace Scoutapm\IntegrationTests;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Connector\SocketConnector;
@@ -17,10 +18,31 @@ use function json_encode;
 use function next;
 use function reset;
 use function sleep;
+use function sprintf;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
 {
+    /** @var TestLogger */
+    private $logger;
+
+    public function setUp() : void
+    {
+        parent::setUp();
+
+        $this->logger = new TestLogger();
+    }
+
+    public function tearDown() : void
+    {
+        parent::tearDown();
+
+        echo "Log messages:\n";
+        foreach ($this->logger->records as $logMessage) {
+            echo sprintf("[%s] %s\n", $logMessage['level'], $logMessage['message']);
+        }
+    }
+
     /** @throws Exception */
     public function testLoggingIsSent() : void
     {
@@ -40,7 +62,7 @@ final class AgentTest extends TestCase
 
         $connector = new MessageCapturingConnectorDelegator(new SocketConnector($config->get('socket_path')));
 
-        $agent = Agent::fromConfig($config, null, $connector);
+        $agent = Agent::fromConfig($config, $this->logger, $connector);
 
         $agent->connect();
 
