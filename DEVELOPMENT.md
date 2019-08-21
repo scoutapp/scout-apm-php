@@ -1,21 +1,35 @@
-Dev Guide
-=========
+# Dev Guide
 
-Setup
------
+## Setup
 
-    composer install
+```bash
+composer install
+```
 
+## Running tests
 
-Running tests
--------------
+```bash
+vendor/bin/phpunit
+```
 
-    vendor/bin/phpunit
+## Writing Code
 
+### Checking for static analysis issues
 
-Writing Code
-------------
+```bash
+vendor/bin/psalm
+```
 
-We have an automated style fixer called php-cs-fixer. Style is checked on TravisCI as well.
+### Checking coding standards are met
 
-    vendor/bin/php-cs-fixer fix
+```bash
+vendor/bin/phpcs
+```
+
+### Fixing coding standards automatically
+
+We have an automated style fixer called PHP Code Sniffer. Style is checked on TravisCI as well.
+
+```bash
+vendor/bin/phpcbf
+```

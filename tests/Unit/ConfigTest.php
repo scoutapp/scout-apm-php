@@ -1,59 +1,65 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Scoutapm\UnitTests;
 
-use \PHPUnit\Framework\TestCase;
-use \Scoutapm\Agent;
-use \Scoutapm\Config;
+use PHPUnit\Framework\TestCase;
+use Scoutapm\Config;
+use function putenv;
 
-/**
- * Test Case for @see \Scoutapm\Config
- */
+/** @covers \Scoutapm\Config*/
 final class ConfigTest extends TestCase
 {
-    public function testGetFallsBackToDefaults()
+    public function testGetFallsBackToDefaults() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Provided by the DefaultConfig
-        $this->assertEquals('1.0', $config->get("api_version"));
+        self::assertSame('1.0', $config->get('api_version'));
     }
 
-    public function testUserSettingsOverridesDefaults()
+    public function testUserSettingsOverridesDefaults() : void
     {
-        $config = new Config(new Agent());
-        $config->set("api_version", "viauserconf");
+        $config = new Config();
+        $config->set('api_version', 'viauserconf');
 
-        $this->assertEquals("viauserconf", $config->get("api_version"));
+        self::assertSame('viauserconf', $config->get('api_version'));
     }
 
-    public function testEnvOverridesAll()
+    public function testEnvOverridesAll() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set("api_version", "viauserconf");
+        $config->set('api_version', 'viauserconf');
 
         // And set the env var
-        putEnv("SCOUT_API_VERSION=viaenvvar");
+        putenv('SCOUT_API_VERSION=viaenvvar');
 
-        $this->assertEquals("viaenvvar", $config->get("api_version"));
+        self::assertSame('viaenvvar', $config->get('api_version'));
     }
 
-    public function testBooleanCoercionOfMonitor()
+    public function testBooleanCoercionOfMonitor() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set("monitor", "true");
-        $this->assertSame(true, $config->get("monitor"));
+        $config->set('monitor', 'true');
+        self::assertTrue($config->get('monitor'));
     }
 
-    public function testJSONCoercionOfIgnore()
+    public function testJSONCoercionOfIgnore() : void
     {
-        $config = new Config(new Agent());
+        $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set("ignore", '["/foo", "/bar"]');
-        $this->assertSame(["/foo", "/bar"], $config->get("ignore"));
+        $config->set('ignore', '["/foo", "/bar"]');
+        self::assertSame(['/foo', '/bar'], $config->get('ignore'));
+    }
+
+    public function testIgnoreDefaultsToEmptyArray() : void
+    {
+        self::assertSame([], (new Config())->get('ignore'));
     }
 }

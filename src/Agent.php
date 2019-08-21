@@ -1,133 +1,165 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scoutapm;
 
 use Closure;
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Scoutapm\Events\Request;
-use Scoutapm\Events\Span;
-use Scoutapm\Events\TagRequest;
+use Scoutapm\Config\IgnoredEndpoints;
+use Scoutapm\Connector\Connector;
+use Scoutapm\Connector\SocketConnector;
+use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
+use Scoutapm\CoreAgent\Downloader;
+use Scoutapm\Events\Metadata;
+use Scoutapm\Events\RegisterMessage;
+use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Span\Span;
 
-class Agent
+// @todo needs interface
+final class Agent
 {
-    const VERSION = '1.0';
+    public const VERSION = '1.0';
 
-    const NAME = 'scout-apm-php';
+    public const NAME = 'scout-apm-php';
 
+    /** @var Config */
     private $config;
 
+    /** @var Request|null */
     private $request;
 
-    /** @var Connector|null */
+    /** @var Connector */
     private $connector;
 
+    /** @var LoggerInterface */
     private $logger;
 
-    // Class that helps check incoming http paths vs. the configured ignore list
+    /**
+     * Class that helps check incoming http paths vs. the configured ignore list
+     *
+     * @var IgnoredEndpoints
+     */
     private $ignoredEndpoints;
 
-    // If this request was marked as ignored
-    private $isIgnored;
+    /**
+     * If this request was marked as ignored
+     *
+     * @var bool
+     */
+    private $isIgnored = false;
 
-    public function __construct()
+    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger)
     {
-        $this->config = new Config($this);
-        $this->request = new Request($this);
-        $this->logger = new NullLogger();
+        $this->config    = $configuration;
+        $this->connector = $connector;
+        $this->logger    = $logger;
 
-        $this->ignoredEndpoints = new IgnoredEndpoints($this);
-        $this->isIgnored = false;
+        $this->request = new Request();
+
+        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get('ignore'));
     }
 
-    public function connect()
+    private static function createConnectorFromConfig(Config $config) : SocketConnector
     {
-        $this->connector = new Connector($this);
+        return new SocketConnector($config->get('socket_path'));
+    }
+
+    /**
+     * @deprecated Once getConfig is removed, you cannot overwrite config using this...
+     *
+     * @todo alternative API to be discussed...
+     */
+    public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    {
+        $config = new Config();
+
+        return new self(
+            $config,
+            $connector ?? self::createConnectorFromConfig($config),
+            $logger ?? new NullLogger()
+        );
+    }
+
+    public static function fromConfig(Config $config, ?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    {
+        return new self(
+            $config,
+            $connector ?? self::createConnectorFromConfig($config),
+            $logger ?? new NullLogger()
+        );
+    }
+
+    public function connect() : void
+    {
         if (! $this->connector->connected() && $this->enabled()) {
-            $this->logger->info("Scout Core Agent Connection Failed, attempting to start");
-            $manager = new CoreAgentManager($this);
+            $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
+            $manager = new AutomaticDownloadAndLaunchManager(
+                $this->config,
+                $this->logger,
+                new Downloader(
+                    $this->config->get('core_agent_dir'),
+                    $this->config->get('core_agent_full_name'),
+                    $this->logger,
+                    $this->config->get('download_url')
+                )
+            );
             $manager->launch();
 
             $this->connector->connect();
         } else {
-            $this->logger->debug("Scout Core Agent Connected");
+            $this->logger->debug('Scout Core Agent Connected');
         }
     }
 
-    // Returns true/false on if the agent should attempt to start and collect data.
+    /**
+     * Returns true/false on if the agent should attempt to start and collect data.
+     */
     public function enabled() : bool
     {
         return $this->config->get('monitor');
     }
 
     /**
-     * Sets the logger for the Agent to use
-     *
-     * @return void
-     */
-    public function setLogger(\Psr\Log\LoggerInterface $logger)
-    {
-        $this->logger = $logger;
-    }
-
-    public function setConfig(Config $config)
-    {
-        $this->config = $config;
-    }
-
-    /**
-     * returns the active logger
-     *
-     * @return \Psr\Log\LoggerInterface compliant logger
-     */
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * returns the active configuration
-     *
-     * @return \Scoutapm\Config
-     */
-    public function getConfig() : Config
-    {
-        return $this->config;
-    }
-
-    /**
-     * Starts a new span on the current request.
+     * Starts a fromRequest span on the current request.
      *
      * NOTE: Do not call stop on the span itself, use the stopSpan() function
      * here to ensure the whole system knows its stopped
      *
-     * @param operation The "name" of the span, something like "Controller/User" or "SQL/Query"
-     * @param overrideTimestamp if you need to set the start time to something specific
+     * @param string $operation         The "name" of the span, something like "Controller/User" or "SQL/Query"
+     * @param ?float $overrideTimestamp If you need to set the start time to something specific
      *
-     * @return Span
+     * @throws Exception
      */
-    public function startSpan(string $operation, float $overrideTimestamp = null)
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
         if ($this->request === null) {
             // Must return a Span object to match API. This is a dummy span
             // that is not ever used for anything.
-            return new Span($this, "Ignored", "ignored-request");
+            return new Span('Ignored', RequestId::new());
         }
 
         return $this->request->startSpan($operation, $overrideTimestamp);
     }
 
-    public function stopSpan()
+    public function stopSpan() : void
     {
         if ($this->request === null) {
-            return null;
+            return;
         }
 
         $this->request->stopSpan();
     }
 
-    public function instrument($type, $name, Closure $block)
+    /** @return mixed */
+    public function instrument(string $type, string $name, Closure $block)
     {
-        $span = $this->startSpan($type . "/" . $name);
+        $span = $this->startSpan($type . '/' . $name);
 
         try {
             return $block($span);
@@ -136,31 +168,33 @@ class Agent
         }
     }
 
-    public function webTransaction($name, Closure $block)
+    /** @return mixed */
+    public function webTransaction(string $name, Closure $block)
     {
-        return $this->instrument("Controller", $name, $block);
+        return $this->instrument('Controller', $name, $block);
     }
 
-    public function backgroundTransaction($name, Closure $block)
+    /** @return mixed */
+    public function backgroundTransaction(string $name, Closure $block)
     {
-        return $this->instrument("Job", $name, $block);
+        return $this->instrument('Job', $name, $block);
     }
 
-    public function addContext(string $tag, $value)
+    public function addContext(string $tag, string $value) : void
     {
-        return $this->tagRequest($tag, $value);
+        $this->tagRequest($tag, $value);
     }
 
-    public function tagRequest(string $tag, $value)
+    public function tagRequest(string $tag, string $value) : void
     {
         if ($this->request === null) {
-            return null;
+            return;
         }
 
-        return $this->request->tag($tag, $value);
+        $this->request->tag($tag, $value);
     }
 
-    /*
+    /**
      * Check if a given URL was configured as ignored.
      * Does not alter the running request. If you wish to abort tracing of this
      * request, use ignore()
@@ -170,18 +204,21 @@ class Agent
         return $this->ignoredEndpoints->ignored($path);
     }
 
-    /*
+    /**
      * Mark the running request as ignored. Triggers optimizations in various
      * tracing and tagging methods to turn them into NOOPs
      */
-    public function ignore()
+    public function ignore() : void
     {
-        $this->request = null;
+        $this->request   = null;
         $this->isIgnored = true;
     }
 
-    // Returns true only if the request was sent onward to the core agent.
-    // False otherwise.
+    /**
+     * Returns true only if the request was sent onward to the core agent. False otherwise.
+     *
+     * @throws Exception
+     */
     public function send() : bool
     {
         // Don't send if the agent is not enabled.
@@ -194,17 +231,35 @@ class Agent
             return false;
         }
 
-        // Send this request off to the CoreAgent
-        $status = $this->connector->sendRequest($this->request);
-        return $status;
+        if ($this->request === null) {
+            // @todo throw exception? return false?
+            return false;
+        }
+
+        if (! $this->connector->sendCommand(new RegisterMessage(
+            (string) $this->config->get('name'),
+            (string) $this->config->get('key'),
+            $this->config->get('api_version')
+        ))) {
+            return false;
+        }
+
+        if (! $this->connector->sendCommand(new Metadata(
+            new DateTimeImmutable('now', new DateTimeZone('UTC'))
+        ))) {
+            return false;
+        }
+
+        return $this->connector->sendCommand($this->request);
     }
 
     /**
      * You probably don't need this, it's useful in testing
      *
-     * @return Request
+     * @internal
+     * @deprecated
      */
-    public function getRequest() : \Scoutapm\Events\Request
+    public function getRequest() : ?Request
     {
         return $this->request;
     }

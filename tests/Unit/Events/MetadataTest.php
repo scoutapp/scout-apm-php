@@ -7,13 +7,13 @@ namespace Scoutapm\UnitTests\Events;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use PHPUnit\Framework\TestCase;
+use Scoutapm\Events\Metadata;
+use Scoutapm\Helper\Timer;
+use const PHP_VERSION;
 use function gethostname;
 use function json_decode;
 use function json_encode;
-use PHPUnit\Framework\TestCase;
-use Scoutapm\Agent;
-use Scoutapm\Events\Metadata;
-use Scoutapm\Helper\Timer;
 
 /** @covers \Scoutapm\Events\Metadata */
 final class MetadataTest extends TestCase
@@ -21,10 +21,9 @@ final class MetadataTest extends TestCase
     /** @throws Exception */
     public function testMetadataSerializesToJson() : void
     {
-        $agent = $this->createMock(Agent::class);
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        $serialized = json_encode(new Metadata($agent, $time));
+        $serialized = json_encode(new Metadata($time));
 
         self::assertNotEmpty($serialized);
 

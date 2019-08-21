@@ -14,9 +14,11 @@
         "ramsey/uuid": "^3.7"
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^2.15",
+        "doctrine/coding-standard": "^6.0",
+        "monolog/monolog": "^1.24",
         "phpunit/phpunit": "^7.5",
-        "spatie/phpunit-watcher": "^1.8"
+        "spatie/phpunit-watcher": "^1.8",
+        "vimeo/psalm": "^3.4"
     },
     "suggest": {
         "ext-xdebug": "Required for processing of request headers"

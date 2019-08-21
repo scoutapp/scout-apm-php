@@ -3,4 +3,4 @@ phpunit.xml
 composer.phar
 .DS_STORE
 .idea
-.php_cs.cache
+.phpcs-cache

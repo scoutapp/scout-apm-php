@@ -10,9 +10,10 @@ before_script:
   - composer install --prefer-dist --no-interaction --no-suggest
 
 script:
-    - vendor/bin/php-cs-fixer fix -v --dry-run --stop-on-violation --using-cache=no
-    - vendor/bin/phpunit --configuration phpunit.xml.dist
+  - vendor/bin/phpcs
+  - vendor/bin/psalm
+  - vendor/bin/phpunit
 
 notifications:
-    on_success: never
-    on_failure: always
+  on_success: never
+  on_failure: always

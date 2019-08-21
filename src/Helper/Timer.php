@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Scoutapm\Helper;
@@ -8,15 +9,16 @@ use DateTimeZone;
 use function microtime;
 use function sprintf;
 
-class Timer
+/** @internal */
+final class Timer
 {
-    private const MICROTIME_FLOAT_FORMAT = 'U.u';
+    private const MICROTIME_FLOAT_FORMAT           = 'U.u';
     private const FORMAT_FLOAT_TO_6_DECIMAL_PLACES = '%.6F';
 
     // @todo this doesn't feel like the right place for this, unless a Timer itself is serializable
     public const FORMAT_FOR_CORE_AGENT = 'Y-m-d\TH:i:s.u\Z';
 
-    /** @var float|null */
+    /** @var float */
     private $start;
 
     /** @var float|null */
@@ -25,17 +27,17 @@ class Timer
     /**
      * Creates and Starts the Timer
      */
-    public function __construct(float $override = null)
+    public function __construct(?float $override = null)
     {
         $this->start($override);
     }
 
-    public function start(float $override = null) : void
+    public function start(?float $override = null) : void
     {
         $this->start = $override ?? microtime(true);
     }
 
-    public function stop(float $override = null) : void
+    public function stop(?float $override = null) : void
     {
         $this->stop = $override ?? microtime(true);
     }
@@ -54,6 +56,7 @@ class Timer
             sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $this->stop),
             new DateTimeZone('UTC')
         );
+
         return $timestamp->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
@@ -67,6 +70,7 @@ class Timer
             sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $this->start),
             new DateTimeZone('UTC')
         );
+
         return $timestamp->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
