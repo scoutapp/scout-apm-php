@@ -24,6 +24,7 @@ final class RegisterMessage implements SerializableMessage
         $this->apiVersion = $apiVersion;
     }
 
+    /** @return array<string, array<string, string>> */
     public function jsonSerialize() : array
     {
         return [

@@ -97,7 +97,7 @@ class Request implements SerializableMessage
     /**
      * turn this object into a list of commands to send to the CoreAgent
      *
-     * @return array<int, array<string, (string|array|bool|null)>>
+     * @return array<string, array<string, array<int, array<string, (string|array|bool|null)>>>>
      */
     public function jsonSerialize() : array
     {

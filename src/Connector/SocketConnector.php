@@ -70,7 +70,7 @@ final class SocketConnector implements Connector
 
     public function sendMessage(SerializableMessage $message) : bool
     {
-        if (!$this->connected()) {
+        if (! $this->connected()) {
             throw NotConnected::fromSocketPath($this->socketPath);
         }
 
@@ -90,7 +90,7 @@ final class SocketConnector implements Connector
 
     public function shutdown() : void
     {
-        if (!$this->connected()) {
+        if (! $this->connected()) {
             return;
         }
 

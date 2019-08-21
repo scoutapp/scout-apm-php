@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Connector\Exception;
 
 use RuntimeException;
+use function sprintf;
 
 final class NotConnected extends RuntimeException
 {

@@ -7,13 +7,11 @@ namespace Scoutapm\IntegrationTests;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Agent;
 use Scoutapm\Config;
-use Scoutapm\Connector\Connector;
-use Scoutapm\Connector\SerializableMessage;
 use Scoutapm\Connector\SocketConnector;
-use Scoutapm\Events\Request\Request;
 use function getenv;
 use function json_decode;
 use function json_encode;
+use function sleep;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
