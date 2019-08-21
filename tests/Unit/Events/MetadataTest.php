@@ -7,10 +7,14 @@ namespace Scoutapm\UnitTests\Events;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
+use function array_keys;
+use function array_map;
+use function explode;
 use function gethostname;
 use function json_decode;
 use function json_encode;
@@ -24,8 +28,6 @@ final class MetadataTest extends TestCase
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
         $serialized = json_encode(new Metadata($time));
-
-        self::assertNotEmpty($serialized);
 
         self::assertEquals(
             [
@@ -43,11 +45,17 @@ final class MetadataTest extends TestCase
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => '',
-                        'libraries' => [],
+                        'libraries' => array_map(
+                            static function ($package, $version) {
+                                return [$package, $version];
+                            },
+                            array_keys(Versions::VERSIONS),
+                            Versions::VERSIONS
+                        ),
                         'paas' => '',
                         'application_root' => '',
                         'scm_subdirectory' => '',
-                        'git_sha' => '',
+                        'git_sha' => explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1],
                     ],
                     'event_type' => 'scout.metadata',
                     'source' => 'php',

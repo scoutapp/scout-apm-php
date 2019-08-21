@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Scoutapm\Events;
 
 use DateTimeImmutable;
+use PackageVersions\Versions;
 use Scoutapm\Connector\Command;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
+use function array_keys;
+use function array_map;
+use function explode;
 use function gethostname;
 
 /**
@@ -28,7 +32,7 @@ final class Metadata implements Command
     }
 
     /**
-     * @return array<string, (string|array<int, string>|null)>
+     * @return array<string, (string|array<int, array<int, string>>|null)>
      */
     private function data() : array
     {
@@ -44,24 +48,35 @@ final class Metadata implements Command
             'database_engine' => '',
             'database_adapter' => '',
             'application_name' => '',
-            'libraries' => [],
+            'libraries' => $this->getLibraries(),
             'paas' => '',
             'application_root' => '',
             'scm_subdirectory' => '',
-            'git_sha' => '',
+            'git_sha' => $this->rootPackageGitSha(),
         ];
     }
 
+    private function rootPackageGitSha() : string
+    {
+        return explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1];
+    }
+
     /**
-     * @return array<int, array<int, string>>
+     * Return an array of arrays: [["package name", "package version"], ....]
      *
-     * @TODO: Return an array of arrays: [["package name", "package version"], ....]
+     * @return array<int, array<int, string>>
      */
-//    private function getLibraries() : array
-//    {
-//         $composer = require __DIR__ . "/vendor/autoload.php";
-//        return [];
-//    }
+    private function getLibraries() : array
+    {
+        return array_map(
+            /** @return string[][]|array<int, string> */
+            static function (string $package, string $version) : array {
+                return [$package, $version];
+            },
+            array_keys(Versions::VERSIONS),
+            Versions::VERSIONS
+        );
+    }
 
     /**
      * Turn this object into a list of commands to send to the CoreAgent
