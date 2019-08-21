@@ -20,6 +20,26 @@ To install the ScoutAPM Agent for a specific framework, use the specific package
 
  * [Laravel](https://github.com/scoutapp/scout-apm-laravel)
 
+### Using the base library directly
+
+```php
+use Scoutapm\Agent;
+use Scoutapm\Config;
+
+$agent = Agent::fromConfig(Config::fromArray([
+    'name' => 'Your application name',
+    'key' => 'your scout key',
+    'monitor' => true,
+]));
+// If the core agent is not already running, this will download and run it (from /tmp by default)
+$agent->connect();
+
+// Use $agent to record `webTransaction`, `backgroundTransaction`, `instrument` or `tagRequest` as necessary
+
+// Nothing is sent to Scout until you call this - so call this at the end of your request
+$agent->send();
+```
+
 ## Documentation
 
 For full installation and troubleshooting documentation, visit our [help site](http://docs.scoutapm.com/#php-agent).
