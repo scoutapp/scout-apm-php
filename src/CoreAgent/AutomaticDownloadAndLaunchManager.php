@@ -84,10 +84,6 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         if (! $manifest->isValid()) {
             $this->logger->debug('Core Agent verification failed: Manifest is not valid.');
             $this->coreAgentBinPath = null;
-
-            // @todo unused, do we need this?
-            //$this->coreAgentBinVersion = null;
-
             return false;
         }
 
@@ -96,17 +92,11 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         if (hash('sha256', file_get_contents($binPath)) === $manifest->hashOfBinary()) {
             $this->coreAgentBinPath = $binPath;
 
-            // @todo unused, do we need this?
-            //$this->coreAgentBinVersion = $manifest->binaryVersion();
-
             return true;
         }
 
         $this->logger->debug('Core Agent verification failed: SHA mismatch.');
         $this->coreAgentBinPath = null;
-
-        // @todo unused, do we need this?
-        //$this->coreAgentBinVersion = null;
 
         return false;
     }
