@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace Scoutapm\Connector;
 
-use Scoutapm\Events\Request\Request;
+use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\NotConnected;
 
 interface Connector
 {
+    /** @throws FailedToConnect */
     public function connect() : void;
 
     public function connected() : bool;
 
-    public function sendRequest(Request $request) : bool;
+    /** @throws NotConnected */
+    public function sendMessage(SerializableMessage $message) : bool;
 
     public function shutdown() : void;
 }

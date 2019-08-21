@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Events\Request;
 
 use Exception;
-use JsonSerializable;
+use Scoutapm\Connector\SerializableMessage;
 use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
@@ -16,7 +16,7 @@ use function array_slice;
 use function end;
 
 /** @internal */
-class Request implements JsonSerializable
+class Request implements SerializableMessage
 {
     /** @var Timer */
     private $timer;
@@ -110,9 +110,7 @@ class Request implements JsonSerializable
         ];
 
         foreach ($this->events as $event) {
-            $array = $event->jsonSerialize();
-
-            foreach ($array as $value) {
+            foreach ($event->jsonSerialize() as $value) {
                 $commands[] = $value;
             }
         }
@@ -124,7 +122,9 @@ class Request implements JsonSerializable
             ],
         ];
 
-        return $commands;
+        return [
+            'BatchCommand' => ['commands' => $commands],
+        ];
     }
 
     /**

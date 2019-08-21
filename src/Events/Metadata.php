@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Events;
 
 use DateTimeImmutable;
-use JsonSerializable;
+use Scoutapm\Connector\SerializableMessage;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function gethostname;
@@ -15,7 +15,7 @@ use function gethostname;
  *
  * @internal
  */
-final class Metadata implements JsonSerializable
+final class Metadata implements SerializableMessage
 {
     /** @var Timer */
     private $timer;

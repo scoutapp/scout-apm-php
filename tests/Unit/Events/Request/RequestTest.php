@@ -37,13 +37,18 @@ final class RequestTest extends TestCase
 
         $serialized = $request->jsonSerialize();
         self::assertIsArray($serialized);
-        self::assertArrayHasKey('StartRequest', reset($serialized));
-        self::assertArrayHasKey('TagRequest', next($serialized));
 
-        self::assertArrayHasKey('StartSpan', next($serialized));
-        self::assertArrayHasKey('TagSpan', next($serialized));
-        self::assertArrayHasKey('StopSpan', next($serialized));
+        self::assertArrayHasKey('BatchCommand', $serialized);
+        self::assertArrayHasKey('commands', $serialized['BatchCommand']);
+        $commands = $serialized['BatchCommand']['commands'];
 
-        self::assertArrayHasKey('FinishRequest', next($serialized));
+        self::assertArrayHasKey('StartRequest', reset($commands));
+        self::assertArrayHasKey('TagRequest', next($commands));
+
+        self::assertArrayHasKey('StartSpan', next($commands));
+        self::assertArrayHasKey('TagSpan', next($commands));
+        self::assertArrayHasKey('StopSpan', next($commands));
+
+        self::assertArrayHasKey('FinishRequest', next($commands));
     }
 }

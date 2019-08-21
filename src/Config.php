@@ -48,6 +48,18 @@ class Config
         ];
     }
 
+    /** @param mixed[]|array<string, mixed> $config */
+    public static function fromArray(array $config = []) : self
+    {
+        $instance = new self();
+
+        foreach ($config as $key => $value) {
+            $instance->set($key, $value);
+        }
+
+        return $instance;
+    }
+
     /**
      * Looks through all available sources for the first that can handle this
      * key, then returns the value from that source.

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Scoutapm;
 
 use Closure;
+use DateTimeImmutable;
+use DateTimeZone;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -13,6 +15,8 @@ use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
+use Scoutapm\Events\Metadata;
+use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
@@ -63,12 +67,7 @@ final class Agent
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector
     {
-        return new SocketConnector(
-            $config->get('socket_path'),
-            (string) $config->get('name'),
-            (string) $config->get('key'),
-            $config->get('api_version')
-        );
+        return new SocketConnector($config->get('socket_path'));
     }
 
     /**
@@ -237,8 +236,21 @@ final class Agent
             return false;
         }
 
-        // Send this request off to the CoreAgent
-        return $this->connector->sendRequest($this->request);
+        if (!$this->connector->sendMessage(new RegisterMessage(
+            (string) $this->config->get('name'),
+            (string) $this->config->get('key'),
+            $this->config->get('api_version')
+        ))) {
+            return false;
+        }
+
+        if (!$this->connector->sendMessage(new Metadata(
+            new DateTimeImmutable('now', new DateTimeZone('UTC'))
+        ))) {
+            return false;
+        }
+
+        return $this->connector->sendMessage($this->request);
     }
 
     /**
