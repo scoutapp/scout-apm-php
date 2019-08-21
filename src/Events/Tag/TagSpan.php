@@ -10,7 +10,13 @@ use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanId;
 use function sprintf;
 
-/** @internal */
+/**
+ * Naming perhaps is a little off, it perhaps would've made more sense to name this `SpanTag`, but the JSON expects
+ * imperative tense, so read this as "tag the span" rather than "this is a span's tag". This naming is kept to be
+ * consistent with the payload that the core agent expects.
+ *
+ * @internal
+ */
 class TagSpan extends Tag
 {
     /** @var SpanId */

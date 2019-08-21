@@ -8,7 +8,13 @@ use DateTime;
 use DateTimeZone;
 use function sprintf;
 
-/** @internal */
+/**
+ * Naming perhaps is a little off, it perhaps would've made more sense to name this `RequestTag`, but the JSON expects
+ * imperative tense, so read this as "tag the request" rather than "this is a request's tag". This naming is kept to be
+ * consistent with the payload that the core agent expects.
+ *
+ * @internal
+ */
 class TagRequest extends Tag
 {
     /** @return array<int, array<string, (string|array|bool|null)>> */
