@@ -13,11 +13,9 @@ final class BacktraceTest extends TestCase
     public function testCapturingBacktrace() : void
     {
         $stack = Backtrace::capture();
-        self::assertNotNull($stack);
+
         foreach ($stack as $frame) {
-            self::assertArrayHasKey('file', $frame);
-            self::assertArrayHasKey('line', $frame);
-            self::assertArrayHasKey('function', $frame);
+            self::assertEquals(['file', 'line', 'function'], array_keys($frame));
         }
     }
 }
