@@ -12,6 +12,8 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
+use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
@@ -111,7 +113,13 @@ final class Agent
             );
             $manager->launch();
 
-            $this->connector->connect();
+            // It's very likely the first request after first launch of core agent will fail, since we have to wait for
+            // the agent to launch
+            try {
+                $this->connector->connect();
+            } catch (FailedToConnect $failedToConnect) {
+                $this->logger->warning($failedToConnect->getMessage());
+            }
         } else {
             $this->logger->debug('Scout Core Agent Connected');
         }
@@ -236,21 +244,35 @@ final class Agent
             return false;
         }
 
-        if (! $this->connector->sendCommand(new RegisterMessage(
-            (string) $this->config->get('name'),
-            (string) $this->config->get('key'),
-            $this->config->get('api_version')
-        ))) {
-            return false;
+        if (!$this->connector->connected()) {
+            try {
+                $this->connector->connect();
+            } catch (FailedToConnect $failedToConnect) {
+                $this->logger->error($failedToConnect->getMessage());
+                return false;
+            }
         }
 
-        if (! $this->connector->sendCommand(new Metadata(
-            new DateTimeImmutable('now', new DateTimeZone('UTC'))
-        ))) {
+        try {
+            if (! $this->connector->sendCommand(new RegisterMessage(
+                (string) $this->config->get('name'),
+                (string) $this->config->get('key'),
+                $this->config->get('api_version')
+            ))) {
+                return false;
+            }
+
+            if (! $this->connector->sendCommand(new Metadata(
+                new DateTimeImmutable('now', new DateTimeZone('UTC'))
+            ))) {
+                return false;
+            }
+
+            return $this->connector->sendCommand($this->request);
+        } catch (NotConnected $notConnected) {
+            $this->logger->error($notConnected->getMessage());
             return false;
         }
-
-        return $this->connector->sendCommand($this->request);
     }
 
     /**
