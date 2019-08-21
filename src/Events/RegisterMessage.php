@@ -6,6 +6,7 @@ namespace Scoutapm\Events;
 
 use Scoutapm\Connector\SerializableMessage;
 
+/** @internal */
 final class RegisterMessage implements SerializableMessage
 {
     /** @var string */
