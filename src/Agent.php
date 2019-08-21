@@ -244,11 +244,12 @@ final class Agent
             return false;
         }
 
-        if (!$this->connector->connected()) {
+        if (! $this->connector->connected()) {
             try {
                 $this->connector->connect();
             } catch (FailedToConnect $failedToConnect) {
                 $this->logger->error($failedToConnect->getMessage());
+
                 return false;
             }
         }
@@ -271,6 +272,7 @@ final class Agent
             return $this->connector->sendCommand($this->request);
         } catch (NotConnected $notConnected) {
             $this->logger->error($notConnected->getMessage());
+
             return false;
         }
     }
