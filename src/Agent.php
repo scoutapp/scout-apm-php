@@ -26,10 +26,6 @@ use Scoutapm\Events\Span\Span;
 // @todo needs interface
 final class Agent
 {
-    public const VERSION = '1.0';
-
-    public const NAME = 'scout-apm-php';
-
     /** @var Config */
     private $config;
 
