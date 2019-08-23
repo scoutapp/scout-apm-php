@@ -7,6 +7,9 @@ namespace Scoutapm\UnitTests\Extension;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\RecordedCall;
+use function extension_loaded;
+use function file_get_contents;
+use function reset;
 
 /** @covers \Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities */
 final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
@@ -15,6 +18,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
     {
         if (extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is not available');
+
             return;
         }
 
@@ -25,7 +29,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
 
     public function testGetCallsReturnsFileGetContentsCallWhenExtensionIsAvailable() : void
     {
-        if (!extension_loaded('scoutapm')) {
+        if (! extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is loaded');
         }
 
