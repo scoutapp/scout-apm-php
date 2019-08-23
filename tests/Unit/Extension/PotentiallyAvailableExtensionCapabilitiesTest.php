@@ -48,6 +48,6 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         $recordedCall = reset($calls);
 
         self::assertSame('file_get_contents', $recordedCall->functionName());
-        self::assertGreaterThan(0, $recordedCall->timeTakenInMicroseconds());
+        self::assertGreaterThan(0, $recordedCall->timeTakenInSeconds());
     }
 }

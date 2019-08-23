@@ -27,7 +27,7 @@ final class RecordedCallTest extends TestCase
             'time_taken' => $timeTaken,
         ]);
 
-        self::assertSame($timeTaken, $call->timeTakenInMicroseconds());
+        self::assertSame($timeTaken, $call->timeTakenInSeconds());
         self::assertSame($function, $call->functionName());
     }
 }

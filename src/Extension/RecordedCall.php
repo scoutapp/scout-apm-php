@@ -12,12 +12,12 @@ final class RecordedCall
     private $function;
 
     /** @var float */
-    private $timeTakenInMicroseconds;
+    private $timeTakenInSeconds;
 
-    private function __construct(string $function, float $timeTakenInMicroseconds)
+    private function __construct(string $function, float $timeTakenInSeconds)
     {
         $this->function                = $function;
-        $this->timeTakenInMicroseconds = $timeTakenInMicroseconds;
+        $this->timeTakenInSeconds = $timeTakenInSeconds;
     }
 
     /**
@@ -43,8 +43,8 @@ final class RecordedCall
         return $this->function;
     }
 
-    public function timeTakenInMicroseconds() : float
+    public function timeTakenInSeconds() : float
     {
-        return $this->timeTakenInMicroseconds;
+        return $this->timeTakenInSeconds;
     }
 }
