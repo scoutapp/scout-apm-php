@@ -1,10 +1,5 @@
 language: php
 
-php:
-  - 7.1
-  - 7.2
-  - 7.3
-
 before_script:
   - composer self-update
   - composer install --prefer-dist --no-interaction --no-suggest
@@ -12,12 +7,23 @@ before_script:
 jobs:
   include:
     - stage: Check coding standards
+      php: 7.3
       script: vendor/bin/phpcs
 
     - stage: Run static analysis check
+      php: 7.3
       script: vendor/bin/psalm
 
-    - stage: Test
+    - stage: Test on PHP 7.1
+      php: 7.1
+      script: vendor/bin/phpunit
+
+    - stage: Test on PHP 7.2
+      php: 7.2
+      script: vendor/bin/phpunit
+
+    - stage: Test on PHP 7.3
+      php: 7.3
       script: vendor/bin/phpunit
 
 notifications:
