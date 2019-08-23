@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Extension;
+namespace Scoutapm\UnitTests\Extension;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Extension\RecordedCall;
 use function microtime;
 use function random_int;
 use function uniqid;
