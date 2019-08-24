@@ -6,36 +6,30 @@ before_script:
 
 jobs:
   include:
-    - stage: Check coding standards
-      php: 7.3
-      script: vendor/bin/phpcs
-
-    - stage: Run static analysis check
-      php: 7.3
-      script: vendor/bin/psalm
-
-    - stage: Test on PHP 7.1
-      php: 7.1
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.2
-      php: 7.2
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.3
-      php: 7.3
-      script: vendor/bin/phpunit
+#    - stage: Check coding standards
+#      php: 7.3
+#      script: vendor/bin/phpcs
+#
+#    - stage: Run static analysis check
+#      php: 7.3
+#      script: vendor/bin/psalm
+#
+#    - stage: Test on PHP 7.1
+#      php: 7.1
+#      script: vendor/bin/phpunit
+#
+#    - stage: Test on PHP 7.2
+#      php: 7.2
+#      script: vendor/bin/phpunit
+#
+#    - stage: Test on PHP 7.3
+#      php: 7.3
+#      script: vendor/bin/phpunit
 
     - stage: Test on PHP 7.3 with extension
       php: 7.3
-      install:
-        - git clone git@github.com:scoutapp/scout-apm-php-ext.git ext
-        - cd ext
-        - phpize
-        - ./configure --enable-scoutapm
-        - make
       script:
-        php -d zend_extension=ext/modules/scoutapm.so vendor/bin/phpunit
+        php -d zend_extension=$TRAVIS_BUILD_DIR/ext/scoutapm-20180731.so vendor/bin/phpunit
 
 
 notifications:
