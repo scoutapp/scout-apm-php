@@ -16,7 +16,7 @@ final class RecordedCall
 
     private function __construct(string $function, float $timeTakenInSeconds)
     {
-        $this->function                = $function;
+        $this->function           = $function;
         $this->timeTakenInSeconds = $timeTakenInSeconds;
     }
 
