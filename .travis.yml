@@ -26,6 +26,18 @@ jobs:
       php: 7.3
       script: vendor/bin/phpunit
 
+    - stage: Test on PHP 7.3 with extension
+      php: 7.3
+      install:
+        - git clone git@github.com:scoutapp/scout-apm-php-ext.git ext
+        - cd ext
+        - phpize
+        - ./configure --enable-scoutapm
+        - make
+      script:
+        php -d zend_extension=ext/modules/scoutapm.so vendor/bin/phpunit
+
+
 notifications:
   on_success: never
   on_failure: always
