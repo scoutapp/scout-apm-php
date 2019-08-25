@@ -29,9 +29,7 @@ jobs:
     - stage: Test on PHP 7.3 with extension
       php: 7.3
       script:
-        - PHP_API=$(php -i | grep 'PHP API' | sed -e 's/PHP API => //')
-        - echo $PHP_API
-        - php -d zend_extension=$TRAVIS_BUILD_DIR/ext/scoutapm-$PHP_API.so vendor/bin/phpunit
+        - $TRAVIS_BUILD_DIR/ext/php-with-scoutapm.sh vendor/bin/phpunit
 
 
 notifications:
