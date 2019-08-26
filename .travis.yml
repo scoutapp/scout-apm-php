@@ -6,31 +6,32 @@ before_script:
 
 jobs:
   include:
-#    - stage: Check coding standards
-#      php: 7.3
-#      script: vendor/bin/phpcs
-#
-#    - stage: Run static analysis check
-#      php: 7.3
-#      script: vendor/bin/psalm
-#
-#    - stage: Test on PHP 7.1
-#      php: 7.1
-#      script: vendor/bin/phpunit
-#
-#    - stage: Test on PHP 7.2
-#      php: 7.2
-#      script: vendor/bin/phpunit
-#
-#    - stage: Test on PHP 7.3
-#      php: 7.3
-#      script: vendor/bin/phpunit
+    - stage: Check coding standards
+      php: 7.3
+      script: vendor/bin/phpcs
 
-    - stage: Test on PHP 7.3 with extension
+    - stage: Run static analysis check
+      php: 7.3
+      script: vendor/bin/psalm
+
+    - stage: Test on PHP 7.1
+      php: 7.1
+      script: vendor/bin/phpunit
+
+    - stage: Test on PHP 7.2
+      php: 7.2
+      script: vendor/bin/phpunit
+
+    - stage: Test on PHP 7.3 (no extension)
+      php: 7.3
+      script: vendor/bin/phpunit
+
+    - stage: Test on PHP 7.3 (with extension)
       php: 7.3
       script:
         - $TRAVIS_BUILD_DIR/ext/php-with-scoutapm.sh vendor/bin/phpunit
 
+# @TODO - add .so and test runs for 7.2, 7.1 too
 
 notifications:
   on_success: never
