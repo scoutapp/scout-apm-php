@@ -27,4 +27,6 @@ echo "PHP API version is: $PHP_API"
 echo "Thread safety is: $THREAD_SAFETY"
 echo "Extension path is: $EXTPATH"
 
+$PHP_PATH -d zend_extension=$EXTPATH -r "if (!extension_loaded('scoutapm')) { echo 'ERROR - Scout APM extension failed to load' . PHP_EOL; } exit(extension_loaded('scoutapm')?0:1);"
+
 $PHP_PATH -d zend_extension=$EXTPATH "$@"
