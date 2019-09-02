@@ -18,15 +18,19 @@ final class RecordedCallTest extends TestCase
     public function testFromExtensionLoggedCallArray() : void
     {
         $function  = uniqid('MyClass\Foo::method', true);
-        $timeTaken = random_int(1, 100) / 1000;
+        $entered = microtime(true) + random_int(1, 5);
+        $exited = microtime(true) + random_int(6, 10);
+        $timeTaken = $exited - $entered;
 
         $call = RecordedCall::fromExtensionLoggedCallArray([
             'function' => $function,
-            'entered' => microtime(true),
-            'exited' => microtime(true),
+            'entered' => $entered,
+            'exited' => $exited,
             'time_taken' => $timeTaken,
         ]);
 
+        self::assertSame($entered, $call->timeEntered());
+        self::assertSame($exited, $call->timeExited());
         self::assertSame($timeTaken, $call->timeTakenInSeconds());
         self::assertSame($function, $call->functionName());
     }

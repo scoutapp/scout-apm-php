@@ -14,10 +14,18 @@ final class RecordedCall
     /** @var float */
     private $timeTakenInSeconds;
 
-    private function __construct(string $function, float $timeTakenInSeconds)
+    /** @var float */
+    private $timeEntered;
+
+    /** @var float */
+    private $timeExited;
+
+    private function __construct(string $function, float $timeTakenInSeconds, float $timeEntered, float $timeExited)
     {
         $this->function           = $function;
         $this->timeTakenInSeconds = $timeTakenInSeconds;
+        $this->timeEntered        = $timeEntered;
+        $this->timeExited         = $timeExited;
     }
 
     /**
@@ -34,7 +42,9 @@ final class RecordedCall
 
         return new self(
             (string) $extensionCall['function'],
-            (float) $extensionCall['time_taken']
+            (float) $extensionCall['time_taken'],
+            (float) $extensionCall['entered'],
+            (float) $extensionCall['exited']
         );
     }
 
@@ -46,5 +56,15 @@ final class RecordedCall
     public function timeTakenInSeconds() : float
     {
         return $this->timeTakenInSeconds;
+    }
+
+    public function timeEntered() : float
+    {
+        return $this->timeEntered;
+    }
+
+    public function timeExited() : float
+    {
+        return $this->timeExited;
     }
 }
