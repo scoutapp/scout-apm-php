@@ -33,14 +33,15 @@ final class AgentTest extends TestCase
         $this->logger = new TestLogger();
     }
 
-    public function tearDown() : void
+    private function formatCapturedLogMessages() : string
     {
-        parent::tearDown();
+        $return = "Log messages:\n";
 
-        echo "Log messages:\n";
         foreach ($this->logger->records as $logMessage) {
-            echo sprintf("[%s] %s\n", $logMessage['level'], $logMessage['message']);
+            $return .= sprintf("[%s] %s\n", $logMessage['level'], $logMessage['message']);
         }
+
+        return $return;
     }
 
     /** @throws Exception */
@@ -76,7 +77,7 @@ final class AgentTest extends TestCase
             $agent->tagRequest('testtag', '1.23');
         });
 
-        self::assertTrue($agent->send());
+        self::assertTrue($agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
 
         $unserialized = json_decode(json_encode($connector->sentMessages), true);
 
