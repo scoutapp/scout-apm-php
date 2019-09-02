@@ -12,10 +12,10 @@ use const SOCK_STREAM;
 use function json_encode;
 use function pack;
 use function register_shutdown_function;
+use function socket_clear_error;
 use function socket_close;
 use function socket_connect;
 use function socket_create;
-use function socket_last_error;
 use function socket_read;
 use function socket_send;
 use function socket_shutdown;
@@ -55,6 +55,7 @@ final class SocketConnector implements Connector
         }
 
         try {
+            socket_clear_error($this->socket);
             $this->connected = socket_connect($this->socket, $this->socketPath);
             register_shutdown_function([&$this, 'shutdown']);
         } catch (Throwable $e) {
@@ -77,15 +78,30 @@ final class SocketConnector implements Connector
         $serializedJsonString = json_encode($message);
 
         $size = strlen($serializedJsonString);
-        socket_send($this->socket, pack('N', $size), 4, 0);
-        socket_send($this->socket, $serializedJsonString, $size, 0);
+
+        // Socket error is a global state, so we must reset to a known state first...
+        socket_clear_error($this->socket);
+
+        if (socket_send($this->socket, pack('N', $size), 4, 0) === false) {
+            throw Exception\FailedToSendCommand::writingMessageSizeToSocket($message, $this->socket, $this->socketPath);
+        }
+
+        if (socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
+            throw Exception\FailedToSendCommand::writingMessageContentToSocket($message, $this->socket, $this->socketPath);
+        }
 
         // Read the response back and drop it. Needed for socket liveness
         $responseLength = socket_read($this->socket, 4);
-        /** @noinspection UnusedFunctionResultInspection */
-        socket_read($this->socket, unpack('N', $responseLength)[1]);
 
-        return socket_last_error($this->socket) === 0;
+        if ($responseLength === false) {
+            throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
+        }
+
+        if (socket_read($this->socket, unpack('N', $responseLength)[1]) === false) {
+            throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->socketPath);
+        }
+
+        return true;
     }
 
     public function shutdown() : void

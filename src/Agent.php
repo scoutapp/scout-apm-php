@@ -13,6 +13,7 @@ use Psr\Log\NullLogger;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\FailedToSendCommand;
 use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
@@ -113,6 +114,7 @@ final class Agent
             // the agent to launch
             try {
                 $this->connector->connect();
+                $this->logger->debug('Connected to connector.');
             } catch (FailedToConnect $failedToConnect) {
                 $this->logger->warning($failedToConnect->getMessage());
             }
@@ -243,6 +245,7 @@ final class Agent
         if (! $this->connector->connected()) {
             try {
                 $this->connector->connect();
+                $this->logger->debug('Connected to connector whilst sending.');
             } catch (FailedToConnect $failedToConnect) {
                 $this->logger->error($failedToConnect->getMessage());
 
@@ -268,6 +271,10 @@ final class Agent
             return $this->connector->sendCommand($this->request);
         } catch (NotConnected $notConnected) {
             $this->logger->error($notConnected->getMessage());
+
+            return false;
+        } catch (FailedToSendCommand $failedToSendCommand) {
+            $this->logger->error($failedToSendCommand->getMessage());
 
             return false;
         }
