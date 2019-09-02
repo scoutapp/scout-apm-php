@@ -62,7 +62,7 @@ class DerivedSource
         $dir      = $this->config->get('core_agent_dir');
         $fullName = $this->config->get('core_agent_full_name');
 
-        return $dir . '/' . $fullName . '/core-agent.sock';
+        return $dir . '/' . $fullName . '/scout-agent.sock';
     }
 
     private function coreAgentFullName() : string
