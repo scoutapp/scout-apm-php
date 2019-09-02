@@ -76,8 +76,6 @@ final class AgentTest extends TestCase
             $agent->tagRequest('testtag', '1.23');
         });
 
-        // @todo for some reason the agent isn't launching in Travis, need to investigate further...
-        self::markTestIncomplete(__METHOD__);
         self::assertTrue($agent->send());
 
         $unserialized = json_decode(json_encode($connector->sentMessages), true);
