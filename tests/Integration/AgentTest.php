@@ -13,7 +13,6 @@ use Scoutapm\Connector\SocketConnector;
 use function getenv;
 use function gethostname;
 use function is_callable;
-use function is_string;
 use function json_decode;
 use function json_encode;
 use function next;
@@ -69,12 +68,16 @@ final class AgentTest extends TestCase
         $agent->connect();
 
         $agent->webTransaction('Yay', static function () use ($agent) : void {
+            file_get_contents(__FILE__);
             $agent->instrument('Test', 'foo', static function () use ($agent) : void {
+                file_get_contents(__FILE__);
                 sleep(1);
                 $agent->instrument('Test', 'bar', static function () : void {
+                    file_get_contents(__FILE__);
                     sleep(1);
                 });
             });
+            file_get_contents(__FILE__);
             $agent->tagRequest('testtag', '1.23');
             $agent->instrument('DB', 'test', static function () : void {
             });
@@ -122,14 +125,35 @@ final class AgentTest extends TestCase
 
                     $controllerSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
+//                    if (TestHelper::scoutApmExtensionAvailable()) {
+//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
+//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+//                    }
+
                     $fooSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
 
+//                    if (TestHelper::scoutApmExtensionAvailable()) {
+//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
+//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+//                    }
+
                     $barSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
+
+//                    if (TestHelper::scoutApmExtensionAvailable()) {
+//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
+//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+//                    }
+
                     $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
 
                     $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
+
+//                    if (TestHelper::scoutApmExtensionAvailable()) {
+//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
+//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+//                    }
 
                     $dbSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
