@@ -107,18 +107,6 @@ class Span implements CommandWithParent, CommandWithChildren
         return $this->timer->duration();
     }
 
-    /** @return TagSpan[]|array<int, TagSpan> */
-    public function getTags() : array
-    {
-        // @todo possibly deprecate? do we need this?
-        return array_filter(
-            $this->children,
-            static function ($item) {
-                return $item instanceof TagSpan;
-            }
-        );
-    }
-
     /** @return array<int, array<string, (string|array|bool|null)>> */
     public function jsonSerialize() : array
     {
