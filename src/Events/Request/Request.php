@@ -54,7 +54,7 @@ class Request implements CommandWithChildren
 
         $this->currentCommand = $span;
 
-        return $span; // @todo do we need to return it...? exposes "internals..."
+        return $span;
     }
 
     public function appendChild(Command $span) : void
