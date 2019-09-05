@@ -8,7 +8,6 @@ use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Connector\CommandWithParent;
-use Scoutapm\Connector\TreeCommand;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Timer;
@@ -105,6 +104,22 @@ class Span implements CommandWithParent, CommandWithChildren
     public function duration() : ?float
     {
         return $this->timer->duration();
+    }
+
+    /**
+     * @todo remove - only used in tests
+     * @deprecated
+     * @internal
+     * @return TagSpan[]|array<int, TagSpan>
+     */
+    public function getTags() : array
+    {
+        return array_filter(
+            $this->children,
+            static function ($item) {
+                return $item instanceof TagSpan;
+            }
+        );
     }
 
     /** @return array<int, array<string, (string|array|bool|null)>> */
