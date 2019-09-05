@@ -78,6 +78,7 @@ final class AgentTest extends TestCase
             $agent->tagRequest('testtag', '1.23');
             $agent->instrument('DB', 'test', static function () : void {});
         });
+        $agent->instrument('Test', 'qux', static function () : void {});
 
         self::assertTrue($agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
 
@@ -135,6 +136,9 @@ final class AgentTest extends TestCase
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
 
                     $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
+
+                    $quxSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
                     $this->assertUnserializedCommandContainsPayload('FinishRequest', ['request_id' => $requestId], next($commands), null);
 
