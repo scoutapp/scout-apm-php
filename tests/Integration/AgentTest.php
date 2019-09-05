@@ -12,6 +12,7 @@ use Scoutapm\Config;
 use Scoutapm\Connector\SocketConnector;
 use function getenv;
 use function gethostname;
+use function is_array;
 use function is_callable;
 use function json_decode;
 use function json_encode;
@@ -155,7 +156,7 @@ final class AgentTest extends TestCase
         foreach ($keysAndValuesToExpect as $expectedKey => $expectedValue) {
             self::assertArrayHasKey($expectedKey, $commandPayload);
 
-            if (is_callable($expectedValue)) {
+            if (!is_string($expectedValue) && is_callable($expectedValue)) {
                 self::assertTrue($expectedValue($commandPayload[$expectedKey]));
                 continue;
             }
