@@ -84,7 +84,7 @@ class Span implements CommandWithParent, CommandWithChildren
     /** @param mixed $value */
     public function tag(string $tag, $value) : void
     {
-        $this->children[] = new TagSpan($tag, $value, $this->requestId, $this->id);
+        $this->appendChild(new TagSpan($tag, $value, $this->requestId, $this->id));
     }
 
     public function getName() : string

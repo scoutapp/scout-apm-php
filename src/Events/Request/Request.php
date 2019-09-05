@@ -7,7 +7,6 @@ namespace Scoutapm\Events\Request;
 use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
-use Scoutapm\Connector\CommandWithParent;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
@@ -93,7 +92,7 @@ class Request implements CommandWithChildren
      */
     public function tag(string $tagName, $value) : void
     {
-        $this->children[] = new TagRequest($tagName, $value, $this->id);
+        $this->appendChild(new TagRequest($tagName, $value, $this->id));
     }
 
     /**
