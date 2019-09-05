@@ -11,6 +11,7 @@ use Scoutapm\Connector\CommandWithParent;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Timer;
+use function array_filter;
 
 /** @internal */
 class Span implements CommandWithParent, CommandWithChildren
@@ -107,10 +108,12 @@ class Span implements CommandWithParent, CommandWithChildren
     }
 
     /**
-     * @todo remove - only used in tests
-     * @deprecated
      * @internal
+     * @deprecated
+     *
      * @return TagSpan[]|array<int, TagSpan>
+     *
+     * @todo remove - only used in tests
      */
     public function getTags() : array
     {

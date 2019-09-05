@@ -69,8 +69,9 @@ class Request implements CommandWithChildren
     public function stopSpan(?float $overrideTimestamp = null) : void
     {
         $command = $this->currentCommand;
-        if (!$command instanceof Span) {
+        if (! $command instanceof Span) {
             $this->stop($overrideTimestamp);
+
             return;
         }
 
@@ -132,10 +133,12 @@ class Request implements CommandWithChildren
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @todo remove
-     * @deprecated
      * @internal
+     * @deprecated
+     *
      * @return Command[]|array<int, Command>
+     *
+     * @todo remove
      */
     public function getEvents() : array
     {
