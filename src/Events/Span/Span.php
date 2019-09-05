@@ -6,12 +6,15 @@ namespace Scoutapm\Events\Span;
 
 use Exception;
 use Scoutapm\Connector\Command;
+use Scoutapm\Connector\CommandWithChildren;
+use Scoutapm\Connector\CommandWithParent;
+use Scoutapm\Connector\TreeCommand;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
-class Span implements Command
+class Span implements CommandWithParent, CommandWithChildren
 {
     /** @var SpanId */
     private $id;
@@ -19,8 +22,11 @@ class Span implements Command
     /** @var RequestId */
     private $requestId;
 
-    /** @var SpanId|null */
-    private $parentId;
+    /** @var CommandWithChildren */
+    private $parent;
+
+    /** @var Command[]|array<int, Command> */
+    private $children = [];
 
     /** @var string */
     private $name;
@@ -28,18 +34,15 @@ class Span implements Command
     /** @var Timer */
     private $timer;
 
-    /** @var TagSpan[]|array<int, TagSpan> */
-    private $tags;
-
     /** @throws Exception */
-    public function __construct(string $name, RequestId $requestId, ?float $override = null)
+    public function __construct(CommandWithChildren $parent, string $name, RequestId $requestId, ?float $override = null)
     {
         $this->id = SpanId::new();
 
+        $this->parent = $parent;
+
         $this->name      = $name;
         $this->requestId = $requestId;
-
-        $this->tags = [];
 
         $this->timer = new Timer($override);
     }
@@ -47,6 +50,11 @@ class Span implements Command
     public function id() : SpanId
     {
         return $this->id;
+    }
+
+    public function parent() : CommandWithChildren
+    {
+        return $this->parent;
     }
 
     /**
@@ -68,15 +76,15 @@ class Span implements Command
         $this->name = $name;
     }
 
+    public function appendChild(Command $command) : void
+    {
+        $this->children[] = $command;
+    }
+
     /** @param mixed $value */
     public function tag(string $tag, $value) : void
     {
-        $this->tags[] = new TagSpan($tag, $value, $this->requestId, $this->id);
-    }
-
-    public function setParentId(SpanId $parentId) : void
-    {
-        $this->parentId = $parentId;
+        $this->children[] = new TagSpan($tag, $value, $this->requestId, $this->id);
     }
 
     public function getName() : string
@@ -102,7 +110,13 @@ class Span implements Command
     /** @return TagSpan[]|array<int, TagSpan> */
     public function getTags() : array
     {
-        return $this->tags;
+        // @todo possibly deprecate? do we need this?
+        return array_filter(
+            $this->children,
+            static function ($item) {
+                return $item instanceof TagSpan;
+            }
+        );
     }
 
     /** @return array<int, array<string, (string|array|bool|null)>> */
@@ -113,14 +127,14 @@ class Span implements Command
             'StartSpan' => [
                 'request_id' => $this->requestId->toString(),
                 'span_id' => $this->id->toString(),
-                'parent_id' => $this->parentId ? $this->parentId->toString() : null,
+                'parent_id' => $this->parent instanceof self ? $this->parent->id->toString() : null,
                 'operation' => $this->name,
                 'timestamp' => $this->getStartTime(),
             ],
         ];
 
-        foreach ($this->tags as $tag) {
-            foreach ($tag->jsonSerialize() as $value) {
+        foreach ($this->children as $child) {
+            foreach ($child->jsonSerialize() as $value) {
                 $commands[] = $value;
             }
         }
