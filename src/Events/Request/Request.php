@@ -16,6 +16,8 @@ use function array_slice;
 /** @internal */
 class Request implements CommandWithChildren
 {
+    private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
+
     /** @var Timer */
     private $timer;
 
@@ -74,9 +76,7 @@ class Request implements CommandWithChildren
 
         $command->stop($overrideTimestamp);
 
-        // @todo move threshold to a private const
-        $threshold = 0.5;
-        if ($command->duration() > $threshold) {
+        if ($command->duration() > self::STACK_TRACE_THRESHOLD_SECONDS) {
             $stack = Backtrace::capture();
             $stack = array_slice($stack, 4);
             $command->tag('stack', $stack);
