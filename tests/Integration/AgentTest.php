@@ -13,6 +13,7 @@ use Scoutapm\Connector\SocketConnector;
 use function getenv;
 use function gethostname;
 use function is_callable;
+use function is_string;
 use function json_decode;
 use function json_encode;
 use function next;
@@ -68,13 +69,17 @@ final class AgentTest extends TestCase
         $agent->connect();
 
         $agent->webTransaction('Yay', static function () use ($agent) : void {
-            $agent->instrument('test', 'foo', static function () : void {
+            $agent->instrument('Test', 'foo', static function () use ($agent) : void {
                 sleep(1);
-            });
-            $agent->instrument('test', 'foo2', static function () : void {
-                sleep(1);
+                $agent->instrument('Test', 'bar', static function () : void {
+                    sleep(1);
+                });
             });
             $agent->tagRequest('testtag', '1.23');
+            $agent->instrument('DB', 'test', static function () : void {
+            });
+        });
+        $agent->instrument('Test', 'qux', static function () : void {
         });
 
         self::assertTrue($agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
@@ -89,7 +94,8 @@ final class AgentTest extends TestCase
                 'language' => 'php',
                 'api_version' => '1.0',
             ],
-            reset($unserialized)
+            reset($unserialized),
+            null
         );
         $this->assertUnserializedCommandContainsPayload(
             'ApplicationEvent',
@@ -103,7 +109,8 @@ final class AgentTest extends TestCase
                     return true;
                 },
             ],
-            next($unserialized)
+            next($unserialized),
+            null
         );
 
         $batchCommand = next($unserialized);
@@ -111,28 +118,37 @@ final class AgentTest extends TestCase
             'BatchCommand',
             [
                 'commands' => function (array $commands) : bool {
-                    $this->assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands));
+                    $requestId = $this->assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), 'request_id');
 
-                    $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'test/foo'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+                    $controllerSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
-                    $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'test/foo2'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+                    $fooSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
 
-                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23'], next($commands));
+                    $barSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
+                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands));
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
+                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands));
+                    $dbSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
+
+                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $controllerSpanId], next($commands), null);
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
+
+                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
+
+                    $quxSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
+                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
+
+                    $this->assertUnserializedCommandContainsPayload('FinishRequest', ['request_id' => $requestId], next($commands), null);
 
                     return true;
                 },
             ],
-            $batchCommand
+            $batchCommand,
+            null
         );
     }
 
@@ -143,20 +159,27 @@ final class AgentTest extends TestCase
     private function assertUnserializedCommandContainsPayload(
         string $expectedCommand,
         array $keysAndValuesToExpect,
-        array $actualCommand
-    ) : void {
+        array $actualCommand,
+        ?string $identifierKeyToReturn
+    ) : ?string {
         self::assertArrayHasKey($expectedCommand, $actualCommand);
         $commandPayload = $actualCommand[$expectedCommand];
 
         foreach ($keysAndValuesToExpect as $expectedKey => $expectedValue) {
             self::assertArrayHasKey($expectedKey, $commandPayload);
 
-            if (is_callable($expectedValue)) {
+            if (! is_string($expectedValue) && is_callable($expectedValue)) {
                 self::assertTrue($expectedValue($commandPayload[$expectedKey]));
                 continue;
             }
 
             self::assertSame($expectedValue, $commandPayload[$expectedKey]);
         }
+
+        if ($identifierKeyToReturn === null) {
+            return null;
+        }
+
+        return $commandPayload[$identifierKeyToReturn];
     }
 }

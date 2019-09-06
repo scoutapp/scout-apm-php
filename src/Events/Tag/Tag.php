@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events\Tag;
 
+use Scoutapm\Connector\Command;
 use Scoutapm\Events\Request\RequestId;
 use function microtime;
 
 /** @internal */
-abstract class Tag
+abstract class Tag implements Command
 {
     /** @var RequestId */
     protected $requestId;

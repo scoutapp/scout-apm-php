@@ -147,7 +147,7 @@ final class Agent
         if ($this->request === null) {
             // Must return a Span object to match API. This is a dummy span
             // that is not ever used for anything.
-            return new Span('Ignored', RequestId::new());
+            return new Span(new Request(), 'Ignored', RequestId::new());
         }
 
         return $this->request->startSpan($operation, $overrideTimestamp);

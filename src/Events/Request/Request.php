@@ -6,26 +6,26 @@ namespace Scoutapm\Events\Request;
 
 use Exception;
 use Scoutapm\Connector\Command;
-use Scoutapm\Events\Exception\SpanHasNotBeenStarted;
+use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
-use function array_pop;
 use function array_slice;
-use function end;
 
 /** @internal */
-class Request implements Command
+class Request implements CommandWithChildren
 {
+    private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
+
     /** @var Timer */
     private $timer;
 
-    /** @var TagRequest[]|Span[]|array<int, (TagRequest|Span)> */
-    private $events = [];
+    /** @var Command[]|array<int, Command> */
+    private $children = [];
 
-    /** @var Span[]|array<int, Span> */
-    private $openSpans = [];
+    /** @var CommandWithChildren */
+    private $currentCommand;
 
     /** @var RequestId */
     private $id;
@@ -36,62 +36,64 @@ class Request implements Command
         $this->id = RequestId::new();
 
         $this->timer = new Timer();
+
+        $this->currentCommand = $this;
     }
 
-    public function stop() : void
+    public function stop(?float $overrideTimestamp = null) : void
     {
-        $this->timer->stop();
+        $this->timer->stop($overrideTimestamp);
     }
 
     /** @throws Exception */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
-        $span = new Span($operation, $this->id, $overrideTimestamp);
+        $span = new Span($this->currentCommand, $operation, $this->id, $overrideTimestamp);
 
-        $parent = end($this->openSpans);
-        // Automatically wire up the parent of this span
-        if ($parent instanceof Span) {
-            $span->setParentId($parent->id());
-        }
+        $this->currentCommand->appendChild($span);
 
-        $this->openSpans[] = $span;
+        $this->currentCommand = $span;
 
         return $span;
+    }
+
+    public function appendChild(Command $span) : void
+    {
+        $this->children[] = $span;
     }
 
     /**
      * Stop the currently "running" span.
      * You can still tag it if needed up until the request as a whole is finished.
-     *
-     * @throws SpanHasNotBeenStarted
      */
     public function stopSpan(?float $overrideTimestamp = null) : void
     {
-        /** @var Span|null $span */
-        $span = array_pop($this->openSpans);
+        $command = $this->currentCommand;
+        if (! $command instanceof Span) {
+            $this->stop($overrideTimestamp);
 
-        if ($span === null) {
-            throw SpanHasNotBeenStarted::fromRequest($this->id);
+            return;
         }
 
-        $span->stop($overrideTimestamp);
+        $command->stop($overrideTimestamp);
 
-        $threshold = 0.5;
-        if ($span->duration() > $threshold) {
+        if ($command->duration() > self::STACK_TRACE_THRESHOLD_SECONDS) {
             $stack = Backtrace::capture();
             $stack = array_slice($stack, 4);
-            $span->tag('stack', $stack);
+            $command->tag('stack', $stack);
         }
 
-        $this->events[] = $span;
+        $this->currentCommand = $command->parent();
     }
 
     /**
      * Add a tag to the request as a whole
+     *
+     * @param mixed $value
      */
-    public function tag(string $tagName, string $value) : void
+    public function tag(string $tagName, $value) : void
     {
-        $this->events[] = new TagRequest($tagName, $value, $this->id);
+        $this->appendChild(new TagRequest($tagName, $value, $this->id));
     }
 
     /**
@@ -109,8 +111,8 @@ class Request implements Command
             ],
         ];
 
-        foreach ($this->events as $event) {
-            foreach ($event->jsonSerialize() as $value) {
+        foreach ($this->children as $child) {
+            foreach ($child->jsonSerialize() as $value) {
                 $commands[] = $value;
             }
         }
@@ -131,10 +133,15 @@ class Request implements Command
      * You probably don't need this, it's used in testing.
      * Returns all events that have occurred in this Request.
      *
-     * @return TagRequest[]|Span[]|array<int, (TagRequest|Span)>
+     * @internal
+     * @deprecated
+     *
+     * @return Command[]|array<int, Command>
+     *
+     * @todo remove
      */
     public function getEvents() : array
     {
-        return $this->events;
+        return $this->children;
     }
 }
