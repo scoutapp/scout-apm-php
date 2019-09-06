@@ -1,8 +1,13 @@
 language: php
 
+env:
+  - DEPENDENCIES=""
+  - DEPENDENCIES="--prefer-lowest --prefer-stable"
+
 before_script:
   - composer self-update
-  - composer install --prefer-dist --no-interaction --no-suggest
+  - rm composer.lock
+  - composer update --prefer-dist $DEPENDENCIES
 
 jobs:
   include:
