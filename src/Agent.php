@@ -60,9 +60,9 @@ final class Agent
 
     public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
     {
-        $this->config    = $configuration;
-        $this->connector = $connector;
-        $this->logger    = $logger;
+        $this->config       = $configuration;
+        $this->connector    = $connector;
+        $this->logger       = $logger;
         $this->phpExtension = $phpExtension;
 
         $this->request = new Request();
