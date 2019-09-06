@@ -125,24 +125,24 @@ final class AgentTest extends TestCase
 
                     $controllerSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
-//                    if (TestHelper::scoutApmExtensionAvailable()) {
-//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
-//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
-//                    }
+                    if (TestHelper::scoutApmExtensionAvailable()) {
+                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                    }
 
                     $fooSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
 
-//                    if (TestHelper::scoutApmExtensionAvailable()) {
-//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
-//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
-//                    }
+                    if (TestHelper::scoutApmExtensionAvailable()) {
+                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
+                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                    }
 
                     $barSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
 
-//                    if (TestHelper::scoutApmExtensionAvailable()) {
-//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
-//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
-//                    }
+                    if (TestHelper::scoutApmExtensionAvailable()) {
+                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
+                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                    }
 
                     $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
@@ -150,10 +150,10 @@ final class AgentTest extends TestCase
                     $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
 
-//                    if (TestHelper::scoutApmExtensionAvailable()) {
-//                        $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands));
-//                        $this->assertUnserializedCommandContainsPayload('StopSpan', [], next($commands));
-//                    }
+                    if (TestHelper::scoutApmExtensionAvailable()) {
+                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                    }
 
                     $dbSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
