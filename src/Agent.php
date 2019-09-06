@@ -176,6 +176,10 @@ final class Agent
 
     private function addSpansFromExtension() : void
     {
+        if ($this->request === null) {
+            return;
+        }
+
         foreach ($this->phpExtension->getCalls() as $recordedCall) {
             $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
             $this->request->stopSpan($recordedCall->timeExited());
