@@ -11,17 +11,9 @@ env:
   - DEPENDENCIES="" PHP=""
   - DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
 
-# @todo build with extension enabled for these versions too
-matrix:
-  exclude:
-    - php: 7.1
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable" PHP="ext/php-with-scoutapm.sh"
-    - php: 7.1
-      env: DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
-    - php: 7.2
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable" PHP="ext/php-with-scoutapm.sh"
-    - php: 7.2
-      env: DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
+install:
+  - git clone git@github.com:scoutapp/scout-apm-php-ext.git ext
+  - cd ext && phpize && ./configure --enable-scoutapm && make && make install && cd ..
 
 before_script:
   - composer self-update
