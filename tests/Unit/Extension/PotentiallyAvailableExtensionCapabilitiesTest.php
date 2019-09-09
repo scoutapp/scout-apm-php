@@ -14,6 +14,15 @@ use function reset;
 /** @covers \Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities */
 final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
 {
+    public function setUp() : void
+    {
+        parent::setUp();
+
+        // First call is to clear any existing logged calls from the extension so we are in a known state
+        /** @noinspection UnusedFunctionResultInspection */
+        (new PotentiallyAvailableExtensionCapabilities())->getCalls();
+    }
+
     public function testGetCallsReturnsEmptyArrayWhenExtensionNotAvailable() : void
     {
         if (extension_loaded('scoutapm')) {
@@ -33,10 +42,6 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
             self::markTestSkipped('Test can only be run when extension is loaded');
         }
 
-        // First call is to clear any existing logged calls from the extension so we are in a known state
-        /** @noinspection UnusedFunctionResultInspection */
-        (new PotentiallyAvailableExtensionCapabilities())->getCalls();
-
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
@@ -49,5 +54,26 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
 
         self::assertSame('file_get_contents', $recordedCall->functionName());
         self::assertGreaterThan(0, $recordedCall->timeTakenInSeconds());
+    }
+
+    public function testRecordedCallsAreClearedWhenExtensionIsAvailable() : void
+    {
+        if (! extension_loaded('scoutapm')) {
+            self::markTestSkipped('Test can only be run when extension is loaded');
+        }
+
+        /** @noinspection UnusedFunctionResultInspection */
+        file_get_contents(__FILE__);
+
+        self::assertCount(1, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+
+        self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+
+        /** @noinspection UnusedFunctionResultInspection */
+        file_get_contents(__FILE__);
+
+        self::assertCount(1, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+
+        self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
     }
 }

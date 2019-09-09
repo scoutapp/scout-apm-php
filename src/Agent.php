@@ -118,10 +118,13 @@ final class Agent
             );
             $manager->launch();
 
+            $this->phpExtension->clearRecordedCalls();
+
             // It's very likely the first request after first launch of core agent will fail, since we have to wait for
             // the agent to launch
             try {
                 $this->connector->connect();
+
                 $this->logger->debug('Connected to connector.');
             } catch (FailedToConnect $failedToConnect) {
                 $this->logger->warning($failedToConnect->getMessage());

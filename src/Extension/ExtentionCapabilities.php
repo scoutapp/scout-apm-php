@@ -8,4 +8,6 @@ interface ExtentionCapabilities
 {
     /** @return RecordedCall[]|array<int, RecordedCall> */
     public function getCalls() : array;
+
+    public function clearRecordedCalls() : void;
 }

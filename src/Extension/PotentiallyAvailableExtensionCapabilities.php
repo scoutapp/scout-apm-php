@@ -27,6 +27,16 @@ final class PotentiallyAvailableExtensionCapabilities implements ExtentionCapabi
         );
     }
 
+    public function clearRecordedCalls() : void
+    {
+        if (! $this->extensionIsAvailable()) {
+            return;
+        }
+
+        /** @psalm-suppress UndefinedFunction */
+        scoutapm_get_calls();
+    }
+
     private function extensionIsAvailable() : bool
     {
         return extension_loaded('scoutapm')
