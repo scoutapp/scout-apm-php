@@ -20,7 +20,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
 
         // First call is to clear any existing logged calls from the extension so we are in a known state
         /** @noinspection UnusedFunctionResultInspection */
-        (new PotentiallyAvailableExtensionCapabilities())->getCalls();
+        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
     }
 
     public function testGetCallsReturnsEmptyArrayWhenExtensionNotAvailable() : void
@@ -65,14 +65,14 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
-        self::assertCount(1, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
 
         self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
 
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
-        self::assertCount(1, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
 
         self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
     }
