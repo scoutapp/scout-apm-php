@@ -35,10 +35,12 @@ jobs:
   include:
     - stage: Check coding standards
       php: 7.3
+      env: DEPENDENCIES="" PHP=""
       script: vendor/bin/phpcs
 
     - stage: Run static analysis check
       php: 7.3
+      env: DEPENDENCIES="" PHP=""
       script: vendor/bin/psalm
 
 notifications:
