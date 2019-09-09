@@ -1,9 +1,35 @@
 language: php
 
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+
+env:
+  - DEPENDENCIES="--prefer-lowest --prefer-stable" PHP=""
+  - DEPENDENCIES="--prefer-lowest --prefer-stable" PHP="ext/php-with-scoutapm.sh"
+  - DEPENDENCIES="" PHP=""
+  - DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
+
+# @todo build with extension enabled for these versions too
+matrix:
+  exclude:
+    - php: 7.1
+      env: DEPENDENCIES="--prefer-lowest --prefer-stable" PHP="ext/php-with-scoutapm.sh"
+    - php: 7.1
+      env: DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
+    - php: 7.2
+      env: DEPENDENCIES="--prefer-lowest --prefer-stable" PHP="ext/php-with-scoutapm.sh"
+    - php: 7.2
+      env: DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
+
 before_script:
   - composer self-update
   - rm composer.lock
   - composer update --prefer-dist $DEPENDENCIES
+
+script:
+  - $PHP vendor/bin/phpunit
 
 jobs:
   include:
@@ -14,50 +40,6 @@ jobs:
     - stage: Run static analysis check
       php: 7.3
       script: vendor/bin/psalm
-
-    - stage: Test on PHP 7.1 (no extension, lowest deps)
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable"
-      php: 7.1
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.1 (no extension, newest deps)
-      env: DEPENDENCIES=""
-      php: 7.1
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.2 (no extension, lowest deps)
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable"
-      php: 7.2
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.2 (no extension, newest deps)
-      env: DEPENDENCIES=""
-      php: 7.2
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.3 (no extension, lowest deps)
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable"
-      php: 7.3
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.3 (no extension, newest deps)
-      env: DEPENDENCIES=""
-      php: 7.3
-      script: vendor/bin/phpunit
-
-    - stage: Test on PHP 7.3 (WITH extension, lowest deps)
-      env: DEPENDENCIES="--prefer-lowest --prefer-stable"
-      php: 7.3
-      script:
-        - $TRAVIS_BUILD_DIR/ext/php-with-scoutapm.sh vendor/bin/phpunit
-
-    - stage: Test on PHP 7.3 (WITH extension, newest deps)
-      env: DEPENDENCIES=""
-      php: 7.3
-      script:
-        - $TRAVIS_BUILD_DIR/ext/php-with-scoutapm.sh vendor/bin/phpunit
-
-# @TODO - add .so and test runs for 7.2, 7.1 too
 
 notifications:
   on_success: never
