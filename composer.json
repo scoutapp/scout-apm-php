@@ -10,11 +10,13 @@
         "ext-json": "*",
         "ext-sockets": "*",
         "ocramius/package-versions": "^1.4",
-        "psr/log": "^1.1",
+        "psr/log": "^1.0",
         "ralouphie/getallheaders": "^2.0.5|^3.0",
-        "ramsey/uuid": "^3.7"
+        "ramsey/uuid": "^3.0",
+        "webmozart/assert": "^1.0"
     },
     "require-dev": {
+        "psr/log": "^1.1",
         "doctrine/coding-standard": "^6.0",
         "monolog/monolog": "^1.24",
         "phpunit/phpunit": "^7.5",

@@ -23,6 +23,8 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 
 // @todo needs interface
 final class Agent
@@ -53,11 +55,15 @@ final class Agent
      */
     private $isIgnored = false;
 
-    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger)
+    /** @var ExtentionCapabilities */
+    private $phpExtension;
+
+    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
     {
-        $this->config    = $configuration;
-        $this->connector = $connector;
-        $this->logger    = $logger;
+        $this->config       = $configuration;
+        $this->connector    = $connector;
+        $this->logger       = $logger;
+        $this->phpExtension = $phpExtension;
 
         $this->request = new Request();
 
@@ -81,7 +87,8 @@ final class Agent
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger()
+            $logger ?? new NullLogger(),
+            new PotentiallyAvailableExtensionCapabilities()
         );
     }
 
@@ -90,7 +97,8 @@ final class Agent
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger()
+            $logger ?? new NullLogger(),
+            new PotentiallyAvailableExtensionCapabilities()
         );
     }
 
@@ -110,10 +118,13 @@ final class Agent
             );
             $manager->launch();
 
+            $this->phpExtension->clearRecordedCalls();
+
             // It's very likely the first request after first launch of core agent will fail, since we have to wait for
             // the agent to launch
             try {
                 $this->connector->connect();
+
                 $this->logger->debug('Connected to connector.');
             } catch (FailedToConnect $failedToConnect) {
                 $this->logger->warning($failedToConnect->getMessage());
@@ -150,6 +161,8 @@ final class Agent
             return new Span(new Request(), 'Ignored', RequestId::new());
         }
 
+        $this->addSpansFromExtension();
+
         return $this->request->startSpan($operation, $overrideTimestamp);
     }
 
@@ -159,7 +172,21 @@ final class Agent
             return;
         }
 
+        $this->addSpansFromExtension();
+
         $this->request->stopSpan();
+    }
+
+    private function addSpansFromExtension() : void
+    {
+        if ($this->request === null) {
+            return;
+        }
+
+        foreach ($this->phpExtension->getCalls() as $recordedCall) {
+            $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
+            $this->request->stopSpan($recordedCall->timeExited());
+        }
     }
 
     /** @return mixed */
