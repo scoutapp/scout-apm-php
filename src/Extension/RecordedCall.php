@@ -20,12 +20,21 @@ final class RecordedCall
     /** @var float */
     private $timeExited;
 
-    private function __construct(string $function, float $timeTakenInSeconds, float $timeEntered, float $timeExited)
-    {
+    /** @var mixed[] */
+    private $arguments;
+
+    private function __construct(
+        string $function,
+        float $timeTakenInSeconds,
+        float $timeEntered,
+        float $timeExited,
+        array $arguments
+    ) {
         $this->function           = $function;
         $this->timeTakenInSeconds = $timeTakenInSeconds;
         $this->timeEntered        = $timeEntered;
         $this->timeExited         = $timeExited;
+        $this->arguments          = $arguments;
     }
 
     /**
@@ -39,12 +48,15 @@ final class RecordedCall
         Assert::keyExists($extensionCall, 'entered');
         Assert::keyExists($extensionCall, 'exited');
         Assert::keyExists($extensionCall, 'time_taken');
+        Assert::keyExists($extensionCall, 'argv');
+        Assert::isArray($extensionCall['argv']);
 
         return new self(
             (string) $extensionCall['function'],
             (float) $extensionCall['time_taken'],
             (float) $extensionCall['entered'],
-            (float) $extensionCall['exited']
+            (float) $extensionCall['exited'],
+            $extensionCall['argv']
         );
     }
 
@@ -66,5 +78,10 @@ final class RecordedCall
     public function timeExited() : float
     {
         return $this->timeExited;
+    }
+
+    public function arguments() : array
+    {
+        return $this->arguments;
     }
 }
