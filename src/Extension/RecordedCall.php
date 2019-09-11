@@ -23,6 +23,7 @@ final class RecordedCall
     /** @var mixed[] */
     private $arguments;
 
+    /** @param mixed[] $arguments */
     private function __construct(
         string $function,
         float $timeTakenInSeconds,
@@ -38,9 +39,11 @@ final class RecordedCall
     }
 
     /**
-     * @param string[]|float[]|array<string, (string|float)> $extensionCall
+     * @param string[]|float[]|array<string, (string|float|mixed[])> $extensionCall
      *
      * @return RecordedCall
+     *
+     * @psalm-param array{function:string, entered:float, exited: float, time_taken: float, argv: mixed[]} $extensionCall
      */
     public static function fromExtensionLoggedCallArray(array $extensionCall) : self
     {
@@ -49,7 +52,6 @@ final class RecordedCall
         Assert::keyExists($extensionCall, 'exited');
         Assert::keyExists($extensionCall, 'time_taken');
         Assert::keyExists($extensionCall, 'argv');
-        Assert::isArray($extensionCall['argv']);
 
         return new self(
             (string) $extensionCall['function'],
@@ -80,6 +82,7 @@ final class RecordedCall
         return $this->timeExited;
     }
 
+    /** @return mixed[] */
     public function arguments() : array
     {
         return $this->arguments;
