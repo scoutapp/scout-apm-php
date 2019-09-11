@@ -6,6 +6,16 @@
 
 ### Fixed
 
+
+## [0.2.0] 2019-09-11
+
+### Changed
+
+- Internal data model now perserves order (#47)
+- Loosen several depencency version requirements (#50)
+- Licensed as MIT
+- Initial support for Scout Native Extension (#42, #54)
+
 ## [0.1.1] 2019-08-22
 
 ### Changed
