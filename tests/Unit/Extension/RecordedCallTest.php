@@ -27,11 +27,13 @@ final class RecordedCallTest extends TestCase
             'entered' => $entered,
             'exited' => $exited,
             'time_taken' => $timeTaken,
+            'argv' => [],
         ]);
 
         self::assertSame($entered, $call->timeEntered());
         self::assertSame($exited, $call->timeExited());
         self::assertSame($timeTaken, $call->timeTakenInSeconds());
         self::assertSame($function, $call->functionName());
+        self::assertSame([], $call->arguments());
     }
 }
