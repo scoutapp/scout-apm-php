@@ -10,6 +10,7 @@ use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Connector\SocketConnector;
+use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use function file_get_contents;
 use function getenv;
 use function gethostname;
@@ -68,6 +69,8 @@ final class AgentTest extends TestCase
         $agent = Agent::fromConfig($config, $this->logger, $connector);
 
         $agent->connect();
+
+        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
 
         $agent->webTransaction('Yay', static function () use ($agent) : void {
             file_get_contents(__FILE__);
