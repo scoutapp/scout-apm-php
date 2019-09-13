@@ -27,11 +27,56 @@ final class RecordedCallTest extends TestCase
             'entered' => $entered,
             'exited' => $exited,
             'time_taken' => $timeTaken,
+            'argv' => [],
         ]);
 
         self::assertSame($entered, $call->timeEntered());
         self::assertSame($exited, $call->timeExited());
         self::assertSame($timeTaken, $call->timeTakenInSeconds());
         self::assertSame($function, $call->functionName());
+        self::assertSame([], $call->filteredArguments());
+    }
+
+    /**
+     * @return string[][]|string[][][]|array<string, array<string, (string|array<string, string>)>>
+     */
+    public function filteredArgumentsDataProvider() : array
+    {
+        return [
+            'file_get_contents' => [
+                'recordedFunctionName' => 'file_get_contents',
+                'expectedFilteredArguments' => ['url' => 'a'],
+            ],
+            'password_hash' => [
+                'recordedFunctionName' => 'password_hashj',
+                'expectedFilteredArguments' => [],
+            ],
+        ];
+    }
+
+    /**
+     * @param mixed[] $expectedFilteredArguments
+     *
+     * @throws Exception
+     *
+     * @dataProvider filteredArgumentsDataProvider
+     */
+    public function testOnlyFilteredArgumentsAreReturned(
+        string $recordedFunctionName,
+        array $expectedFilteredArguments
+    ) : void {
+        $entered = microtime(true) + random_int(1, 5);
+        $exited  = microtime(true) + random_int(6, 10);
+
+        self::assertEquals(
+            $expectedFilteredArguments,
+            RecordedCall::fromExtensionLoggedCallArray([
+                'function' => $recordedFunctionName,
+                'entered' => $entered,
+                'exited' => $exited,
+                'time_taken' => $exited - $entered,
+                'argv' => ['a', 'b', 'c', 'd', 'e', 'f'],
+            ])->filteredArguments()
+        );
     }
 }
