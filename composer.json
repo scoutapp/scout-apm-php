@@ -9,6 +9,8 @@
         "php": ">=7.1.0,<7.5.0",
         "ext-json": "*",
         "ext-sockets": "*",
+        "ext-zlib": "*",
+        "ext-openssl": "*",
         "ocramius/package-versions": "^1.4",
         "psr/log": "^1.0",
         "ralouphie/getallheaders": "^2.0.5|^3.0",
@@ -24,7 +26,8 @@
         "vimeo/psalm": "^3.4"
     },
     "suggest": {
-        "ext-xdebug": "Required for processing of request headers"
+        "ext-xdebug": "Required for processing of request headers",
+        "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions"
     },
     "autoload": {
         "psr-4": {

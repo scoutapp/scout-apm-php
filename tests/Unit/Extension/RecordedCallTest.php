@@ -37,6 +37,9 @@ final class RecordedCallTest extends TestCase
         self::assertSame([], $call->filteredArguments());
     }
 
+    /**
+     * @return string[][]|string[][][]|array<string, array<string, (string|array<string, string>)>>
+     */
     public function filteredArgumentsDataProvider() : array
     {
         return [
@@ -53,15 +56,17 @@ final class RecordedCallTest extends TestCase
 
     /**
      * @param mixed[] $expectedFilteredArguments
+     *
+     * @throws Exception
+     *
      * @dataProvider filteredArgumentsDataProvider
-     * @throws \Exception
      */
     public function testOnlyFilteredArgumentsAreReturned(
         string $recordedFunctionName,
         array $expectedFilteredArguments
     ) : void {
-        $entered   = microtime(true) + random_int(1, 5);
-        $exited    = microtime(true) + random_int(6, 10);
+        $entered = microtime(true) + random_int(1, 5);
+        $exited  = microtime(true) + random_int(6, 10);
 
         self::assertEquals(
             $expectedFilteredArguments,
