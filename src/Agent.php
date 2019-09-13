@@ -185,7 +185,7 @@ final class Agent
 
         foreach ($this->phpExtension->getCalls() as $recordedCall) {
             $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
-            $callSpan->tag('arguments', $recordedCall->arguments());
+            $callSpan->tag('desc', $recordedCall->filteredArguments());
             $this->request->stopSpan($recordedCall->timeExited());
         }
     }

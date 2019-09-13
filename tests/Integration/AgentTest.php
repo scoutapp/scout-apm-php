@@ -132,7 +132,7 @@ final class AgentTest extends TestCase
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
                         $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'arguments', 'value' => [__FILE__]], next($commands), null);
+                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'desc', 'value' => ['url' => __FILE__]], next($commands), null);
                         $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
@@ -140,7 +140,7 @@ final class AgentTest extends TestCase
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
                         $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'arguments', 'value' => [__FILE__]], next($commands), null);
+                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'desc', 'value' => ['url' => __FILE__]], next($commands), null);
                         $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
@@ -148,7 +148,7 @@ final class AgentTest extends TestCase
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
                         $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'arguments', 'value' => [__FILE__]], next($commands), null);
+                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'desc', 'value' => ['url' => __FILE__]], next($commands), null);
                         $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
@@ -160,7 +160,7 @@ final class AgentTest extends TestCase
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
                         $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'arguments', 'value' => [__FILE__]], next($commands), null);
+                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'desc', 'value' => ['url' => __FILE__]], next($commands), null);
                         $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 

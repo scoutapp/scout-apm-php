@@ -82,9 +82,20 @@ final class RecordedCall
         return $this->timeExited;
     }
 
-    /** @return mixed[] */
-    public function arguments() : array
+    /**
+     * We should never return the full set of arguments, only specific arguments for specific functions. This is to
+     * avoid potentially spilling personally identifiable information.
+     *
+     * @return mixed[]
+     */
+    public function filteredArguments() : array
     {
-        return $this->arguments;
+        if ($this->function === 'file_get_contents') {
+            return [
+                'url' => (string) $this->arguments[0],
+            ];
+        }
+
+        return [];
     }
 }
