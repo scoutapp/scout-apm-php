@@ -26,7 +26,6 @@
         "vimeo/psalm": "^3.4"
     },
     "suggest": {
-        "ext-xdebug": "Required for processing of request headers",
         "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions"
     },
     "autoload": {
@@ -46,8 +45,5 @@
         },
         "preferred-install": "dist",
         "sort-packages": true
-    },
-    "provide": {
-        "psr/log-implementation": "1.0.0"
     }
 }
