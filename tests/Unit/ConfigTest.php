@@ -38,6 +38,8 @@ final class ConfigTest extends TestCase
         putenv('SCOUT_API_VERSION=viaenvvar');
 
         self::assertSame('viaenvvar', $config->get('api_version'));
+
+        putenv('SCOUT_API_VERSION');
     }
 
     public function testBooleanCoercionOfMonitor() : void
