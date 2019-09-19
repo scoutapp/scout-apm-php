@@ -7,7 +7,6 @@ namespace Scoutapm;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
-use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Scoutapm\Config\IgnoredEndpoints;
@@ -133,25 +132,13 @@ final class Agent implements ScoutApmAgent
         }
     }
 
-    /**
-     * Returns true/false on if the agent should attempt to start and collect data.
-     */
+    /** {@inheritDoc} */
     public function enabled() : bool
     {
         return $this->config->get('monitor');
     }
 
-    /**
-     * Starts a fromRequest span on the current request.
-     *
-     * NOTE: Do not call stop on the span itself, use the stopSpan() function
-     * here to ensure the whole system knows its stopped
-     *
-     * @param string $operation         The "name" of the span, something like "Controller/User" or "SQL/Query"
-     * @param ?float $overrideTimestamp If you need to set the start time to something specific
-     *
-     * @throws Exception
-     */
+    /** {@inheritDoc} */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
         if ($this->request === null) {
@@ -189,7 +176,7 @@ final class Agent implements ScoutApmAgent
         }
     }
 
-    /** @return mixed */
+    /** {@inheritDoc} */
     public function instrument(string $type, string $name, Closure $block)
     {
         $span = $this->startSpan($type . '/' . $name);
@@ -201,13 +188,13 @@ final class Agent implements ScoutApmAgent
         }
     }
 
-    /** @return mixed */
+    /** {@inheritDoc} */
     public function webTransaction(string $name, Closure $block)
     {
         return $this->instrument('Controller', $name, $block);
     }
 
-    /** @return mixed */
+    /** {@inheritDoc} */
     public function backgroundTransaction(string $name, Closure $block)
     {
         return $this->instrument('Job', $name, $block);
@@ -227,31 +214,20 @@ final class Agent implements ScoutApmAgent
         $this->request->tag($tag, $value);
     }
 
-    /**
-     * Check if a given URL was configured as ignored.
-     * Does not alter the running request. If you wish to abort tracing of this
-     * request, use ignore()
-     */
+    /** {@inheritDoc} */
     public function ignored(string $path) : bool
     {
         return $this->ignoredEndpoints->ignored($path);
     }
 
-    /**
-     * Mark the running request as ignored. Triggers optimizations in various
-     * tracing and tagging methods to turn them into NOOPs
-     */
+    /** {@inheritDoc} */
     public function ignore() : void
     {
         $this->request   = null;
         $this->isIgnored = true;
     }
 
-    /**
-     * Returns true only if the request was sent onward to the core agent. False otherwise.
-     *
-     * @throws Exception
-     */
+    /** {@inheritDoc} */
     public function send() : bool
     {
         // Don't send if the agent is not enabled.
@@ -308,7 +284,7 @@ final class Agent implements ScoutApmAgent
     }
 
     /**
-     * You probably don't need this, it's useful in testing
+     * {@inheritDoc}
      *
      * @internal
      * @deprecated
