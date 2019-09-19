@@ -26,8 +26,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 
-// @todo needs interface
-final class Agent
+final class Agent implements ScoutApmAgent
 {
     /** @var Config */
     private $config;
