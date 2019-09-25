@@ -7,9 +7,11 @@ namespace Scoutapm\CoreAgent;
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Throwable;
+use function array_map;
 use function exec;
 use function file_get_contents;
 use function hash;
+use function implode;
 
 /** @internal */
 final class AutomaticDownloadAndLaunchManager implements Manager
@@ -106,15 +108,40 @@ final class AutomaticDownloadAndLaunchManager implements Manager
     {
         $this->logger->debug('Core Agent Launch in Progress');
         try {
-            // @todo ESCAPE THIS !!!
-            $command = $this->agentBinary() . ' ' .
-                $this->daemonizeFlag() . ' ' .
-                $this->logLevel() . ' ' .
-                $this->logFile() . ' ' .
-                $this->configFile() . ' ' .
-                $this->socketPath();
-            $this->logger->debug('Core Agent: ' . $command);
-            exec($command);
+            $logLevel   = $this->config->get('logLevel');
+            $logFile    = $this->config->get('logFile');
+            $configFile = $this->config->get('configFile');
+
+            if ($logFile === null) {
+                $logFile = '/dev/null';
+            }
+
+            $commandParts = [
+                $this->coreAgentBinPath,
+                'start',
+                '--daemonize',
+                'true',
+                '--log-file',
+                $logFile,
+            ];
+
+            if ($logLevel !== null) {
+                $commandParts[] = '--log-level';
+                $commandParts[] = $logLevel;
+            }
+
+            if ($configFile !== null) {
+                $commandParts[] = '--config-file';
+                $commandParts[] = $configFile;
+            }
+
+            $commandParts[] = '--socket';
+            $commandParts[] = $this->config->get('socket_path');
+
+            $escapedCommand = implode(' ', array_map('escapeshellarg', $commandParts));
+
+            $this->logger->debug('Core Agent: ' . $escapedCommand);
+            exec($escapedCommand);
 
             return true;
         } catch (Throwable $e) {
@@ -122,62 +149,5 @@ final class AutomaticDownloadAndLaunchManager implements Manager
             // logger.error("Error running Core Agent: %r", e);
             return false;
         }
-    }
-
-    private function agentBinary() : string
-    {
-        // @todo should this be an exception...?
-        if ($this->coreAgentBinPath === null) {
-            return ' start';
-        }
-
-        return $this->coreAgentBinPath . ' start';
-    }
-
-    private function daemonizeFlag() : string
-    {
-        return '--daemonize true';
-    }
-
-    private function logLevel() : string
-    {
-        $log_level = $this->config->get('logLevel');
-        if ($log_level !== null) {
-            return '--log-level ' . $log_level;
-        }
-
-        return '';
-    }
-
-    /**
-     * Core Agent log file. Does not affect any logging in the PHP side of the agent. Useful only for debugging purposes.
-     */
-    private function logFile() : string
-    {
-        $log_file = $this->config->get('logFile');
-        if ($log_file !== null) {
-            return '--log-file ' . $log_file;
-        }
-
-        return '';
-    }
-
-    /**
-     * Allow a config file to be passed (this is distinct from the php configuration, this is only used for core-agent
-     * specific configs, mostly for debugging, or other niche cases)
-     */
-    private function configFile() : string
-    {
-        $config = $this->config->get('configFile');
-        if ($config !== null) {
-            return '--config-file ' . $config;
-        }
-
-        return '';
-    }
-
-    private function socketPath() : string
-    {
-        return '--socket ' . $this->config->get('socket_path');
     }
 }
