@@ -6,6 +6,11 @@
 
 ### Fixed
 
+## [0.2.1] 2019-09-25
+
+### Changed
+
+- Lock CoreAgent version to 1.2.2
 
 ## [0.2.0] 2019-09-11
 
