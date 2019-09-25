@@ -6,15 +6,19 @@ namespace Scoutapm\CoreAgent;
 
 use PharData;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Throwable;
 use function basename;
 use function copy;
 use function dirname;
 use function fclose;
+use function file_exists;
 use function filectime;
 use function fopen;
 use function is_dir;
 use function mkdir;
+use function sprintf;
+use function str_replace;
 use function time;
 use function unlink;
 
@@ -58,7 +62,22 @@ class Downloader
         $this->coreAgentFullName   = $coreAgentFullName;
         $this->stale_download_secs = 120;
 
-        $this->package_location   = $coreAgentDir . '/' . $coreAgentFullName . '.tgz';
+        /**
+         * To avoid issues completely with inconsistent handling of PharData::decompress() detected filenames (due to
+         * the presence of `.` in the Core Agent version (and thus, the `$coreAgentFullName` value), replace `.` in the
+         * filename with underscores.
+         *
+         * Otherwise, in some versions of PHP, the extracted tar name is:
+         *
+         *     scout_apm_core-v1.tar
+         *
+         * Instead of the expected:
+         *
+         *     scout_apm_core-v1.2.1-x86_64-unknown-linux-gnu.tar
+         *
+         * @link https://bugs.php.net/bug.php?id=58852
+         */
+        $this->package_location   = $coreAgentDir . '/' . str_replace('.', '_', $coreAgentFullName) . '.tgz';
         $this->download_lock_path = $coreAgentDir . '/download.lock';
         $this->downloadUrl        = $downloadUrl;
     }
@@ -138,21 +157,37 @@ class Downloader
 
     private function downloadPackage() : void
     {
-        copy($this->fullUrl(), $this->package_location);
+        $fullUrl = $this->fullUrl();
+        copy($fullUrl, $this->package_location);
+
+        if (! file_exists($this->package_location)) {
+            throw new RuntimeException(sprintf(
+                'Downloaded file did not exist (tried downloading %s to %s)',
+                $fullUrl,
+                $this->package_location
+            ));
+        }
     }
 
     private function untar() : void
     {
+        $tgzFilename = $this->package_location;
         $destination = $this->coreAgentDir;
 
-        // Uncompress the .tgz
-        $phar = new PharData($this->package_location);
-        $phar->decompress();
+        (new PharData($tgzFilename))->decompress();
+
+        $tarFilename = dirname($tgzFilename) . '/' . basename($tgzFilename, '.tgz') . '.tar';
+
+        if (! file_exists($tarFilename)) {
+            throw new RuntimeException(sprintf(
+                'Failed to extract tar file "%s" from downloaded archive "%s"',
+                $tarFilename,
+                $tgzFilename
+            ));
+        }
 
         // Extract it to destination
-        $tar_location = dirname($this->package_location) . '/' . basename($this->package_location, '.tgz') . '.tar';
-        $phar         = new PharData($tar_location);
-        $phar->extractTo($destination);
+        (new PharData($tarFilename))->extractTo($destination);
     }
 
     /**
