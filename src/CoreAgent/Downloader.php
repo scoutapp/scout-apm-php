@@ -138,7 +138,16 @@ class Downloader
 
     private function downloadPackage() : void
     {
-        copy($this->fullUrl(), $this->package_location);
+        $fullUrl = $this->fullUrl();
+        copy($fullUrl, $this->package_location);
+
+        if (!file_exists($this->package_location)) {
+            throw new \RuntimeException(sprintf(
+                'Downloaded file did not exist (tried downloading %s to %s)',
+                $fullUrl,
+                $this->package_location
+            ));
+        }
     }
 
     private function untar() : void
