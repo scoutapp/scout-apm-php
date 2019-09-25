@@ -18,8 +18,7 @@ use function fopen;
 use function is_dir;
 use function mkdir;
 use function sprintf;
-use function strpos;
-use function substr;
+use function str_replace;
 use function time;
 use function unlink;
 
@@ -63,7 +62,22 @@ class Downloader
         $this->coreAgentFullName   = $coreAgentFullName;
         $this->stale_download_secs = 120;
 
-        $this->package_location   = $coreAgentDir . '/' . $coreAgentFullName . '.tgz';
+        /**
+         * To avoid issues completely with inconsistent handling of PharData::decompress() detected filenames (due to
+         * the presence of `.` in the Core Agent version (and thus, the `$coreAgentFullName` value), replace `.` in the
+         * filename with underscores.
+         *
+         * Otherwise, in some versions of PHP, the extracted tar name is:
+         *
+         *     scout_apm_core-v1.tar
+         *
+         * Instead of the expected:
+         *
+         *     scout_apm_core-v1.2.1-x86_64-unknown-linux-gnu.tar
+         *
+         * @link https://bugs.php.net/bug.php?id=58852
+         */
+        $this->package_location   = $coreAgentDir . '/' . str_replace('.', '_', $coreAgentFullName) . '.tgz';
         $this->download_lock_path = $coreAgentDir . '/download.lock';
         $this->downloadUrl        = $downloadUrl;
     }
@@ -160,30 +174,9 @@ class Downloader
         $tgzFilename = $this->package_location;
         $destination = $this->coreAgentDir;
 
-        $packageLocationWithoutExtension = basename($tgzFilename, '.tgz');
+        (new PharData($tgzFilename))->decompress();
 
-        /**
-         * `decompress()` considers anything after the first `.` as the "extension", so provide a full extension. This
-         * results in a tgz filename of:
-         *
-         *     scout_apm_core-v1.2.1-x86_64-unknown-linux-gnu.tgz
-         *
-         * To be decompressed to:
-         *
-         *     scout_apm_core-v1.tar
-         *
-         * So by specifying the extension as `.2.1-x86_64-unknown-linux-gnu.tar` (instead of the default of `.tar`) to
-         * the `decompress()` function, the expected output name would be used instead:
-         *
-         *     scout_apm_core-v1.2.1-x86_64-unknown-linux-gnu.tar
-         *
-         * @link https://bugs.php.net/bug.php?id=58852
-         */
-        (new PharData($tgzFilename))->decompress(
-            substr($packageLocationWithoutExtension, strpos($packageLocationWithoutExtension, '.')) . '.tar'
-        );
-
-        $tarFilename = dirname($tgzFilename) . '/' . $packageLocationWithoutExtension . '.tar';
+        $tarFilename = dirname($tgzFilename) . '/' . basename($tgzFilename, '.tgz') . '.tar';
 
         if (! file_exists($tarFilename)) {
             throw new RuntimeException(sprintf(
