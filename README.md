@@ -1,6 +1,6 @@
 # Scout PHP APM Agent
 
-[![Build Status](https://travis-ci.com/scoutapp/scout-apm-php.svg?branch=master)](https://travis-ci.com/scoutapp/scout-apm-php)
+[![Build Status](https://travis-ci.com/scoutapp/scout-apm-php.svg?branch=master)](https://travis-ci.com/scoutapp/scout-apm-php) [![Latest Stable Version](https://poser.pugx.org/scoutapp/scout-apm-php/v/stable)](https://packagist.org/packages/scoutapp/scout-apm-php) [![License](https://poser.pugx.org/scoutapp/scout-apm-php/license)](https://packagist.org/packages/scoutapp/scout-apm-php)
 
 Email us at support@ScoutAPM.com to get on the beta invite list!
 
