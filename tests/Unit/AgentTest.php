@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Events\Span\Span;
@@ -14,6 +17,38 @@ use function end;
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
 {
+    public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages() : void
+    {
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(self::never())
+            ->method('log');
+
+        $config = new Config();
+        $config->set('log_level', LogLevel::WARNING);
+        $config->set('monitor', 'false');
+
+        $agent = Agent::fromConfig($config, $logger);
+        $agent->connect();
+    }
+
+    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration() : void
+    {
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(self::once())
+            ->method('log')
+            ->with(LogLevel::DEBUG, 'Scout Core Agent Connected', []);
+
+        $config = new Config();
+        $config->set('monitor', 'false');
+
+        $agent = Agent::fromConfig($config, $logger);
+        $agent->connect();
+    }
+
     public function testFullAgentSequence() : void
     {
         $agent = Agent::fromDefaults();

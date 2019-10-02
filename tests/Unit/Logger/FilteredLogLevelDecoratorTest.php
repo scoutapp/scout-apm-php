@@ -14,7 +14,7 @@ use function uniqid;
 /** @covers \Scoutapm\Logger\FilteredLogLevelDecorator */
 final class FilteredLogLevelDecoratorTest extends TestCase
 {
-    /** @var LoggerInterface|MockObject */
+    /** @var LoggerInterface&MockObject */
     private $decoratedLogger;
 
     public function setUp() : void

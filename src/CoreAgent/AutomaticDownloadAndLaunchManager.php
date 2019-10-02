@@ -108,7 +108,7 @@ final class AutomaticDownloadAndLaunchManager implements Manager
     {
         $this->logger->debug('Core Agent Launch in Progress');
         try {
-            $logLevel   = $this->config->get('log_level');
+            $logLevel   = $this->config->get('agent_log_level');
             $logFile    = $this->config->get('log_file');
             $configFile = $this->config->get('config_file');
 

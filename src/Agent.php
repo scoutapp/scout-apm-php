@@ -24,6 +24,7 @@ use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\Logger\FilteredLogLevelDecorator;
 
 final class Agent implements ScoutApmAgent
 {
@@ -62,6 +63,13 @@ final class Agent implements ScoutApmAgent
         $this->connector    = $connector;
         $this->logger       = $logger;
         $this->phpExtension = $phpExtension;
+
+        if (! $this->logger instanceof FilteredLogLevelDecorator) {
+            $this->logger = new FilteredLogLevelDecorator(
+                $this->logger,
+                $this->config->get('log_level')
+            );
+        }
 
         $this->request = new Request();
 
