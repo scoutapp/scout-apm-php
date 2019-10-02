@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Logger;
 
+use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
+use function str_repeat;
 use function uniqid;
 
 /** @covers \Scoutapm\Logger\FilteredLogLevelDecorator */
@@ -48,5 +50,23 @@ final class FilteredLogLevelDecoratorTest extends TestCase
             ->with(LogLevel::WARNING, $logMessage, $context);
 
         $decorator->warning($logMessage, $context);
+    }
+
+    /** @return array<int, array<int, string>> */
+    public function invalidLogLevelProvider() : array
+    {
+        return [
+            ['lizard'],
+            [''],
+            [uniqid('randomString', true)],
+            [str_repeat('a', 1024)],
+        ];
+    }
+
+    /** @dataProvider invalidLogLevelProvider */
+    public function testInvalidLogLevelsAreRejected(string $invalidLogLevel) : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);
     }
 }

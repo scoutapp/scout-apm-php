@@ -7,6 +7,7 @@ namespace Scoutapm\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
+use Webmozart\Assert\Assert;
 use function strtolower;
 
 /**
@@ -38,6 +39,8 @@ final class FilteredLogLevelDecorator implements LoggerInterface
      */
     public function __construct(LoggerInterface $realLogger, string $minimumLogLevel)
     {
+        Assert::keyExists(self::LOG_LEVEL_ORDER, $minimumLogLevel);
+
         $this->minimumLogLevel = self::LOG_LEVEL_ORDER[strtolower($minimumLogLevel)];
         $this->realLogger      = $realLogger;
     }
