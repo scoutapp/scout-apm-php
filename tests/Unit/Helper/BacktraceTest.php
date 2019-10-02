@@ -6,6 +6,7 @@ namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Helper\Backtrace;
+use function array_keys;
 
 /** @covers \Scoutapm\Helper\Backtrace */
 final class BacktraceTest extends TestCase
