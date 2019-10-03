@@ -4,7 +4,26 @@
 
 ### Added
 
+ - New `\Scoutapm\Config\ConfigKey` class containing `public const`s for configuration key names (#83)
+ - Added config key `log_level` which overrides Scout APM's minimum log level (#83)
+
 ### Fixed
+
+### Changed
+
+ - **[BC]** Renamed the following configuration keys (#83)
+   - `log_level` => `core_agent_log_level`
+   - `log_file` => `core_agent_log_file`
+   - `config_file` => `core_agent_config_file`
+   - `socket_path` => `core_agent_socket_path`
+   - `download_url` => `core_agent_download_url`
+ - Improved stack trace filtering (#61)
+
+## [0.2.2] 2019-09-26
+
+### Fixed
+
+ - Corrected naming of core agent config values (#80)
 
 ## [0.2.1] 2019-09-25
 
@@ -16,8 +35,8 @@
 
 ### Changed
 
-- Internal data model now perserves order (#47)
-- Loosen several depencency version requirements (#50)
+- Internal data model now preserves order (#47)
+- Loosen several dependency version requirements (#50)
 - Licensed as MIT
 - Initial support for Scout Native Extension (#42, #54)
 
