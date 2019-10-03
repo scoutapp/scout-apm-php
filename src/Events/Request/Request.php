@@ -11,7 +11,6 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
-use function array_slice;
 
 /** @internal */
 class Request implements CommandWithChildren
@@ -78,9 +77,7 @@ class Request implements CommandWithChildren
         $command->stop($overrideTimestamp);
 
         if ($command->duration() > self::STACK_TRACE_THRESHOLD_SECONDS) {
-            $stack = Backtrace::capture();
-            $stack = array_slice($stack, 4);
-            $command->tag('stack', $stack);
+            $command->tag('stack', Backtrace::capture());
         }
 
         $this->currentCommand = $command->parent();
