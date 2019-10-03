@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use function php_uname;
 
 /** @internal */
@@ -44,11 +45,11 @@ class DerivedSource
     public function get(string $key)
     {
         switch ($key) {
-            case 'socket_path':
+            case ConfigKey::CORE_AGENT_SOCKET_PATH:
                 return $this->socketPath();
-            case 'core_agent_full_name':
+            case ConfigKey::CORE_AGENT_FULL_NAME:
                 return $this->coreAgentFullName();
-            case 'core_agent_triple':
+            case ConfigKey::CORE_AGENT_TRIPLE:
                 return $this->coreAgentTriple();
             case 'testing':
                 return $this->testing();
@@ -59,8 +60,8 @@ class DerivedSource
 
     private function socketPath() : string
     {
-        $dir      = $this->config->get('core_agent_dir');
-        $fullName = $this->config->get('core_agent_full_name');
+        $dir      = $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY);
+        $fullName = $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME);
 
         return $dir . '/' . $fullName . '/scout-agent.sock';
     }
@@ -68,8 +69,8 @@ class DerivedSource
     private function coreAgentFullName() : string
     {
         $name    = 'scout_apm_core';
-        $version = $this->config->get('core_agent_version');
-        $triple  = $this->config->get('core_agent_triple');
+        $version = $this->config->get(ConfigKey::CORE_AGENT_VERSION);
+        $triple  = $this->config->get(ConfigKey::CORE_AGENT_TRIPLE);
 
         return $name . '-' . $version . '-' . $triple;
     }
@@ -100,7 +101,7 @@ class DerivedSource
      */
     private function testing() : string
     {
-        $version = $this->config->get('api_version');
+        $version = $this->config->get(ConfigKey::API_VERSION);
 
         return 'derived api version: ' . $version;
     }

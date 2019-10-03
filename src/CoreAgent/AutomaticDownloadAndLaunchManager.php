@@ -6,12 +6,14 @@ namespace Scoutapm\CoreAgent;
 
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Throwable;
 use function array_map;
 use function exec;
 use function file_get_contents;
 use function hash;
 use function implode;
+use function sprintf;
 
 /** @internal */
 final class AutomaticDownloadAndLaunchManager implements Manager
@@ -35,24 +37,28 @@ final class AutomaticDownloadAndLaunchManager implements Manager
     {
         $this->config       = $config;
         $this->logger       = $logger;
-        $this->coreAgentDir = $config->get('core_agent_dir') . '/' . $config->get('core_agent_full_name');
+        $this->coreAgentDir = $config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $config->get(ConfigKey::CORE_AGENT_FULL_NAME);
 
         $this->downloader = $downloader;
     }
 
     public function launch() : bool
     {
-        if (! $this->config->get('core_agent_launch')) {
-            $this->logger->debug("Not attempting to launch Core Agent due to 'core_agent_launch' setting.");
+        if (! $this->config->get(ConfigKey::CORE_AGENT_LAUNCH_ENABLED)) {
+            $this->logger->debug(sprintf(
+                "Not attempting to launch Core Agent due to '%s' setting.",
+                ConfigKey::CORE_AGENT_LAUNCH_ENABLED
+            ));
 
             return false;
         }
 
         if (! $this->verify()) {
-            if (! $this->config->get('core_agent_download')) {
-                $this->logger->debug(
-                    "Not attempting to download Core Agent due to 'core_agent_download' setting."
-                );
+            if (! $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED)) {
+                $this->logger->debug(sprintf(
+                    "Not attempting to download Core Agent due to '%s' setting.",
+                    ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED
+                ));
 
                 return false;
             }
@@ -108,9 +114,9 @@ final class AutomaticDownloadAndLaunchManager implements Manager
     {
         $this->logger->debug('Core Agent Launch in Progress');
         try {
-            $logLevel   = $this->config->get('agent_log_level');
-            $logFile    = $this->config->get('log_file');
-            $configFile = $this->config->get('config_file');
+            $logLevel   = $this->config->get(ConfigKey::CORE_AGENT_LOG_LEVEL);
+            $logFile    = $this->config->get(ConfigKey::CORE_AGENT_LOG_FILE);
+            $configFile = $this->config->get(ConfigKey::CORE_AGENT_CONFIG_FILE);
 
             if ($logFile === null) {
                 $logFile = '/dev/null';
@@ -136,7 +142,7 @@ final class AutomaticDownloadAndLaunchManager implements Manager
             }
 
             $commandParts[] = '--socket';
-            $commandParts[] = $this->config->get('socket_path');
+            $commandParts[] = $this->config->get(ConfigKey::CORE_AGENT_SOCKET_PATH);
 
             $escapedCommand = implode(' ', array_map('escapeshellarg', $commandParts));
 

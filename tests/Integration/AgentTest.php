@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use function file_get_contents;
@@ -64,7 +65,7 @@ final class AgentTest extends TestCase
             'monitor' => true,
         ]);
 
-        $connector = new MessageCapturingConnectorDelegator(new SocketConnector($config->get('socket_path')));
+        $connector = new MessageCapturingConnectorDelegator(new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH)));
 
         $agent = Agent::fromConfig($config, $this->logger, $connector);
 
