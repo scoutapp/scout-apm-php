@@ -39,7 +39,7 @@ final class FilteredLogLevelDecorator implements LoggerInterface
      */
     public function __construct(LoggerInterface $realLogger, string $minimumLogLevel)
     {
-        Assert::keyExists(self::LOG_LEVEL_ORDER, $minimumLogLevel);
+        Assert::keyExists(self::LOG_LEVEL_ORDER, strtolower($minimumLogLevel));
 
         $this->minimumLogLevel = self::LOG_LEVEL_ORDER[strtolower($minimumLogLevel)];
         $this->realLogger      = $realLogger;
