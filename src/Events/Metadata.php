@@ -56,7 +56,7 @@ final class Metadata implements Command
             'framework_version' => '',
             'environment' => '',
             'app_server' => '',
-            'hostname' => gethostname(),
+            'hostname' => $this->config->get(ConfigKey::HOSTNAME) ?? gethostname(),
             'database_engine' => '',
             'database_adapter' => '',
             'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',

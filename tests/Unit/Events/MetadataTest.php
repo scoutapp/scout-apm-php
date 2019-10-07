@@ -32,6 +32,7 @@ final class MetadataTest extends TestCase
             ConfigKey::SCM_SUBDIRECTORY => '/fake/scm/subdirectory',
             ConfigKey::APPLICATION_NAME => 'My amazing application',
             ConfigKey::REVISION_SHA => 'abc123',
+            ConfigKey::HOSTNAME => 'fake-hostname.scoutapm.com',
         ]);
 
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
@@ -48,7 +49,7 @@ final class MetadataTest extends TestCase
                         'framework_version' => '',
                         'environment' => '',
                         'app_server' => '',
-                        'hostname' => gethostname(),
+                        'hostname' => 'fake-hostname.scoutapm.com',
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => 'My amazing application',
