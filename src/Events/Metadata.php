@@ -18,7 +18,6 @@ use function dirname;
 use function explode;
 use function file_exists;
 use function gethostname;
-use function is_file;
 use function is_readable;
 use function is_string;
 use function realpath;
@@ -70,17 +69,17 @@ final class Metadata implements Command
     }
 
     /**
-     * Try to locate composer.json in any parent directory; it's usually a good sign of where the application root is.
+     * Try to locate a file or folder in any parent directory (upwards of this library itself)
      */
-    private function locateComposerJson() : ?string
+    private function locateFileOrFolder(string $fileOrFolder) : ?string
     {
-        // Starting 3 levels up will avoid finding scout-apm-php's own composer.json
+        // Starting 3 levels up will avoid finding scout-apm-php's own contents
         $dir        = dirname(__DIR__, 3);
         $rootOrHome = '/';
 
         while (dirname($dir) !== $dir && $dir !== $rootOrHome) {
-            $composerAttempted = $dir . '/composer.json';
-            if (file_exists($composerAttempted) && is_file($composerAttempted) && is_readable($composerAttempted)) {
+            $fileOrFolderAttempted = $dir . '/' . $fileOrFolder;
+            if (file_exists($fileOrFolderAttempted) && is_readable($fileOrFolderAttempted)) {
                 return realpath($dir);
             }
             $dir = dirname($dir);
@@ -96,7 +95,7 @@ final class Metadata implements Command
             return $applicationRootConfiguration;
         }
 
-        $composerJsonLocation = $this->locateComposerJson();
+        $composerJsonLocation = $this->locateFileOrFolder('composer.json');
         if ($composerJsonLocation !== null) {
             return $composerJsonLocation;
         }
