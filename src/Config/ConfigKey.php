@@ -12,6 +12,7 @@ abstract class ConfigKey
     public const LOG_LEVEL                   = 'log_level';
     public const API_VERSION                 = 'api_version';
     public const IGNORED_ENDPOINTS           = 'ignore';
+    public const APPLICATION_ROOT            = 'application_root';
     public const CORE_AGENT_LOG_LEVEL        = 'core_agent_log_level';
     public const CORE_AGENT_LOG_FILE         = 'core_agent_log_file';
     public const CORE_AGENT_CONFIG_FILE      = 'core_agent_config_file';

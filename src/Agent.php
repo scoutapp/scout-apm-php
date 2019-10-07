@@ -275,7 +275,8 @@ final class Agent implements ScoutApmAgent
             }
 
             if (! $this->connector->sendCommand(new Metadata(
-                new DateTimeImmutable('now', new DateTimeZone('UTC'))
+                new DateTimeImmutable('now', new DateTimeZone('UTC')),
+                $this->config
             ))) {
                 return false;
             }

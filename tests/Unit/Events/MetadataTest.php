@@ -9,6 +9,7 @@ use DateTimeZone;
 use Exception;
 use PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Config;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
@@ -25,9 +26,11 @@ final class MetadataTest extends TestCase
     /** @throws Exception */
     public function testMetadataSerializesToJson() : void
     {
+        $config = new Config();
+
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
-        $serialized = json_encode(new Metadata($time));
+        $_SERVER['DOCUMENT_ROOT'] = '/fake/app/root';
 
         self::assertEquals(
             [
@@ -53,7 +56,7 @@ final class MetadataTest extends TestCase
                             Versions::VERSIONS
                         ),
                         'paas' => '',
-                        'application_root' => '',
+                        'application_root' => '/fake/app/root',
                         'scm_subdirectory' => '',
                         'git_sha' => explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1],
                     ],
@@ -61,7 +64,7 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode($serialized, true)
+            json_decode(json_encode(new Metadata($time, $config)), true)
         );
     }
 }
