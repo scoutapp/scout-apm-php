@@ -16,7 +16,7 @@ use function array_key_exists;
 /** @internal */
 class DefaultSource
 {
-    /** @var array<string, (string|bool|array<int, string>)> */
+    /** @var array<string, (string|bool|array<int, string>|int)> */
     private $defaults;
 
     public function __construct()
@@ -37,7 +37,7 @@ class DefaultSource
      *
      * Only valid if the Source has previously returned "true" to `hasKey`
      *
-     * @return string|bool|array<int, string>|null
+     * @return string|bool|array<int, string>|int|null
      */
     public function get(string $key)
     {
@@ -49,7 +49,7 @@ class DefaultSource
      *
      * Only valid if the Source has previously returned "true" to `hasKey`
      *
-     * @return array<string, (string|bool|array<int, string>)>
+     * @return array<string, (string|bool|array<int, string>|int)>
      */
     private function getDefaultConfig() : array
     {
@@ -60,6 +60,7 @@ class DefaultSource
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => true,
             ConfigKey::CORE_AGENT_VERSION => 'v1.2.2',
             ConfigKey::CORE_AGENT_DOWNLOAD_URL => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
+            ConfigKey::CORE_AGENT_PERMISSIONS => 0777,
             ConfigKey::MONITORING_ENABLED => false,
             ConfigKey::IGNORED_ENDPOINTS => [],
             ConfigKey::LOG_LEVEL => 'debug',

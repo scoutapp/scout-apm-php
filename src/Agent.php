@@ -120,7 +120,8 @@ final class Agent implements ScoutApmAgent
                     $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
                     $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
                     $this->logger,
-                    $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL)
+                    $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL),
+                    $this->config->get(ConfigKey::CORE_AGENT_PERMISSIONS)
                 )
             );
             $manager->launch();

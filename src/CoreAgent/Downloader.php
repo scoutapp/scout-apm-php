@@ -54,8 +54,16 @@ class Downloader
     /** @var string */
     private $downloadUrl;
 
-    public function __construct(string $coreAgentDir, string $coreAgentFullName, LoggerInterface $logger, string $downloadUrl)
-    {
+    /** @var int */
+    private $coreAgentPermissions;
+
+    public function __construct(
+        string $coreAgentDir,
+        string $coreAgentFullName,
+        LoggerInterface $logger,
+        string $downloadUrl,
+        int $coreAgentPermissions
+    ) {
         $this->logger = $logger;
 
         $this->coreAgentDir        = $coreAgentDir;
@@ -77,9 +85,10 @@ class Downloader
          *
          * @link https://bugs.php.net/bug.php?id=58852
          */
-        $this->package_location   = $coreAgentDir . '/' . str_replace('.', '_', $coreAgentFullName) . '.tgz';
-        $this->download_lock_path = $coreAgentDir . '/download.lock';
-        $this->downloadUrl        = $downloadUrl;
+        $this->package_location     = $coreAgentDir . '/' . str_replace('.', '_', $coreAgentFullName) . '.tgz';
+        $this->download_lock_path   = $coreAgentDir . '/download.lock';
+        $this->downloadUrl          = $downloadUrl;
+        $this->coreAgentPermissions = $coreAgentPermissions;
     }
 
     public function download() : void
@@ -104,12 +113,13 @@ class Downloader
     private function createCoreAgentDir() : void
     {
         try {
-            $permissions = 0777; // TODO: AgentContext.instance.config.core_agent_permissions()
             $recursive   = true;
             $destination = $this->coreAgentDir;
 
-            if (! is_dir($destination)) {
-                mkdir($destination, $permissions, $recursive);
+            if (! is_dir($destination)
+                && ! mkdir($destination, $this->coreAgentPermissions, $recursive)
+                && ! is_dir($destination)) {
+                throw new RuntimeException(sprintf('Directory "%s" was not created', $destination));
             }
         } catch (Throwable $e) {
             $this->logger->error('Failed to create directory: ' . $destination);

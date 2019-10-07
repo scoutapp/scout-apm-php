@@ -27,4 +27,5 @@ abstract class ConfigKey
     public const CORE_AGENT_DOWNLOAD_ENABLED = 'core_agent_download';
     public const CORE_AGENT_VERSION          = 'core_agent_version';
     public const CORE_AGENT_TRIPLE           = 'core_agent_triple';
+    public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
 }
