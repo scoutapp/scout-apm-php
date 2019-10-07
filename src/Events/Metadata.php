@@ -59,7 +59,7 @@ final class Metadata implements Command
             'hostname' => gethostname(),
             'database_engine' => '',
             'database_adapter' => '',
-            'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME),
+            'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',
             'libraries' => $this->getLibraries(),
             'paas' => '',
             'application_root' => $this->applicationRoot(),
@@ -119,6 +119,11 @@ final class Metadata implements Command
 
     private function rootPackageGitSha() : string
     {
+        $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
+        if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
+            return $revisionShaConfiguration;
+        }
+
         return explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1];
     }
 

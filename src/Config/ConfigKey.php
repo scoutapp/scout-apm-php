@@ -14,6 +14,7 @@ abstract class ConfigKey
     public const IGNORED_ENDPOINTS           = 'ignore';
     public const APPLICATION_ROOT            = 'application_root';
     public const SCM_SUBDIRECTORY            = 'scm_subdirectory';
+    public const REVISION_SHA                = 'revision_sha';
     public const CORE_AGENT_LOG_LEVEL        = 'core_agent_log_level';
     public const CORE_AGENT_LOG_FILE         = 'core_agent_log_file';
     public const CORE_AGENT_CONFIG_FILE      = 'core_agent_config_file';
