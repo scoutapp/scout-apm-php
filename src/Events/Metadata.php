@@ -59,11 +59,11 @@ final class Metadata implements Command
             'hostname' => gethostname(),
             'database_engine' => '',
             'database_adapter' => '',
-            'application_name' => '',
+            'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME),
             'libraries' => $this->getLibraries(),
             'paas' => '',
             'application_root' => $this->applicationRoot(),
-            'scm_subdirectory' => '',
+            'scm_subdirectory' => $this->scmSubdirectory(),
             'git_sha' => $this->rootPackageGitSha(),
         ];
     }
@@ -105,6 +105,16 @@ final class Metadata implements Command
         }
 
         return $_SERVER['DOCUMENT_ROOT'];
+    }
+
+    private function scmSubdirectory() : string
+    {
+        $scmSubdirectoryConfiguration = $this->config->get(ConfigKey::SCM_SUBDIRECTORY);
+        if (is_string($scmSubdirectoryConfiguration) && $scmSubdirectoryConfiguration !== '') {
+            return $scmSubdirectoryConfiguration;
+        }
+
+        return $this->locateFileOrFolder('.git') ?? $this->applicationRoot();
     }
 
     private function rootPackageGitSha() : string

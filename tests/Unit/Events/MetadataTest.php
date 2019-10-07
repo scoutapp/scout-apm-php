@@ -10,6 +10,7 @@ use Exception;
 use PackageVersions\Versions;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
@@ -26,11 +27,13 @@ final class MetadataTest extends TestCase
     /** @throws Exception */
     public function testMetadataSerializesToJson() : void
     {
-        $config = new Config();
+        $config = Config::fromArray([
+            ConfigKey::APPLICATION_ROOT => '/fake/app/root',
+            ConfigKey::SCM_SUBDIRECTORY => '/fake/scm/subdirectory',
+            ConfigKey::APPLICATION_NAME => 'My amazing application',
+        ]);
 
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-
-        $_SERVER['DOCUMENT_ROOT'] = '/fake/app/root';
 
         self::assertEquals(
             [
@@ -47,7 +50,7 @@ final class MetadataTest extends TestCase
                         'hostname' => gethostname(),
                         'database_engine' => '',
                         'database_adapter' => '',
-                        'application_name' => '',
+                        'application_name' => 'My amazing application',
                         'libraries' => array_map(
                             static function ($package, $version) {
                                 return [$package, $version];
@@ -57,7 +60,7 @@ final class MetadataTest extends TestCase
                         ),
                         'paas' => '',
                         'application_root' => '/fake/app/root',
-                        'scm_subdirectory' => '',
+                        'scm_subdirectory' => '/fake/scm/subdirectory',
                         'git_sha' => explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1],
                     ],
                     'event_type' => 'scout.metadata',
