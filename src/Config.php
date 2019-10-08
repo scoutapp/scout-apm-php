@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\Source\DefaultSource;
 use Scoutapm\Config\Source\DerivedSource;
 use Scoutapm\Config\Source\EnvSource;
@@ -43,8 +44,8 @@ class Config
         ];
 
         $this->coercions = [
-            'monitor' => new CoerceBoolean(),
-            'ignore' => new CoerceJson(),
+            ConfigKey::MONITORING_ENABLED => new CoerceBoolean(),
+            ConfigKey::IGNORED_ENDPOINTS => new CoerceJson(),
         ];
     }
 

@@ -6,6 +6,7 @@ namespace Scoutapm\UnitTests;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use function putenv;
 
 /** @covers \Scoutapm\Config*/
@@ -16,15 +17,15 @@ final class ConfigTest extends TestCase
         $config = new Config();
 
         // Provided by the DefaultConfig
-        self::assertSame('1.0', $config->get('api_version'));
+        self::assertSame('1.0', $config->get(ConfigKey::API_VERSION));
     }
 
     public function testUserSettingsOverridesDefaults() : void
     {
         $config = new Config();
-        $config->set('api_version', 'viauserconf');
+        $config->set(ConfigKey::API_VERSION, 'viauserconf');
 
-        self::assertSame('viauserconf', $config->get('api_version'));
+        self::assertSame('viauserconf', $config->get(ConfigKey::API_VERSION));
     }
 
     public function testEnvOverridesAll() : void
@@ -32,12 +33,12 @@ final class ConfigTest extends TestCase
         $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set('api_version', 'viauserconf');
+        $config->set(ConfigKey::API_VERSION, 'viauserconf');
 
         // And set the env var
         putenv('SCOUT_API_VERSION=viaenvvar');
 
-        self::assertSame('viaenvvar', $config->get('api_version'));
+        self::assertSame('viaenvvar', $config->get(ConfigKey::API_VERSION));
 
         putenv('SCOUT_API_VERSION');
     }
@@ -47,8 +48,8 @@ final class ConfigTest extends TestCase
         $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set('monitor', 'true');
-        self::assertTrue($config->get('monitor'));
+        $config->set(ConfigKey::MONITORING_ENABLED, 'true');
+        self::assertTrue($config->get(ConfigKey::MONITORING_ENABLED));
     }
 
     public function testJSONCoercionOfIgnore() : void
@@ -56,12 +57,12 @@ final class ConfigTest extends TestCase
         $config = new Config();
 
         // Set a user config. This won't be looked up
-        $config->set('ignore', '["/foo", "/bar"]');
-        self::assertSame(['/foo', '/bar'], $config->get('ignore'));
+        $config->set(ConfigKey::IGNORED_ENDPOINTS, '["/foo", "/bar"]');
+        self::assertSame(['/foo', '/bar'], $config->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
     public function testIgnoreDefaultsToEmptyArray() : void
     {
-        self::assertSame([], (new Config())->get('ignore'));
+        self::assertSame([], (new Config())->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 }

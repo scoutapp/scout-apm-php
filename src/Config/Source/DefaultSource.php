@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config\Source;
 
+use Scoutapm\Config\ConfigKey;
 use function array_key_exists;
 
 /** @internal */
@@ -53,14 +54,15 @@ class DefaultSource
     private function getDefaultConfig() : array
     {
         return [
-            'api_version' => '1.0',
-            'core_agent_dir' => '/tmp/scout_apm_core',
-            'core_agent_download' => true,
-            'core_agent_launch' => true,
-            'core_agent_version' => 'v1.2.2',
-            'download_url' => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
-            'monitor' => false,
-            'ignore' => [],
+            ConfigKey::API_VERSION => '1.0',
+            ConfigKey::CORE_AGENT_DIRECTORY => '/tmp/scout_apm_core',
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => true,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => true,
+            ConfigKey::CORE_AGENT_VERSION => 'v1.2.2',
+            ConfigKey::CORE_AGENT_DOWNLOAD_URL => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
+            ConfigKey::MONITORING_ENABLED => false,
+            ConfigKey::IGNORED_ENDPOINTS => [],
+            ConfigKey::LOG_LEVEL => 'debug',
         ];
     }
 }

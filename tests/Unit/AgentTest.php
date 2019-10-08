@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Scoutapm\Agent;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use function end;
@@ -14,6 +18,38 @@ use function end;
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
 {
+    public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages() : void
+    {
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(self::never())
+            ->method('log');
+
+        $config = new Config();
+        $config->set(ConfigKey::LOG_LEVEL, LogLevel::WARNING);
+        $config->set(ConfigKey::MONITORING_ENABLED, 'false');
+
+        $agent = Agent::fromConfig($config, $logger);
+        $agent->connect();
+    }
+
+    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration() : void
+    {
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(self::once())
+            ->method('log')
+            ->with(LogLevel::DEBUG, 'Scout Core Agent Connected', []);
+
+        $config = new Config();
+        $config->set(ConfigKey::MONITORING_ENABLED, 'false');
+
+        $agent = Agent::fromConfig($config, $logger);
+        $agent->connect();
+    }
+
     public function testFullAgentSequence() : void
     {
         $agent = Agent::fromDefaults();
@@ -125,7 +161,7 @@ final class AgentTest extends TestCase
 
         // but a config that has monitor = true, it is set
         $config = new Config();
-        $config->set('monitor', 'true');
+        $config->set(ConfigKey::MONITORING_ENABLED, 'true');
 
         $enabledAgent = Agent::fromConfig($config);
         self::assertTrue($enabledAgent->enabled());
@@ -134,7 +170,7 @@ final class AgentTest extends TestCase
     public function testIgnoredEndpoints() : void
     {
         $config = new Config();
-        $config->set('ignore', ['/foo']);
+        $config->set(ConfigKey::IGNORED_ENDPOINTS, ['/foo']);
 
         $agent = Agent::fromConfig($config);
 

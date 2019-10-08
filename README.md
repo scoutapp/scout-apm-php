@@ -27,11 +27,12 @@ To install the ScoutAPM Agent for a specific framework, use the specific package
 ```php
 use Scoutapm\Agent;
 use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 
 $agent = Agent::fromConfig(Config::fromArray([
-    'name' => 'Your application name',
-    'key' => 'your scout key',
-    'monitor' => true,
+    ConfigKey::APPLICATION_NAME => 'Your application name',
+    ConfigKey::APPLICATION_KEY => 'your scout key',
+    ConfigKey::MONITORING_ENABLED => true,
 ]));
 // If the core agent is not already running, this will download and run it (from /tmp by default)
 $agent->connect();

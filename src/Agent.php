@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
@@ -24,6 +25,7 @@ use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\Logger\FilteredLogLevelDecorator;
 
 final class Agent implements ScoutApmAgent
 {
@@ -63,14 +65,21 @@ final class Agent implements ScoutApmAgent
         $this->logger       = $logger;
         $this->phpExtension = $phpExtension;
 
+        if (! $this->logger instanceof FilteredLogLevelDecorator) {
+            $this->logger = new FilteredLogLevelDecorator(
+                $this->logger,
+                $this->config->get(ConfigKey::LOG_LEVEL)
+            );
+        }
+
         $this->request = new Request();
 
-        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get('ignore'));
+        $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector
     {
-        return new SocketConnector($config->get('socket_path'));
+        return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
     /**
@@ -108,10 +117,10 @@ final class Agent implements ScoutApmAgent
                 $this->config,
                 $this->logger,
                 new Downloader(
-                    $this->config->get('core_agent_dir') . '/' . $this->config->get('core_agent_full_name'),
-                    $this->config->get('core_agent_full_name'),
+                    $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
+                    $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
                     $this->logger,
-                    $this->config->get('download_url')
+                    $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL)
                 )
             );
             $manager->launch();
@@ -135,7 +144,7 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function enabled() : bool
     {
-        return $this->config->get('monitor');
+        return $this->config->get(ConfigKey::MONITORING_ENABLED);
     }
 
     /** {@inheritDoc} */
@@ -258,9 +267,9 @@ final class Agent implements ScoutApmAgent
 
         try {
             if (! $this->connector->sendCommand(new RegisterMessage(
-                (string) $this->config->get('name'),
-                (string) $this->config->get('key'),
-                $this->config->get('api_version')
+                (string) $this->config->get(ConfigKey::APPLICATION_NAME),
+                (string) $this->config->get(ConfigKey::APPLICATION_KEY),
+                $this->config->get(ConfigKey::API_VERSION)
             ))) {
                 return false;
             }
