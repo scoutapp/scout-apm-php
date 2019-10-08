@@ -26,6 +26,8 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
+use function is_string;
+use function sprintf;
 
 final class Agent implements ScoutApmAgent
 {
@@ -72,9 +74,23 @@ final class Agent implements ScoutApmAgent
             );
         }
 
+        $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
+        $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
+
         $this->request = new Request();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
+    }
+
+    private function warnIfConfigValueIsNotSet(string $configKey) : void
+    {
+        $configValue = $this->config->get($configKey);
+
+        if ($configValue !== null && (! is_string($configValue) || $configValue !== '')) {
+            return;
+        }
+
+        $this->logger->warning(sprintf('Config key "%s" should be set, but it was empty', $configKey));
     }
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector
