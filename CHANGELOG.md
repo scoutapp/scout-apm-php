@@ -12,6 +12,7 @@
    - `revision_sha` (defaults to version detected by `ocramius/package-versions`)
    - `hostname` (defaults to value of `gethostname()`)
    - `core_agent_permissions` (defaults to `0777`)
+ - Added warning when `name` or `key` configurations are not set
 
 ### Fixed
 
