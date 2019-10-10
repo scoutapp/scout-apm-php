@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\IntegrationTests;
 
+use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
@@ -12,6 +13,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\Helper\Timer;
 use function file_get_contents;
 use function getenv;
 use function gethostname;
@@ -127,7 +129,14 @@ final class AgentTest extends TestCase
             'BatchCommand',
             [
                 'commands' => function (array $commands) : bool {
-                    $requestId = $this->assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), 'request_id');
+                    $requestId = $this->assertUnserializedCommandContainsPayload(
+                        'StartRequest',
+                        [
+                            'timestamp' => [$this, 'assertValidTimestamp'],
+                        ],
+                        reset($commands),
+                        'request_id'
+                    );
 
                     $controllerSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
@@ -176,7 +185,15 @@ final class AgentTest extends TestCase
                     $quxSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('FinishRequest', ['request_id' => $requestId], next($commands), null);
+                    $this->assertUnserializedCommandContainsPayload(
+                        'FinishRequest',
+                        [
+                            'request_id' => $requestId,
+                            'timestamp' => [$this, 'assertValidTimestamp'],
+                        ],
+                        next($commands),
+                        null
+                    );
 
                     return true;
                 },
@@ -185,6 +202,19 @@ final class AgentTest extends TestCase
             null
         );
     }
+
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+    /** @throws Exception */
+    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
+    private function assertValidTimestamp(?string $timestamp) : bool
+    {
+        self::assertNotNull($timestamp, 'Expected a non-null timestamp, but the timestamp was null');
+        self::assertSame($timestamp, (new DateTimeImmutable($timestamp))->format(Timer::FORMAT_FOR_CORE_AGENT));
+
+        return true;
+    }
+
+    // phpcs:enable
 
     /**
      * @param string[]|callable[]|array<string, (string|callable)>        $keysAndValuesToExpect
