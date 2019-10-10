@@ -6,8 +6,11 @@ namespace Scoutapm\UnitTests\Events\Request;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\Request;
+use function json_decode;
+use function json_encode;
 use function next;
 use function reset;
+use function time;
 
 /** @covers \Scoutapm\Events\Request\Request */
 final class RequestTest extends TestCase
@@ -21,8 +24,34 @@ final class RequestTest extends TestCase
     public function testCanBeStopped() : void
     {
         $request = new Request();
+
+        self::assertNull(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+
         $request->stop();
-        self::assertNotNull($request);
+
+        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+    }
+
+    public function testRequestIsStoppedIfRunning() : void
+    {
+        $request = new Request();
+
+        self::assertNull(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+
+        $request->stopIfRunning();
+
+        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+    }
+
+    public function testRequestFinishTimestampIsNotChangedWhenStopIfRunningIsCalledOnAStoppedRequest() : void
+    {
+        $request = new Request();
+        $request->stop(time() - 100.0);
+        $originalStopTime = json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp'];
+
+        $request->stopIfRunning();
+
+        self::assertSame($originalStopTime, json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
     }
 
     public function testJsonSerializes() : void

@@ -39,6 +39,15 @@ class Request implements CommandWithChildren
         $this->currentCommand = $this;
     }
 
+    public function stopIfRunning() : void
+    {
+        if ($this->timer->getStop() !== null) {
+            return;
+        }
+
+        $this->stop();
+    }
+
     public function stop(?float $overrideTimestamp = null) : void
     {
         $this->timer->stop($overrideTimestamp);
