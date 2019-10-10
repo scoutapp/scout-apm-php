@@ -12,8 +12,7 @@ env:
   - DEPENDENCIES="" PHP="ext/php-with-scoutapm.sh"
 
 install:
-  - git clone https://github.com/scoutapp/scout-apm-php-ext.git ext/src
-  - cd ext/src && phpize && ./configure --enable-scoutapm && make && make install && cd ../..
+  - pecl install scoutapm-alpha
 
 before_script:
   - composer self-update
