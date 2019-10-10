@@ -43,6 +43,22 @@ $agent->connect();
 $agent->send();
 ```
 
+## Monitoring of PHP internal functions
+
+You can enable additional monitoring of internal PHP function executions to measure time taken there. To do so, you need
+to install and enable the `scoutapm` PHP extension from PECL, for example:
+
+```bash
+$ sudo pecl install scoutapm-alpha
+```
+
+You may need to add `zend_extension=scoutapm.so` into your `php.ini` to enable the extension.
+
+With the extension enabled, specific IO-bound functions in PHP are monitored, for example `file_get_contents`,
+`file_put_contents`, `PDO->exec` and so on.
+
+Alternatively, you can [install from source](https://github.com/scoutapp/scout-apm-php-ext).
+
 ## Documentation
 
 For full installation and troubleshooting documentation, visit our [help site](http://docs.scoutapm.com/#php-agent).
