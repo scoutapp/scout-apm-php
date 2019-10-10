@@ -20,6 +20,8 @@ use function explode;
 use function gethostname;
 use function json_decode;
 use function json_encode;
+use function putenv;
+use function uniqid;
 
 /** @covers \Scoutapm\Events\Metadata */
 final class MetadataTest extends TestCase
@@ -116,5 +118,23 @@ final class MetadataTest extends TestCase
             ],
             json_decode(json_encode(new Metadata($time, $config)), true)
         );
+    }
+
+    /** @throws Exception */
+    public function testHerokuSlugCommitOverridesTheGitSha() : void
+    {
+        $testHerokuSlugCommit = uniqid('testHerokuSlugCommit', true);
+
+        putenv('HEROKU_SLUG_COMMIT=' . $testHerokuSlugCommit);
+
+        self::assertSame(
+            $testHerokuSlugCommit,
+            json_decode(json_encode(new Metadata(
+                new DateTimeImmutable('now', new DateTimeZone('UTC')),
+                Config::fromArray([])
+            )), true)['ApplicationEvent']['event_value']['git_sha']
+        );
+
+        putenv('HEROKU_SLUG_COMMIT');
     }
 }

@@ -17,6 +17,7 @@ use function array_map;
 use function dirname;
 use function explode;
 use function file_exists;
+use function getenv;
 use function gethostname;
 use function is_readable;
 use function is_string;
@@ -122,6 +123,11 @@ final class Metadata implements Command
         $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
         if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
             return $revisionShaConfiguration;
+        }
+
+        $herokuSlugCommit = getenv('HEROKU_SLUG_COMMIT');
+        if (is_string($herokuSlugCommit) && $herokuSlugCommit !== '') {
+            return $herokuSlugCommit;
         }
 
         return explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1];
