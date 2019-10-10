@@ -16,6 +16,8 @@ use function uniqid;
 /** @covers \Scoutapm\Logger\FilteredLogLevelDecorator */
 final class FilteredLogLevelDecoratorTest extends TestCase
 {
+    private const PREPEND_SCOUT_TAG = '[Scout] ';
+
     /** @var LoggerInterface&MockObject */
     private $decoratedLogger;
 
@@ -24,6 +26,24 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         parent::setUp();
 
         $this->decoratedLogger = $this->createMock(LoggerInterface::class);
+    }
+
+    public function testLogMessagesHaveScoutTagPrepended() : void
+    {
+        $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, LogLevel::DEBUG);
+
+        $logMessage = uniqid('logMessage', true);
+
+        $this->decoratedLogger
+            ->expects(self::once())
+            ->method('log')
+            ->with(
+                LogLevel::DEBUG,
+                self::PREPEND_SCOUT_TAG . $logMessage,
+                []
+            );
+
+        $decorator->debug($logMessage);
     }
 
     public function testLogMessagesBelowThresholdAreNotLogged() : void
@@ -47,7 +67,11 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         $this->decoratedLogger
             ->expects(self::once())
             ->method('log')
-            ->with(LogLevel::WARNING, $logMessage, $context);
+            ->with(
+                LogLevel::WARNING,
+                self::stringContains($logMessage),
+                $context
+            );
 
         $decorator->warning($logMessage, $context);
     }
