@@ -17,6 +17,8 @@ final class FilteredLogLevelDecorator implements LoggerInterface
 {
     use LoggerTrait;
 
+    private const PREPEND_SCOUT_TAG = '[Scout] ';
+
     private const LOG_LEVEL_ORDER = [
         LogLevel::DEBUG => 0,
         LogLevel::INFO => 1,
@@ -52,6 +54,6 @@ final class FilteredLogLevelDecorator implements LoggerInterface
             return;
         }
 
-        $this->realLogger->log($level, $message, $context);
+        $this->realLogger->log($level, self::PREPEND_SCOUT_TAG . $message, $context);
     }
 }

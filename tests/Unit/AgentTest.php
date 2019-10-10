@@ -41,7 +41,11 @@ final class AgentTest extends TestCase
 
         $logger->expects(self::once())
             ->method('log')
-            ->with(LogLevel::DEBUG, 'Scout Core Agent Connected', []);
+            ->with(
+                LogLevel::DEBUG,
+                self::stringContains('Scout Core Agent Connected'),
+                []
+            );
 
         $config = new Config();
         $config->set(ConfigKey::MONITORING_ENABLED, 'false');
