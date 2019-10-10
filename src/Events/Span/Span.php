@@ -10,6 +10,7 @@ use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Connector\CommandWithParent;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagSpan;
+use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\Timer;
 use function array_filter;
 
@@ -34,6 +35,12 @@ class Span implements CommandWithParent, CommandWithChildren
     /** @var Timer */
     private $timer;
 
+    /** @var MemoryUsage */
+    private $startMemory;
+
+    /** @var MemoryUsage|null */
+    private $stopMemory;
+
     /** @throws Exception */
     public function __construct(CommandWithChildren $parent, string $name, RequestId $requestId, ?float $override = null)
     {
@@ -44,7 +51,8 @@ class Span implements CommandWithParent, CommandWithChildren
         $this->name      = $name;
         $this->requestId = $requestId;
 
-        $this->timer = new Timer($override);
+        $this->timer       = new Timer($override);
+        $this->startMemory = MemoryUsage::record();
     }
 
     public function id() : SpanId
@@ -64,6 +72,7 @@ class Span implements CommandWithParent, CommandWithChildren
      */
     public function stop(?float $override = null) : void
     {
+        $this->stopMemory = MemoryUsage::record();
         $this->timer->stop($override);
     }
 
@@ -136,6 +145,7 @@ class Span implements CommandWithParent, CommandWithChildren
                 'parent_id' => $this->parent instanceof self ? $this->parent->id->toString() : null,
                 'operation' => $this->name,
                 'timestamp' => $this->getStartTime(),
+                'memory_usage' => $this->startMemory,
             ],
         ];
 
@@ -150,6 +160,7 @@ class Span implements CommandWithParent, CommandWithChildren
                 'request_id' => $this->requestId->toString(),
                 'span_id' => $this->id->toString(),
                 'timestamp' => $this->getStopTime(),
+                'memory_usage' => $this->stopMemory,
             ],
         ];
 

@@ -10,6 +10,7 @@ use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
+use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
@@ -29,12 +30,19 @@ class Request implements CommandWithChildren
     /** @var RequestId */
     private $id;
 
+    /** @var MemoryUsage */
+    private $startMemory;
+
+    /** @var MemoryUsage|null */
+    private $stopMemory;
+
     /** @throws Exception */
     public function __construct()
     {
         $this->id = RequestId::new();
 
-        $this->timer = new Timer();
+        $this->timer       = new Timer();
+        $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
     }
@@ -51,6 +59,7 @@ class Request implements CommandWithChildren
     public function stop(?float $overrideTimestamp = null) : void
     {
         $this->timer->stop($overrideTimestamp);
+        $this->stopMemory = MemoryUsage::record();
     }
 
     /** @throws Exception */
@@ -114,6 +123,7 @@ class Request implements CommandWithChildren
             'StartRequest' => [
                 'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStart(),
+                'memory_usage' => $this->startMemory,
             ],
         ];
 
@@ -127,6 +137,7 @@ class Request implements CommandWithChildren
             'FinishRequest' => [
                 'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStop(),
+                'memory_usage' => $this->stopMemory,
             ],
         ];
 
