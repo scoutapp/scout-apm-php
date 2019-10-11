@@ -30,23 +30,33 @@ final class AgentTest extends TestCase
     {
         return [
             'withoutName' => [
-                'config' => Config::fromArray([ConfigKey::APPLICATION_KEY => 'abc123']),
+                'config' => Config::fromArray([
+                    ConfigKey::MONITORING_ENABLED => true,
+                    ConfigKey::APPLICATION_KEY => 'abc123',
+                ]),
                 'missingKeys' => [
                     ConfigKey::APPLICATION_NAME,
                 ],
             ],
             'withoutKey' => [
-                'config' => Config::fromArray([ConfigKey::APPLICATION_NAME => 'My Application']),
+                'config' => Config::fromArray([
+                    ConfigKey::MONITORING_ENABLED => true,
+                    ConfigKey::APPLICATION_NAME => 'My Application',
+                ]),
                 'missingKeys' => [
                     ConfigKey::APPLICATION_KEY,
                 ],
             ],
             'withoutAnything' => [
-                'config' => Config::fromArray([]),
+                'config' => Config::fromArray([ConfigKey::MONITORING_ENABLED => true]),
                 'missingKeys' => [
                     ConfigKey::APPLICATION_NAME,
                     ConfigKey::APPLICATION_KEY,
                 ],
+            ],
+            'withoutAnythingButMonitoringIsDisabled' => [
+                'config' => Config::fromArray([]),
+                'missingKeys' => [],
             ],
         ];
     }
@@ -67,7 +77,10 @@ final class AgentTest extends TestCase
                 static function (string $missingKey) : array {
                     return [
                         'warning',
-                        sprintf('Config key "%s" should be set, but it was empty', $missingKey),
+                        self::stringContains(sprintf(
+                            'Config key "%s" should be set, but it was empty',
+                            $missingKey
+                        )),
                     ];
                 },
                 $missingKeys

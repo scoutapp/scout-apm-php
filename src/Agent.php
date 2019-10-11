@@ -74,8 +74,10 @@ final class Agent implements ScoutApmAgent
             );
         }
 
-        $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
-        $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
+        if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
+            $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
+            $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
+        }
 
         $this->request = new Request();
 
