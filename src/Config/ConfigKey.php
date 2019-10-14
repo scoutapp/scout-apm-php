@@ -12,6 +12,10 @@ abstract class ConfigKey
     public const LOG_LEVEL                   = 'log_level';
     public const API_VERSION                 = 'api_version';
     public const IGNORED_ENDPOINTS           = 'ignore';
+    public const APPLICATION_ROOT            = 'application_root';
+    public const SCM_SUBDIRECTORY            = 'scm_subdirectory';
+    public const REVISION_SHA                = 'revision_sha';
+    public const HOSTNAME                    = 'hostname';
     public const CORE_AGENT_LOG_LEVEL        = 'core_agent_log_level';
     public const CORE_AGENT_LOG_FILE         = 'core_agent_log_file';
     public const CORE_AGENT_CONFIG_FILE      = 'core_agent_config_file';
@@ -23,4 +27,5 @@ abstract class ConfigKey
     public const CORE_AGENT_DOWNLOAD_ENABLED = 'core_agent_download';
     public const CORE_AGENT_VERSION          = 'core_agent_version';
     public const CORE_AGENT_TRIPLE           = 'core_agent_triple';
+    public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
 }

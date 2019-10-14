@@ -6,13 +6,22 @@ namespace Scoutapm\Events;
 
 use DateTimeImmutable;
 use PackageVersions\Versions;
+use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function dirname;
 use function explode;
+use function file_exists;
+use function getenv;
 use function gethostname;
+use function is_readable;
+use function is_string;
+use function realpath;
 
 /**
  * Also called AppServerLoad in other agents
@@ -24,11 +33,15 @@ final class Metadata implements Command
     /** @var Timer */
     private $timer;
 
-    public function __construct(DateTimeImmutable $now)
+    /** @var Config */
+    private $config;
+
+    public function __construct(DateTimeImmutable $now, Config $config)
     {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer = new Timer((float) $now->format('U.u'));
+        $this->timer  = new Timer((float) $now->format('U.u'));
+        $this->config = $config;
     }
 
     /**
@@ -44,20 +57,79 @@ final class Metadata implements Command
             'framework_version' => '',
             'environment' => '',
             'app_server' => '',
-            'hostname' => gethostname(),
+            'hostname' => $this->config->get(ConfigKey::HOSTNAME) ?? gethostname(),
             'database_engine' => '',
             'database_adapter' => '',
-            'application_name' => '',
+            'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',
             'libraries' => $this->getLibraries(),
             'paas' => '',
-            'application_root' => '',
-            'scm_subdirectory' => '',
+            'application_root' => $this->applicationRoot(),
+            'scm_subdirectory' => $this->scmSubdirectory(),
             'git_sha' => $this->rootPackageGitSha(),
         ];
     }
 
+    /**
+     * Try to locate a file or folder in any parent directory (upwards of this library itself)
+     */
+    private function locateFileOrFolder(string $fileOrFolder) : ?string
+    {
+        // Starting 3 levels up will avoid finding scout-apm-php's own contents
+        $dir        = dirname(__DIR__, 3);
+        $rootOrHome = '/';
+
+        while (dirname($dir) !== $dir && $dir !== $rootOrHome) {
+            $fileOrFolderAttempted = $dir . '/' . $fileOrFolder;
+            if (file_exists($fileOrFolderAttempted) && is_readable($fileOrFolderAttempted)) {
+                return realpath($dir);
+            }
+            $dir = dirname($dir);
+        }
+
+        return null;
+    }
+
+    private function applicationRoot() : string
+    {
+        $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
+        if (is_string($applicationRootConfiguration) && $applicationRootConfiguration !== '') {
+            return $applicationRootConfiguration;
+        }
+
+        $composerJsonLocation = $this->locateFileOrFolder('composer.json');
+        if ($composerJsonLocation !== null) {
+            return $composerJsonLocation;
+        }
+
+        if (! array_key_exists('DOCUMENT_ROOT', $_SERVER)) {
+            return '';
+        }
+
+        return $_SERVER['DOCUMENT_ROOT'];
+    }
+
+    private function scmSubdirectory() : string
+    {
+        $scmSubdirectoryConfiguration = $this->config->get(ConfigKey::SCM_SUBDIRECTORY);
+        if (is_string($scmSubdirectoryConfiguration) && $scmSubdirectoryConfiguration !== '') {
+            return $scmSubdirectoryConfiguration;
+        }
+
+        return $this->locateFileOrFolder('.git') ?? $this->applicationRoot();
+    }
+
     private function rootPackageGitSha() : string
     {
+        $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
+        if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
+            return $revisionShaConfiguration;
+        }
+
+        $herokuSlugCommit = getenv('HEROKU_SLUG_COMMIT');
+        if (is_string($herokuSlugCommit) && $herokuSlugCommit !== '') {
+            return $herokuSlugCommit;
+        }
+
         return explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1];
     }
 

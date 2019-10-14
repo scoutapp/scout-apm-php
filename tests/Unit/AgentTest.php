@@ -13,11 +13,82 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
+use function array_map;
+use function count;
 use function end;
+use function sprintf;
 
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
 {
+    /**
+     * @return Config[][]|string[][][]
+     *
+     * @psalm-return array<string, array{config: Config, missingKeys: array<int, string>}>
+     */
+    public function invalidConfigurationProvider() : array
+    {
+        return [
+            'withoutName' => [
+                'config' => Config::fromArray([
+                    ConfigKey::MONITORING_ENABLED => true,
+                    ConfigKey::APPLICATION_KEY => 'abc123',
+                ]),
+                'missingKeys' => [
+                    ConfigKey::APPLICATION_NAME,
+                ],
+            ],
+            'withoutKey' => [
+                'config' => Config::fromArray([
+                    ConfigKey::MONITORING_ENABLED => true,
+                    ConfigKey::APPLICATION_NAME => 'My Application',
+                ]),
+                'missingKeys' => [
+                    ConfigKey::APPLICATION_KEY,
+                ],
+            ],
+            'withoutAnything' => [
+                'config' => Config::fromArray([ConfigKey::MONITORING_ENABLED => true]),
+                'missingKeys' => [
+                    ConfigKey::APPLICATION_NAME,
+                    ConfigKey::APPLICATION_KEY,
+                ],
+            ],
+            'withoutAnythingButMonitoringIsDisabled' => [
+                'config' => Config::fromArray([]),
+                'missingKeys' => [],
+            ],
+        ];
+    }
+
+    /**
+     * @param string[]|array<int, string> $missingKeys
+     *
+     * @dataProvider invalidConfigurationProvider
+     */
+    public function testCreatingAgentWithoutRequiredConfigKeysLogsWarning(Config $config, array $missingKeys) : void
+    {
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+
+        $logger->expects(self::exactly(count($missingKeys)))
+            ->method('log')
+            ->withConsecutive(...array_map(
+                static function (string $missingKey) : array {
+                    return [
+                        'warning',
+                        self::stringContains(sprintf(
+                            'Config key "%s" should be set, but it was empty',
+                            $missingKey
+                        )),
+                    ];
+                },
+                $missingKeys
+            ));
+
+        Agent::fromConfig($config, $logger);
+    }
+
     public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages() : void
     {
         /** @var LoggerInterface&MockObject $logger */
@@ -26,11 +97,16 @@ final class AgentTest extends TestCase
         $logger->expects(self::never())
             ->method('log');
 
-        $config = new Config();
-        $config->set(ConfigKey::LOG_LEVEL, LogLevel::WARNING);
-        $config->set(ConfigKey::MONITORING_ENABLED, 'false');
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => 'My Application',
+                ConfigKey::APPLICATION_KEY => 'abc123',
+                ConfigKey::LOG_LEVEL => LogLevel::WARNING,
+                ConfigKey::MONITORING_ENABLED => false,
+            ]),
+            $logger
+        );
 
-        $agent = Agent::fromConfig($config, $logger);
         $agent->connect();
     }
 
@@ -47,10 +123,15 @@ final class AgentTest extends TestCase
                 []
             );
 
-        $config = new Config();
-        $config->set(ConfigKey::MONITORING_ENABLED, 'false');
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => 'My Application',
+                ConfigKey::APPLICATION_KEY => 'abc123',
+                ConfigKey::MONITORING_ENABLED => false,
+            ]),
+            $logger
+        );
 
-        $agent = Agent::fromConfig($config, $logger);
         $agent->connect();
     }
 

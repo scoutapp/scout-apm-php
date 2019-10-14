@@ -6,6 +6,13 @@
 
  - New `\Scoutapm\Config\ConfigKey` class containing `public const`s for configuration key names (#83)
  - Added config key `log_level` which overrides Scout APM's minimum log level (#83)
+ - Added more new config keys (#88):
+   - `application_root` (defaults to `composer.json` location, or `$_SERVER['DOCUMENT_ROOT']`
+   - `scm_subdirectory` (defaults to `.git` location, or `application_root` value)
+   - `revision_sha` (defaults to version detected by `ocramius/package-versions`)
+   - `hostname` (defaults to value of `gethostname()`)
+   - `core_agent_permissions` (defaults to `0777`)
+ - Added warning when `name` or `key` configurations are not set
 
 ### Fixed
 
