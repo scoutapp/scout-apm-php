@@ -279,7 +279,7 @@ final class AgentTest extends TestCase
                     'Value for %s command %s was expected to be %s, was %s',
                     $expectedCommand,
                     $expectedKey,
-                    $expectedValue,
+                    var_export($expectedValue, true),
                     var_export($commandPayload[$expectedKey], true)
                 )
             );
