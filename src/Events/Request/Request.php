@@ -9,15 +9,12 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
-use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
 class Request implements CommandWithChildren
 {
-    private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
-
     /** @var Timer */
     private $timer;
 
@@ -91,10 +88,6 @@ class Request implements CommandWithChildren
         }
 
         $command->stop($overrideTimestamp);
-
-        if ($command->duration() > self::STACK_TRACE_THRESHOLD_SECONDS) {
-            $command->tag('stack', Backtrace::capture());
-        }
 
         $this->currentCommand = $command->parent();
     }
