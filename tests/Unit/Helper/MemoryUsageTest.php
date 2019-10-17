@@ -16,14 +16,14 @@ final class MemoryUsageTest extends TestCase
         $usageBefore = MemoryUsage::record();
 
         /** @noinspection PhpUnusedLocalVariableInspection */
-        $block = str_repeat('a', 1024);
+        $block = str_repeat('a', 1000000);
 
         $usageAfter = MemoryUsage::record();
 
         // In reality, because a zval is larger, the allocation will be more like 1392, but as long as it's more!
         self::assertGreaterThanOrEqual(
-            1024,
-            $usageAfter->usedDifference($usageBefore)
+            1,
+            $usageAfter->usedDifferenceInMegabytes($usageBefore)
         );
     }
 }

@@ -8,6 +8,8 @@ use function memory_get_usage;
 
 final class MemoryUsage
 {
+    private const BYTES_IN_A_MB = 1000000;
+
     /** @var int */
     private $bytesUsed;
 
@@ -21,8 +23,8 @@ final class MemoryUsage
         return new self();
     }
 
-    public function usedDifference(MemoryUsage $comparedTo) : int
+    public function usedDifferenceInMegabytes(MemoryUsage $comparedTo) : float
     {
-        return $this->bytesUsed - $comparedTo->bytesUsed;
+        return ($this->bytesUsed - $comparedTo->bytesUsed) / self::BYTES_IN_A_MB;
     }
 }

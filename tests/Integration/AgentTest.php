@@ -220,10 +220,10 @@ final class AgentTest extends TestCase
     }
 
     /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function assertValidMemoryUsage(?int $memoryUsage) : bool
+    private function assertValidMemoryUsage(?float $memoryUsageInMb) : bool
     {
-        self::assertIsInt($memoryUsage, 'Expected an integer memory usage, but was it was null');
-        self::assertGreaterThan(0, $memoryUsage, 'Memory usage should be greater than zero');
+        self::assertIsFloat($memoryUsageInMb, 'Expected an float memory usage, but was it was null');
+        self::assertGreaterThan(0, $memoryUsageInMb, 'Memory usage should be greater than zero');
 
         return true;
     }

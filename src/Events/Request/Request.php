@@ -57,7 +57,7 @@ class Request implements CommandWithChildren
     {
         $this->timer->stop($overrideTimestamp);
 
-        $this->tag('memory_delta', MemoryUsage::record()->usedDifference($this->startMemory));
+        $this->tag('memory_delta', MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
     }
 
     /** @throws Exception */
