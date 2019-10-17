@@ -11,6 +11,8 @@ use function microtime;
 /** @internal */
 abstract class Tag implements Command
 {
+    public const TAG_STACK_TRACE = 'stack';
+
     /** @var RequestId */
     protected $requestId;
 

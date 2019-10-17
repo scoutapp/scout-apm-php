@@ -9,6 +9,7 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Connector\CommandWithParent;
 use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
@@ -73,7 +74,7 @@ class Span implements CommandWithParent, CommandWithChildren
             return;
         }
 
-        $this->tag('stack', Backtrace::capture());
+        $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
     }
 
     /**
