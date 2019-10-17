@@ -13,8 +13,12 @@
    - `hostname` (defaults to value of `gethostname()`)
    - `core_agent_permissions` (defaults to `0777`)
  - Added warning when `name` or `key` configurations are not set
+ - All log messages are prepended with `[Scout]` (#93)
+ - Build status badges added to README (#81)
 
 ### Fixed
+
+ - Fixed missing request stop timestamp (#91)
 
 ### Changed
 
@@ -24,7 +28,8 @@
    - `config_file` => `core_agent_config_file`
    - `socket_path` => `core_agent_socket_path`
    - `download_url` => `core_agent_download_url`
- - Improved stack trace filtering (#61)
+ - Improved stack trace filtering (#84)
+ - CI updated to use `pecl` to install scoutapm extension (#92)
 
 ## [0.2.2] 2019-09-26
 
@@ -36,28 +41,38 @@
 
 ### Changed
 
-- Lock CoreAgent version to 1.2.2
+ - Lock CoreAgent version to 1.2.2 (#78)
+ - Always provide `--log-file` parameter for core agent (#76)
+ - Added an interface for the agent `Scoutapm\ScoutApmAgent` (#72)
+ - Support fetching function call arguments from PHP ext (#55)
 
 ## [0.2.0] 2019-09-11
 
 ### Changed
 
-- Internal data model now preserves order (#47)
-- Loosen several dependency version requirements (#50)
-- Licensed as MIT
-- Initial support for Scout Native Extension (#42, #54)
+ - Internal data model now preserves order (#47)
+ - Loosen several dependency version requirements (#50)
+ - Licensed as MIT (#48)
+ - Initial support for Scout Native Extension (#42, #54)
+ - Updated default socket path (#43)
+ - Added integration test execution into CI (#46)
+ - Fetch `git_sha` metadata from `ocramius/package-versions` (#39)
 
 ## [0.1.1] 2019-08-22
 
 ### Changed
 
- - API for creating the agent should be `Agent::fromConfig(Config::fromArray([]))` at minimum
- - Most of what is intended to be "internal" with no promise of BC is now marked `@internal`
- - Strict type hints introduced throughout the library
- - Internal interfaces for `\Scoutapm\Connector\Connector`, `\Scoutapm\CoreAgent\Manager`, etc. introduced
- - Applied `doctrine/coding-standard` throughout
- - Applied Psalm static analysis throughout
- - Large amount of general internal refactoring
+ - Fixed agent launch bug (#38)
+ - Large refactoring internally (#34)
+   - API for creating the agent should be `Agent::fromConfig(Config::fromArray([]))` at minimum
+   - Most of what is intended to be "internal" with no promise of BC is now marked `@internal`
+   - Strict type hints introduced throughout the library
+   - Internal interfaces for `\Scoutapm\Connector\Connector`, `\Scoutapm\CoreAgent\Manager`, etc. introduced
+   - Applied `doctrine/coding-standard` throughout
+   - Applied Psalm static analysis throughout
+ - Added `ignore` configuration option (#33)
+ - Pass metadata along with each request made to Scout (#32)
+ - Added coercion for JSON-formatted configuration values (#31)
 
 ## [0.1] 2019-08-05
 
