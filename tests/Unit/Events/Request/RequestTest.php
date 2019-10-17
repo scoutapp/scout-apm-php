@@ -29,7 +29,7 @@ final class RequestTest extends TestCase
 
         $request->stop();
 
-        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['FinishRequest']['timestamp']);
     }
 
     public function testRequestIsStoppedIfRunning() : void
@@ -40,18 +40,18 @@ final class RequestTest extends TestCase
 
         $request->stopIfRunning();
 
-        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+        self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['FinishRequest']['timestamp']);
     }
 
     public function testRequestFinishTimestampIsNotChangedWhenStopIfRunningIsCalledOnAStoppedRequest() : void
     {
         $request = new Request();
         $request->stop(time() - 100.0);
-        $originalStopTime = json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp'];
+        $originalStopTime = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['FinishRequest']['timestamp'];
 
         $request->stopIfRunning();
 
-        self::assertSame($originalStopTime, json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
+        self::assertSame($originalStopTime, json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['FinishRequest']['timestamp']);
     }
 
     public function testJsonSerializes() : void
@@ -77,6 +77,8 @@ final class RequestTest extends TestCase
         self::assertArrayHasKey('StartSpan', next($commands));
         self::assertArrayHasKey('TagSpan', next($commands));
         self::assertArrayHasKey('StopSpan', next($commands));
+
+        self::assertArrayHasKey('TagRequest', next($commands));
 
         self::assertArrayHasKey('FinishRequest', next($commands));
     }

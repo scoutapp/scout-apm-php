@@ -15,6 +15,7 @@
  - Added warning when `name` or `key` configurations are not set
  - All log messages are prepended with `[Scout]` (#93)
  - Build status badges added to README (#81)
+ - Added memory usage statistics to request (#89)
 
 ### Fixed
 

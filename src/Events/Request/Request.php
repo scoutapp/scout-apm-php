@@ -10,6 +10,7 @@ use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\Backtrace;
+use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\Timer;
 
 /** @internal */
@@ -29,12 +30,16 @@ class Request implements CommandWithChildren
     /** @var RequestId */
     private $id;
 
+    /** @var MemoryUsage */
+    private $startMemory;
+
     /** @throws Exception */
     public function __construct()
     {
         $this->id = RequestId::new();
 
-        $this->timer = new Timer();
+        $this->timer       = new Timer();
+        $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
     }
@@ -51,6 +56,8 @@ class Request implements CommandWithChildren
     public function stop(?float $overrideTimestamp = null) : void
     {
         $this->timer->stop($overrideTimestamp);
+
+        $this->tag('memory_delta', MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
     }
 
     /** @throws Exception */
