@@ -23,6 +23,7 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
@@ -199,7 +200,7 @@ final class Agent implements ScoutApmAgent
 
         foreach ($this->phpExtension->getCalls() as $recordedCall) {
             $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
-            $callSpan->tag('desc', $recordedCall->filteredArguments());
+            $callSpan->tag(Tag::TAG_ARGUMENTS, $recordedCall->filteredArguments());
             $this->request->stopSpan($recordedCall->timeExited());
         }
     }
@@ -219,13 +220,13 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function webTransaction(string $name, Closure $block)
     {
-        return $this->instrument('Controller', $name, $block);
+        return $this->instrument(Span::INSTRUMENT_CONTROLLER, $name, $block);
     }
 
     /** {@inheritDoc} */
     public function backgroundTransaction(string $name, Closure $block)
     {
-        return $this->instrument('Job', $name, $block);
+        return $this->instrument(Span::INSTRUMENT_JOB, $name, $block);
     }
 
     public function addContext(string $tag, string $value) : void

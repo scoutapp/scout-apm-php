@@ -16,6 +16,7 @@
  - All log messages are prepended with `[Scout]` (#93)
  - Build status badges added to README (#81)
  - Added memory usage statistics to request (#89)
+ - Suppress backtraces for Controller, Job, and Middleware spans (#96)
 
 ### Fixed
 

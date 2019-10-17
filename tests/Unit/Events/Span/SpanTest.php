@@ -8,6 +8,7 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Connector\CommandWithChildren;
+use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 
@@ -62,5 +63,57 @@ final class SpanTest extends TestCase
 
         $span->updateName('fromRequest');
         self::assertSame('fromRequest', $span->getName());
+    }
+
+    /** @return int[][]|string[][] */
+    public function spansForStackTraceProvider() : array
+    {
+        return [
+            [
+                'spanName' => 'Foo/Bar',
+                'startTime' => 1,
+                'endTime' => 1,
+                'expectedTagCount' => 0,
+            ],
+            [
+                'spanName' => 'Foo/Bar',
+                'startTime' => 1,
+                'endTime' => 2,
+                'expectedTagCount' => 1,
+            ],
+            [
+                'spanName' => 'Controller/Foo',
+                'startTime' => 1,
+                'endTime' => 2,
+                'expectedTagCount' => 0,
+            ],
+            [
+                'spanName' => 'Middleware/Foo',
+                'startTime' => 1,
+                'endTime' => 2,
+                'expectedTagCount' => 0,
+            ],
+            [
+                'spanName' => 'Job/Foo',
+                'startTime' => 1,
+                'endTime' => 2,
+                'expectedTagCount' => 0,
+            ],
+        ];
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @dataProvider spansForStackTraceProvider
+     */
+    public function testStackTracesAreOnlyAddedForAppropriateSpans(string $spanName, float $startTime, float $endTime, int $expectedTagCount) : void
+    {
+        $request = new Request();
+
+        $span = new Span($request, $spanName, RequestId::new(), $startTime);
+        $span->stop($endTime);
+
+        self::assertCount($expectedTagCount, $span->getTags());
     }
 }

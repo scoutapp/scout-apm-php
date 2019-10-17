@@ -9,13 +9,22 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Connector\CommandWithParent;
 use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagSpan;
+use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
 use function array_filter;
+use function strpos;
 
 /** @internal */
 class Span implements CommandWithParent, CommandWithChildren
 {
+    private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
+
+    public const INSTRUMENT_CONTROLLER = 'Controller';
+    public const INSTRUMENT_JOB        = 'Job';
+    public const INSTRUMENT_MIDDLEWARE = 'Middleware';
+
     /** @var SpanId */
     private $id;
 
@@ -65,6 +74,19 @@ class Span implements CommandWithParent, CommandWithChildren
     public function stop(?float $override = null) : void
     {
         $this->timer->stop($override);
+
+        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+        if ($this->duration() >= self::STACK_TRACE_THRESHOLD_SECONDS && ! $this->isControllerJobOrMiddleware()) {
+            $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
+        }
+        // phpcs:enable
+    }
+
+    private function isControllerJobOrMiddleware() : bool
+    {
+        return strpos($this->name, self::INSTRUMENT_CONTROLLER) === 0
+            || strpos($this->name, self::INSTRUMENT_MIDDLEWARE) === 0
+            || strpos($this->name, self::INSTRUMENT_JOB) === 0;
     }
 
     /**
