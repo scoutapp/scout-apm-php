@@ -79,17 +79,18 @@ class Span implements CommandWithParent, CommandWithChildren
             return;
         }
 
-        if ($this->isControllerOrMiddleware()) {
+        if ($this->isControllerJobOrMiddleware()) {
             return;
         }
 
         $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
     }
 
-    private function isControllerOrMiddleware() : bool
+    private function isControllerJobOrMiddleware() : bool
     {
         return strpos($this->name, self::INSTRUMENT_CONTROLLER) === 0
-            || strpos($this->name, self::INSTRUMENT_MIDDLEWARE) === 0;
+            || strpos($this->name, self::INSTRUMENT_MIDDLEWARE) === 0
+            || strpos($this->name, self::INSTRUMENT_JOB) === 0;
     }
 
     /**

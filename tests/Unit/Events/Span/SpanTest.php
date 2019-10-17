@@ -93,6 +93,12 @@ final class SpanTest extends TestCase
                 'endTime' => 2,
                 'expectedTagCount' => 0,
             ],
+            [
+                'spanName' => 'Job/Foo',
+                'startTime' => 1,
+                'endTime' => 2,
+                'expectedTagCount' => 0,
+            ],
         ];
     }
 
