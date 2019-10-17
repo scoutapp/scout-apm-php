@@ -75,15 +75,11 @@ class Span implements CommandWithParent, CommandWithChildren
     {
         $this->timer->stop($override);
 
-        if ($this->duration() <= self::STACK_TRACE_THRESHOLD_SECONDS) {
-            return;
+        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+        if ($this->duration() >= self::STACK_TRACE_THRESHOLD_SECONDS && ! $this->isControllerJobOrMiddleware()) {
+            $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
         }
-
-        if ($this->isControllerJobOrMiddleware()) {
-            return;
-        }
-
-        $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
+        // phpcs:enable
     }
 
     private function isControllerJobOrMiddleware() : bool
