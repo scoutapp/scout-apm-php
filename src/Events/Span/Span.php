@@ -14,6 +14,7 @@ use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\Timer;
 use function array_filter;
+use function strpos;
 
 /** @internal */
 class Span implements CommandWithParent, CommandWithChildren
@@ -22,6 +23,7 @@ class Span implements CommandWithParent, CommandWithChildren
 
     public const INSTRUMENT_CONTROLLER = 'Controller';
     public const INSTRUMENT_JOB        = 'Job';
+    public const INSTRUMENT_MIDDLEWARE = 'Middleware';
 
     /** @var SpanId */
     private $id;
@@ -77,7 +79,17 @@ class Span implements CommandWithParent, CommandWithChildren
             return;
         }
 
+        if ($this->isControllerOrMiddleware()) {
+            return;
+        }
+
         $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
+    }
+
+    private function isControllerOrMiddleware() : bool
+    {
+        return strpos($this->name, self::INSTRUMENT_CONTROLLER) === 0
+            || strpos($this->name, self::INSTRUMENT_MIDDLEWARE) === 0;
     }
 
     /**
