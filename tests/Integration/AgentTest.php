@@ -14,9 +14,11 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Helper\Timer;
+use function array_keys;
 use function file_get_contents;
 use function getenv;
 use function gethostname;
+use function implode;
 use function is_callable;
 use function is_string;
 use function json_decode;
@@ -25,6 +27,7 @@ use function next;
 use function reset;
 use function sleep;
 use function sprintf;
+use function var_export;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
@@ -185,6 +188,8 @@ final class AgentTest extends TestCase
                     $quxSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
+                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [$this, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
+
                     $this->assertUnserializedCommandContainsPayload(
                         'FinishRequest',
                         [
@@ -214,6 +219,15 @@ final class AgentTest extends TestCase
         return true;
     }
 
+    /** @noinspection PhpUnusedPrivateMethodInspection */
+    private function assertValidMemoryUsage(?int $memoryUsage) : bool
+    {
+        self::assertIsInt($memoryUsage, 'Expected an integer memory usage, but was it was null');
+        self::assertGreaterThan(0, $memoryUsage, 'Memory usage should be greater than zero');
+
+        return true;
+    }
+
     // phpcs:enable
 
     /**
@@ -226,18 +240,49 @@ final class AgentTest extends TestCase
         array $actualCommand,
         ?string $identifierKeyToReturn
     ) : ?string {
-        self::assertArrayHasKey($expectedCommand, $actualCommand);
+        self::assertArrayHasKey(
+            $expectedCommand,
+            $actualCommand,
+            sprintf('Expected %s command, got %s', $expectedCommand, implode(',', array_keys($actualCommand)))
+        );
         $commandPayload = $actualCommand[$expectedCommand];
 
         foreach ($keysAndValuesToExpect as $expectedKey => $expectedValue) {
-            self::assertArrayHasKey($expectedKey, $commandPayload);
+            self::assertArrayHasKey(
+                $expectedKey,
+                $commandPayload,
+                sprintf(
+                    'Expected %s command to have %s key, contained: %s',
+                    $expectedCommand,
+                    $expectedKey,
+                    implode(',', array_keys($commandPayload))
+                )
+            );
 
             if (! is_string($expectedValue) && is_callable($expectedValue)) {
-                self::assertTrue($expectedValue($commandPayload[$expectedKey]));
+                self::assertTrue(
+                    $expectedValue($commandPayload[$expectedKey]),
+                    sprintf(
+                        'Callable for %s command %s did not return true - value was %s',
+                        $expectedCommand,
+                        $expectedKey,
+                        var_export($commandPayload[$expectedKey], true)
+                    )
+                );
                 continue;
             }
 
-            self::assertSame($expectedValue, $commandPayload[$expectedKey]);
+            self::assertSame(
+                $expectedValue,
+                $commandPayload[$expectedKey],
+                sprintf(
+                    'Value for %s command %s was expected to be %s, was %s',
+                    $expectedCommand,
+                    $expectedKey,
+                    $expectedValue,
+                    var_export($commandPayload[$expectedKey], true)
+                )
+            );
         }
 
         if ($identifierKeyToReturn === null) {

@@ -6,27 +6,24 @@ namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Helper\MemoryUsage;
+use function str_repeat;
 
 /** @covers \Scoutapm\Helper\MemoryUsage */
 final class MemoryUsageTest extends TestCase
 {
     public function testMemoryUsageCanBeRecorded() : void
     {
-        $usage = MemoryUsage::record()->jsonSerialize();
+        $usageBefore = MemoryUsage::record();
 
-        self::assertArrayHasKey('allocated', $usage);
-        self::assertArrayHasKey('used', $usage);
-        self::assertArrayHasKey('peak_allocated', $usage);
-        self::assertArrayHasKey('peak_used', $usage);
+        /** @noinspection PhpUnusedLocalVariableInspection */
+        $block = str_repeat('a', 1024);
 
-        self::assertIsInt($usage['allocated']);
-        self::assertIsInt($usage['used']);
-        self::assertIsInt($usage['peak_allocated']);
-        self::assertIsInt($usage['peak_used']);
+        $usageAfter = MemoryUsage::record();
 
-        self::assertGreaterThan(0, $usage['allocated']);
-        self::assertGreaterThan(0, $usage['used']);
-        self::assertGreaterThan(0, $usage['peak_allocated']);
-        self::assertGreaterThan(0, $usage['peak_used']);
+        // In reality, because a zval is larger, the allocation will be more like 1392, but as long as it's more!
+        self::assertGreaterThanOrEqual(
+            1024,
+            $usageAfter->usedDifference($usageBefore)
+        );
     }
 }

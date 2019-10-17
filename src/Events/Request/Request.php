@@ -33,9 +33,6 @@ class Request implements CommandWithChildren
     /** @var MemoryUsage */
     private $startMemory;
 
-    /** @var MemoryUsage|null */
-    private $stopMemory;
-
     /** @throws Exception */
     public function __construct()
     {
@@ -59,7 +56,8 @@ class Request implements CommandWithChildren
     public function stop(?float $overrideTimestamp = null) : void
     {
         $this->timer->stop($overrideTimestamp);
-        $this->stopMemory = MemoryUsage::record();
+
+        $this->tag('memory_delta', MemoryUsage::record()->usedDifference($this->startMemory));
     }
 
     /** @throws Exception */
@@ -123,7 +121,6 @@ class Request implements CommandWithChildren
             'StartRequest' => [
                 'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStart(),
-                'memory_usage' => $this->startMemory,
             ],
         ];
 
@@ -137,7 +134,6 @@ class Request implements CommandWithChildren
             'FinishRequest' => [
                 'request_id' => $this->id->toString(),
                 'timestamp' => $this->timer->getStop(),
-                'memory_usage' => $this->stopMemory,
             ],
         ];
 
