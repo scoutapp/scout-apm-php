@@ -20,6 +20,9 @@ class Span implements CommandWithParent, CommandWithChildren
 {
     private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
 
+    public const INSTRUMENT_CONTROLLER = 'Controller';
+    public const INSTRUMENT_JOB        = 'Job';
+
     /** @var SpanId */
     private $id;
 
