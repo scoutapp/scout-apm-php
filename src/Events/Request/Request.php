@@ -8,9 +8,11 @@ use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\Timer;
+use function is_string;
 
 /** @internal */
 class Request implements CommandWithChildren
@@ -30,6 +32,9 @@ class Request implements CommandWithChildren
     /** @var MemoryUsage */
     private $startMemory;
 
+    /** @var string|null */
+    private $requestUriOverride;
+
     /** @throws Exception */
     public function __construct()
     {
@@ -39,6 +44,28 @@ class Request implements CommandWithChildren
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
+    }
+
+    public function overrideRequestUri(string $newRequestUri) : void
+    {
+        $this->requestUriOverride = $newRequestUri;
+    }
+
+    private function determineRequestPathFromServerGlobal() : string
+    {
+        $requestUri = $_SERVER['REQUEST_URI'] ?? null;
+
+        if (is_string($requestUri)) {
+            return $requestUri;
+        }
+
+        $origPathInfo = $_SERVER['ORIG_PATH_INFO'] ?? null;
+
+        if (is_string($origPathInfo)) {
+            return $origPathInfo;
+        }
+
+        return '/';
     }
 
     public function stopIfRunning() : void
@@ -54,7 +81,8 @@ class Request implements CommandWithChildren
     {
         $this->timer->stop($overrideTimestamp);
 
-        $this->tag('memory_delta', MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
+        $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
+        $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
     }
 
     /** @throws Exception */

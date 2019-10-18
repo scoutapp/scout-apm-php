@@ -72,6 +72,8 @@ final class AgentTest extends TestCase
 
         $connector = new MessageCapturingConnectorDelegator(new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH)));
 
+        $_SERVER['REQUEST_URI'] = '/fake-path';
+
         $agent = Agent::fromConfig($config, $this->logger, $connector);
 
         $agent->connect();
@@ -188,6 +190,7 @@ final class AgentTest extends TestCase
                     $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
                     $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [$this, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
+                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
 
                     $this->assertUnserializedCommandContainsPayload(
                         'FinishRequest',
