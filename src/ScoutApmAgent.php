@@ -60,6 +60,14 @@ interface ScoutApmAgent
     public function ignore() : void;
 
     /**
+     * If the automatically determined request URI is incorrect, please report an issue so we can investigate. You may
+     * override the automatic determination of the request URI by calling this method.
+     *
+     * @link https://github.com/scoutapp/scout-apm-php
+     */
+    public function changeRequestUri(string $newRequestUri) : void;
+
+    /**
      * Returns true only if the request was sent onward to the core agent. False otherwise.
      *
      * @throws Exception

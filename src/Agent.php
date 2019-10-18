@@ -257,6 +257,15 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
+    public function changeRequestUri(string $newRequestUri) : void
+    {
+        if ($this->request === null) {
+            return;
+        }
+        $this->request->overrideRequestUri($newRequestUri);
+    }
+
+    /** {@inheritDoc} */
     public function send() : bool
     {
         // Don't send if the agent is not enabled.
