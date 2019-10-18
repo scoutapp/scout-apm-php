@@ -17,6 +17,7 @@
  - Build status badges added to README (#81)
  - Added memory usage statistics to request (#89)
  - Suppress backtraces for Controller, Job, and Middleware spans (#96)
+ - Tag the request URI automatically with `$_SERVER['REQUEST_URI']` or override with alternative (#102)
 
 ### Fixed
 
