@@ -2,6 +2,8 @@
 
 ## Pending
 
+## [0.2.3] 2019-10-22
+
 ### Added
 
  - New `\Scoutapm\Config\ConfigKey` class containing `public const`s for configuration key names (#83)
