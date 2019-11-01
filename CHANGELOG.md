@@ -2,6 +2,10 @@
 
 ## Pending
 
+### Changed
+
+ - Improved error message when invalid log level given for `log_level` configuration (#106)
+
 ## [0.2.3] 2019-10-22
 
 ### Added

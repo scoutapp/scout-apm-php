@@ -8,6 +8,9 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
 use Webmozart\Assert\Assert;
+use function array_keys;
+use function implode;
+use function sprintf;
 use function strtolower;
 
 /**
@@ -41,7 +44,15 @@ final class FilteredLogLevelDecorator implements LoggerInterface
      */
     public function __construct(LoggerInterface $realLogger, string $minimumLogLevel)
     {
-        Assert::keyExists(self::LOG_LEVEL_ORDER, strtolower($minimumLogLevel));
+        Assert::keyExists(
+            self::LOG_LEVEL_ORDER,
+            strtolower($minimumLogLevel),
+            sprintf(
+                'Log level %s was not a valid PSR-3 compatible log level. Should be one of: %s',
+                $minimumLogLevel,
+                implode(', ', array_keys(self::LOG_LEVEL_ORDER))
+            )
+        );
 
         $this->minimumLogLevel = self::LOG_LEVEL_ORDER[strtolower($minimumLogLevel)];
         $this->realLogger      = $realLogger;

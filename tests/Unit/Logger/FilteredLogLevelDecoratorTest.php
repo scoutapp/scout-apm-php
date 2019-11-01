@@ -28,6 +28,16 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         $this->decoratedLogger = $this->createMock(LoggerInterface::class);
     }
 
+    public function testInvalidLogLevelStringGivesClearErrorMessage() : void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(
+            'Log level foo was not a valid PSR-3 compatible log level. '
+            . 'Should be one of: debug, info, notice, warning, error, critical, alert, emergency'
+        );
+        new FilteredLogLevelDecorator($this->decoratedLogger, 'foo');
+    }
+
     public function testLogMessagesHaveScoutTagPrepended() : void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, LogLevel::DEBUG);
