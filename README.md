@@ -49,7 +49,7 @@ You can enable additional monitoring of internal PHP function executions to meas
 to install and enable the `scoutapm` PHP extension from PECL, for example:
 
 ```bash
-$ sudo pecl install scoutapm-alpha
+$ sudo pecl install scoutapm
 ```
 
 You may need to add `zend_extension=scoutapm.so` into your `php.ini` to enable the extension.
