@@ -4,7 +4,12 @@
 
 ### Changed
 
+## [1.0.0] 2019-11-05
+
+### Changed
+
  - Improved error message when invalid log level given for `log_level` configuration (#106)
+ - Updated installation instructions to remove `-alpha` flag from PHP extension (#109)
 
 ## [0.2.3] 2019-10-22
 
