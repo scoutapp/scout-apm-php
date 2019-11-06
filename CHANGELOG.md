@@ -4,6 +4,8 @@
 
 ### Changed
 
+ - Added `language_version` key to be sent with metadata (#110)
+
 ## [1.0.0] 2019-11-05
 
 ### Changed

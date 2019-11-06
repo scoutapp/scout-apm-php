@@ -52,6 +52,7 @@ final class Metadata implements Command
         return [
             'language' => 'php',
             'version' => PHP_VERSION,
+            'language_version' => PHP_VERSION,
             'server_time' => $this->timer->getStart(),
             'framework' => 'laravel',
             'framework_version' => '',
