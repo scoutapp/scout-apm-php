@@ -130,8 +130,17 @@ final class Agent implements ScoutApmAgent
 
     public function connect() : void
     {
-        if (! $this->connector->connected() && $this->enabled()) {
-            $this->logger->info('Scout Core Agent Connection Failed, attempting to start');
+        if (! $this->enabled()) {
+            $this->logger->debug('Connection skipped, since monitoring is disabled');
+
+            return;
+        }
+
+        if (! $this->connector->connected()) {
+            $this->logger->info(sprintf(
+                'Scout Core Agent (app=%s) not connected yet, attempting to start',
+                $this->config->get(ConfigKey::APPLICATION_NAME)
+            ));
             $manager = new AutomaticDownloadAndLaunchManager(
                 $this->config,
                 $this->logger,
@@ -157,7 +166,10 @@ final class Agent implements ScoutApmAgent
                 $this->logger->warning($failedToConnect->getMessage());
             }
         } else {
-            $this->logger->debug('Scout Core Agent Connected');
+            $this->logger->debug(sprintf(
+                'Scout Core Agent Connected (app=%s)',
+                $this->config->get(ConfigKey::APPLICATION_NAME)
+            ));
         }
     }
 
