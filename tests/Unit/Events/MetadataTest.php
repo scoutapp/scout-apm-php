@@ -46,6 +46,7 @@ final class MetadataTest extends TestCase
                     'event_value' => [
                         'language' => 'php',
                         'version' => PHP_VERSION,
+                        'language_version' => PHP_VERSION,
                         'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
                         'framework' => 'laravel',
                         'framework_version' => '',
@@ -91,6 +92,7 @@ final class MetadataTest extends TestCase
                     'event_value' => [
                         'language' => 'php',
                         'version' => PHP_VERSION,
+                        'language_version' => PHP_VERSION,
                         'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
                         'framework' => 'laravel',
                         'framework_version' => '',
