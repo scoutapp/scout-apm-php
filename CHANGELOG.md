@@ -4,6 +4,8 @@
 
 ### Changed
 
+ - Added more debug logging to isolate issues easier (#111)
+
 ## [1.0.0] 2019-11-05
 
 ### Changed

@@ -119,7 +119,7 @@ final class AgentTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::DEBUG,
-                self::stringContains('Scout Core Agent Connected'),
+                self::stringContains('Connection skipped, since monitoring is disabled'),
                 []
             );
 
