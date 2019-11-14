@@ -282,15 +282,21 @@ final class Agent implements ScoutApmAgent
     {
         // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
+            $this->logger->debug('Not sending payload, logging is not enabled');
+
             return false;
         }
 
         // Don't send it if the request was ignored
         if ($this->isIgnored) {
+            $this->logger->debug('Not sending payload, request has been ignored');
+
             return false;
         }
 
         if ($this->request === null) {
+            $this->logger->debug('Not sending payload, request was not set');
+
             // @todo throw exception? return false?
             return false;
         }
@@ -312,6 +318,8 @@ final class Agent implements ScoutApmAgent
                 (string) $this->config->get(ConfigKey::APPLICATION_KEY),
                 $this->config->get(ConfigKey::API_VERSION)
             ))) {
+                $this->logger->debug('Send command returned false for RegisterMessage');
+
                 return false;
             }
 
@@ -319,6 +327,8 @@ final class Agent implements ScoutApmAgent
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config
             ))) {
+                $this->logger->debug('Send command returned false for Metadata');
+
                 return false;
             }
 
