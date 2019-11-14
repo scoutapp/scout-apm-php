@@ -21,6 +21,7 @@ use Scoutapm\Config\TypeCoercion\CoerceType;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function array_reverse;
 
 // @todo needs interface
 class Config
@@ -107,15 +108,13 @@ class Config
      */
     public function asArrayWithSecretsRemoved() : array
     {
-        $x = array_map(
-            static function (ConfigSource $source) : array {
-                return $source->asArrayWithSecretsRemoved();
-            },
-            $this->sources
-        );
-
         return array_merge(
-            ...$x
+            ...array_map(
+                static function (ConfigSource $source) : array {
+                    return $source->asArrayWithSecretsRemoved();
+                },
+                array_reverse($this->sources)
+            )
         );
     }
 }

@@ -71,11 +71,14 @@ final class ConfigTest extends TestCase
         $configArray = Config::fromArray([
             ConfigKey::APPLICATION_NAME => 'My App',
             ConfigKey::APPLICATION_KEY => 'secret key',
+            ConfigKey::MONITORING_ENABLED => true,
         ])->asArrayWithSecretsRemoved();
 
         self::assertArrayHasKey('name', $configArray);
         self::assertSame('My App', $configArray['name']);
         self::assertArrayHasKey('key', $configArray);
         self::assertSame('<redacted>', $configArray['key']);
+        self::assertArrayHasKey('monitor', $configArray);
+        self::assertTrue($configArray['monitor']);
     }
 }
