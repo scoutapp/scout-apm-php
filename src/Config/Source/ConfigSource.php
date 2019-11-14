@@ -19,17 +19,4 @@ interface ConfigSource
      * @return mixed
      */
     public function get(string $key);
-
-    /**
-     * Return this configuration source **WITH ALL SECRETS REMOVED**. This must never return "secrets" (such as API
-     * keys).
-     *
-     * A filtering function exists in \Scoutapm\Config\ConfigKey::filterSecretsFromConfigArray which is recommended
-     * for implementations to filter secrets.
-     *
-     * @return mixed[]
-     *
-     * @psalm-return array<string, mixed>
-     */
-    public function asArrayWithSecretsRemoved() : array;
 }

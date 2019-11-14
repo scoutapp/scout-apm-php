@@ -24,10 +24,4 @@ final class NullSource implements ConfigSource
     {
         return null;
     }
-
-    /** @inheritDoc */
-    public function asArrayWithSecretsRemoved() : array
-    {
-        return [];
-    }
 }

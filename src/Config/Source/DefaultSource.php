@@ -58,10 +58,4 @@ final class DefaultSource implements ConfigSource
             ConfigKey::LOG_LEVEL => 'debug',
         ];
     }
-
-    /** @inheritDoc */
-    public function asArrayWithSecretsRemoved() : array
-    {
-        return ConfigKey::filterSecretsFromConfigArray($this->defaults);
-    }
 }

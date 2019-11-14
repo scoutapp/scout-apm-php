@@ -14,8 +14,6 @@ namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
-use function array_combine;
-use function array_map;
 use function in_array;
 use function php_uname;
 
@@ -106,22 +104,5 @@ final class DerivedSource implements ConfigSource
         $version = $this->config->get(ConfigKey::API_VERSION);
 
         return 'derived api version: ' . $version;
-    }
-
-    /** @inheritDoc */
-    public function asArrayWithSecretsRemoved() : array
-    {
-        return ConfigKey::filterSecretsFromConfigArray(
-            array_combine(
-                self::SUPPORTED_DERIVED_KEYS,
-                array_map(
-                    /** @return mixed */
-                    function (string $key) {
-                        return $this->get($key);
-                    },
-                    self::SUPPORTED_DERIVED_KEYS
-                )
-            )
-        );
     }
 }
