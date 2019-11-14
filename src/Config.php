@@ -9,6 +9,7 @@ declare(strict_types=1);
 namespace Scoutapm;
 
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Config\Source\ConfigSource;
 use Scoutapm\Config\Source\DefaultSource;
 use Scoutapm\Config\Source\DerivedSource;
 use Scoutapm\Config\Source\EnvSource;
@@ -18,6 +19,8 @@ use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
 use function array_key_exists;
+use function array_map;
+use function array_merge;
 
 // @todo needs interface
 class Config
@@ -95,5 +98,24 @@ class Config
     public function set(string $key, $value) : void
     {
         $this->userSettingsSource->set($key, $value);
+    }
+
+    /**
+     * @return mixed[]
+     *
+     * @psalm-return array<string, mixed>
+     */
+    public function asArrayWithSecretsRemoved() : array
+    {
+        $x = array_map(
+            static function (ConfigSource $source) : array {
+                return $source->asArrayWithSecretsRemoved();
+            },
+            $this->sources
+        );
+
+        return array_merge(
+            ...$x
+        );
     }
 }
