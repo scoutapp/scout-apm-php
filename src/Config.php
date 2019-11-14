@@ -9,7 +9,6 @@ declare(strict_types=1);
 namespace Scoutapm;
 
 use Scoutapm\Config\ConfigKey;
-use Scoutapm\Config\Source\ConfigSource;
 use Scoutapm\Config\Source\DefaultSource;
 use Scoutapm\Config\Source\DerivedSource;
 use Scoutapm\Config\Source\EnvSource;
@@ -18,10 +17,9 @@ use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
+use function array_combine;
 use function array_key_exists;
 use function array_map;
-use function array_merge;
-use function array_reverse;
 
 // @todo needs interface
 class Config
@@ -102,19 +100,26 @@ class Config
     }
 
     /**
+     * Return the configuration **WITH ALL SECRETS REMOVED**. This must never return "secrets" (such as API
+     * keys).
+     *
      * @return mixed[]
      *
      * @psalm-return array<string, mixed>
      */
     public function asArrayWithSecretsRemoved() : array
     {
-        return array_merge(
-            ...array_map(
-                static function (ConfigSource $source) : array {
-                    return $source->asArrayWithSecretsRemoved();
+        $keys = ConfigKey::allConfigurationKeys();
+
+        return ConfigKey::filterSecretsFromConfigArray(array_combine(
+            $keys,
+            array_map(
+                /** @return mixed */
+                function (string $key) {
+                    return $this->get($key);
                 },
-                array_reverse($this->sources)
+                $keys
             )
-        );
+        ));
     }
 }
