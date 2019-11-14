@@ -28,6 +28,7 @@ use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use function is_string;
+use function json_encode;
 use function sprintf;
 
 final class Agent implements ScoutApmAgent
@@ -130,6 +131,8 @@ final class Agent implements ScoutApmAgent
 
     public function connect() : void
     {
+        $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
+
         if (! $this->enabled()) {
             $this->logger->debug('Connection skipped, since monitoring is disabled');
 
@@ -334,7 +337,15 @@ final class Agent implements ScoutApmAgent
 
             $this->request->stopIfRunning();
 
-            return $this->connector->sendCommand($this->request);
+            if (! $this->connector->sendCommand($this->request)) {
+                $this->logger->debug('Send command returned false for Request');
+
+                return false;
+            }
+
+            $this->logger->debug('Sent whole payload successfully to core agent.');
+
+            return true;
         } catch (NotConnected $notConnected) {
             $this->logger->error($notConnected->getMessage());
 
