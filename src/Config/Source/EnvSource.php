@@ -11,27 +11,31 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config\Source;
 
+use Scoutapm\Config\ConfigKey;
+use const ARRAY_FILTER_USE_KEY;
+use function array_combine;
+use function array_filter;
+use function array_keys;
+use function array_map;
 use function getenv;
+use function strlen;
+use function strpos;
+use function strtolower;
 use function strtoupper;
+use function substr;
 
 /** @internal */
-class EnvSource
+final class EnvSource implements ConfigSource
 {
-    /**
-     * Returns true iff this config source knows for certain it has an answer for this key
-     */
+    private const SCOUT_PREFIX = 'SCOUT_';
+
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
         return getenv($this->envVarName($key)) !== false;
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return mixed
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         $value = getenv($this->envVarName($key));
@@ -46,8 +50,29 @@ class EnvSource
 
     private function envVarName(string $key) : string
     {
-        $upper = strtoupper($key);
+        return self::SCOUT_PREFIX . strtoupper($key);
+    }
 
-        return 'SCOUT_' . $upper;
+    /** @inheritDoc */
+    public function asArrayWithSecretsRemoved() : array
+    {
+        $scoutPrefixedEnvVars = array_filter(
+            getenv(),
+            /** @param mixed $v */
+            static function ($v) : bool {
+                return strpos($v, self::SCOUT_PREFIX) === 0;
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return ConfigKey::filterSecretsFromConfigArray(array_combine(
+            array_map(
+                static function (string $k) {
+                    return strtolower(substr($k, strlen(self::SCOUT_PREFIX)));
+                },
+                array_keys($scoutPrefixedEnvVars)
+            ),
+            $scoutPrefixedEnvVars
+        ));
     }
 }

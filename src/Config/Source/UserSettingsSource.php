@@ -11,10 +11,11 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config\Source;
 
+use Scoutapm\Config\ConfigKey;
 use function array_key_exists;
 
 /** @internal */
-class UserSettingsSource
+final class UserSettingsSource implements ConfigSource
 {
     /** @var array<string, mixed> */
     private $config;
@@ -24,21 +25,13 @@ class UserSettingsSource
         $this->config = [];
     }
 
-    /**
-     * Returns true if this config source knows for certain it has an answer for this key
-     */
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
         return array_key_exists($key, $this->config);
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return mixed
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         return $this->config[$key] ?? null;
@@ -48,5 +41,11 @@ class UserSettingsSource
     public function set(string $key, $value) : void
     {
         $this->config[$key] = $value;
+    }
+
+    /** @inheritDoc */
+    public function asArrayWithSecretsRemoved() : array
+    {
+        return ConfigKey::filterSecretsFromConfigArray($this->config);
     }
 }

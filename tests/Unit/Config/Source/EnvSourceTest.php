@@ -36,4 +36,20 @@ final class EnvSourceTest extends TestCase
         // Clean up the var
         putenv('SCOUT_TEST_CASE_BAR');
     }
+
+    public function testAsArray() : void
+    {
+        putenv('SCOUT_KEY=secret key');
+        putenv('SCOUT_NAME=My App');
+
+        $configArray = (new EnvSource())->asArrayWithSecretsRemoved();
+
+        self::assertArrayHasKey('key', $configArray);
+        self::assertSame('<redacted>', $configArray['key']);
+        self::assertArrayHasKey('name', $configArray);
+        self::assertSame('My App', $configArray['name']);
+
+        putenv('SCOUT_KEY');
+        putenv('SCOUT_NAME');
+    }
 }

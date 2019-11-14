@@ -11,27 +11,23 @@ declare(strict_types=1);
 namespace Scoutapm\Config\Source;
 
 /** @internal */
-class NullSource
+final class NullSource implements ConfigSource
 {
-    /**
-     * Returns true
-     *
-     * @return bool (always True)
-     */
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
         return true;
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return null
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         return null;
+    }
+
+    /** @inheritDoc */
+    public function asArrayWithSecretsRemoved() : array
+    {
+        return [];
     }
 }

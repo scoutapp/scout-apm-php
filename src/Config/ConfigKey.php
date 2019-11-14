@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config;
 
+use function array_combine;
+use function array_keys;
+use function array_map;
+use function in_array;
+
 abstract class ConfigKey
 {
     public const MONITORING_ENABLED          = 'monitor';
@@ -28,4 +33,37 @@ abstract class ConfigKey
     public const CORE_AGENT_VERSION          = 'core_agent_version';
     public const CORE_AGENT_TRIPLE           = 'core_agent_triple';
     public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
+
+    private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
+
+    /**
+     * @param mixed[] $configArray
+     *
+     * @return mixed[]
+     *
+     * @psalm-param array<string, mixed> $configArray
+     * @psalm-return array<string, mixed>
+     */
+    public static function filterSecretsFromConfigArray(array $configArray) : array
+    {
+        return array_combine(
+            array_keys($configArray),
+            array_map(
+                /**
+                 * @param mixed $v
+                 *
+                 * @return mixed
+                 */
+                static function (string $k, $v) {
+                    if (in_array($k, self::SECRET_CONFIGURATIONS, true)) {
+                        return '<redacted>';
+                    }
+
+                    return $v;
+                },
+                array_keys($configArray),
+                $configArray
+            )
+        );
+    }
 }
