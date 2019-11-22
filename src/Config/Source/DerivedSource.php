@@ -14,11 +14,19 @@ namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use function in_array;
 use function php_uname;
 
 /** @internal */
-class DerivedSource
+final class DerivedSource implements ConfigSource
 {
+    private const SUPPORTED_DERIVED_KEYS = [
+        ConfigKey::CORE_AGENT_SOCKET_PATH,
+        ConfigKey::CORE_AGENT_FULL_NAME,
+        ConfigKey::CORE_AGENT_TRIPLE,
+        'testing',
+    ];
+
     /** @var Config */
     private $config;
 
@@ -27,21 +35,13 @@ class DerivedSource
         $this->config = $config;
     }
 
-    /**
-     * Returns true if this config source knows for certain it has an answer for this key
-     */
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
-        return $this->get($key) !== null;
+        return in_array($key, self::SUPPORTED_DERIVED_KEYS, true);
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return mixed
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         switch ($key) {

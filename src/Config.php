@@ -17,7 +17,9 @@ use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
+use function array_combine;
 use function array_key_exists;
+use function array_map;
 
 // @todo needs interface
 class Config
@@ -95,5 +97,29 @@ class Config
     public function set(string $key, $value) : void
     {
         $this->userSettingsSource->set($key, $value);
+    }
+
+    /**
+     * Return the configuration **WITH ALL SECRETS REMOVED**. This must never return "secrets" (such as API
+     * keys).
+     *
+     * @return mixed[]
+     *
+     * @psalm-return array<string, mixed>
+     */
+    public function asArrayWithSecretsRemoved() : array
+    {
+        $keys = ConfigKey::allConfigurationKeys();
+
+        return ConfigKey::filterSecretsFromConfigArray(array_combine(
+            $keys,
+            array_map(
+                /** @return mixed */
+                function (string $key) {
+                    return $this->get($key);
+                },
+                $keys
+            )
+        ));
     }
 }

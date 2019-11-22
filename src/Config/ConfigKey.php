@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config;
 
+use function array_combine;
+use function array_keys;
+use function array_map;
+use function in_array;
+
 abstract class ConfigKey
 {
     public const MONITORING_ENABLED          = 'monitor';
@@ -28,4 +33,66 @@ abstract class ConfigKey
     public const CORE_AGENT_VERSION          = 'core_agent_version';
     public const CORE_AGENT_TRIPLE           = 'core_agent_triple';
     public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
+
+    private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
+
+    /** @return string[] */
+    public static function allConfigurationKeys() : array
+    {
+        return [
+            self::MONITORING_ENABLED,
+            self::APPLICATION_NAME,
+            self::APPLICATION_KEY,
+            self::LOG_LEVEL,
+            self::API_VERSION,
+            self::IGNORED_ENDPOINTS,
+            self::APPLICATION_ROOT,
+            self::SCM_SUBDIRECTORY,
+            self::REVISION_SHA,
+            self::HOSTNAME,
+            self::CORE_AGENT_LOG_LEVEL,
+            self::CORE_AGENT_LOG_FILE,
+            self::CORE_AGENT_CONFIG_FILE,
+            self::CORE_AGENT_SOCKET_PATH,
+            self::CORE_AGENT_DIRECTORY,
+            self::CORE_AGENT_FULL_NAME,
+            self::CORE_AGENT_DOWNLOAD_URL,
+            self::CORE_AGENT_LAUNCH_ENABLED,
+            self::CORE_AGENT_DOWNLOAD_ENABLED,
+            self::CORE_AGENT_VERSION,
+            self::CORE_AGENT_TRIPLE,
+            self::CORE_AGENT_PERMISSIONS,
+        ];
+    }
+
+    /**
+     * @param mixed[] $configArray
+     *
+     * @return mixed[]
+     *
+     * @psalm-param array<string, mixed> $configArray
+     * @psalm-return array<string, mixed>
+     */
+    public static function filterSecretsFromConfigArray(array $configArray) : array
+    {
+        return array_combine(
+            array_keys($configArray),
+            array_map(
+                /**
+                 * @param mixed $v
+                 *
+                 * @return mixed
+                 */
+                static function (string $k, $v) {
+                    if (in_array($k, self::SECRET_CONFIGURATIONS, true)) {
+                        return '<redacted>';
+                    }
+
+                    return $v;
+                },
+                array_keys($configArray),
+                $configArray
+            )
+        );
+    }
 }

@@ -14,9 +14,9 @@ use Scoutapm\Config\ConfigKey;
 use function array_key_exists;
 
 /** @internal */
-class DefaultSource
+final class DefaultSource implements ConfigSource
 {
-    /** @var array<string, (string|bool|array<int, string>|int)> */
+    /** @var array<string, mixed> */
     private $defaults;
 
     public function __construct()
@@ -24,21 +24,13 @@ class DefaultSource
         $this->defaults = $this->getDefaultConfig();
     }
 
-    /**
-     * Returns true iff this config source knows for certain it has an answer for this key
-     */
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
         return array_key_exists($key, $this->defaults);
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return string|bool|array<int, string>|int|null
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         return $this->defaults[$key] ?? null;

@@ -115,12 +115,19 @@ final class AgentTest extends TestCase
         /** @var LoggerInterface&MockObject $logger */
         $logger = $this->createMock(LoggerInterface::class);
 
-        $logger->expects(self::once())
+        $logger->expects(self::exactly(2))
             ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                self::stringContains('Connection skipped, since monitoring is disabled'),
-                []
+            ->withConsecutive(
+                [
+                    LogLevel::DEBUG,
+                    self::stringContains('Configuration'),
+                    [],
+                ],
+                [
+                    LogLevel::DEBUG,
+                    self::stringContains('Connection skipped, since monitoring is disabled'),
+                    [],
+                ]
             );
 
         $agent = Agent::fromConfig(

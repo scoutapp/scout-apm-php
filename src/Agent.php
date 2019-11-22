@@ -28,6 +28,7 @@ use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use function is_string;
+use function json_encode;
 use function sprintf;
 
 final class Agent implements ScoutApmAgent
@@ -130,6 +131,8 @@ final class Agent implements ScoutApmAgent
 
     public function connect() : void
     {
+        $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
+
         if (! $this->enabled()) {
             $this->logger->debug('Connection skipped, since monitoring is disabled');
 
@@ -282,15 +285,21 @@ final class Agent implements ScoutApmAgent
     {
         // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
+            $this->logger->debug('Not sending payload, logging is not enabled');
+
             return false;
         }
 
         // Don't send it if the request was ignored
         if ($this->isIgnored) {
+            $this->logger->debug('Not sending payload, request has been ignored');
+
             return false;
         }
 
         if ($this->request === null) {
+            $this->logger->debug('Not sending payload, request was not set');
+
             // @todo throw exception? return false?
             return false;
         }
@@ -312,6 +321,8 @@ final class Agent implements ScoutApmAgent
                 (string) $this->config->get(ConfigKey::APPLICATION_KEY),
                 $this->config->get(ConfigKey::API_VERSION)
             ))) {
+                $this->logger->debug('Send command returned false for RegisterMessage');
+
                 return false;
             }
 
@@ -319,12 +330,22 @@ final class Agent implements ScoutApmAgent
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config
             ))) {
+                $this->logger->debug('Send command returned false for Metadata');
+
                 return false;
             }
 
             $this->request->stopIfRunning();
 
-            return $this->connector->sendCommand($this->request);
+            if (! $this->connector->sendCommand($this->request)) {
+                $this->logger->debug('Send command returned false for Request');
+
+                return false;
+            }
+
+            $this->logger->debug('Sent whole payload successfully to core agent.');
+
+            return true;
         } catch (NotConnected $notConnected) {
             $this->logger->error($notConnected->getMessage());
 

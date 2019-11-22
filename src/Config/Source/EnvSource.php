@@ -15,23 +15,17 @@ use function getenv;
 use function strtoupper;
 
 /** @internal */
-class EnvSource
+final class EnvSource implements ConfigSource
 {
-    /**
-     * Returns true iff this config source knows for certain it has an answer for this key
-     */
+    private const SCOUT_PREFIX = 'SCOUT_';
+
+    /** @inheritDoc */
     public function hasKey(string $key) : bool
     {
         return getenv($this->envVarName($key)) !== false;
     }
 
-    /**
-     * Returns the value for this configuration key.
-     *
-     * Only valid if the Source has previously returned "true" to `hasKey`
-     *
-     * @return mixed
-     */
+    /** @inheritDoc */
     public function get(string $key)
     {
         $value = getenv($this->envVarName($key));
@@ -46,8 +40,6 @@ class EnvSource
 
     private function envVarName(string $key) : string
     {
-        $upper = strtoupper($key);
-
-        return 'SCOUT_' . $upper;
+        return self::SCOUT_PREFIX . strtoupper($key);
     }
 }
