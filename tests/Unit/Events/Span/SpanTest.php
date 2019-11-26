@@ -56,6 +56,17 @@ final class SpanTest extends TestCase
     }
 
     /** @throws Exception */
+    public function testSpansCanBeCounted() : void
+    {
+        $span = new Span($this->mockParent, '', RequestId::new());
+        $span->tag('Foo', 'Bar');
+        $span->appendChild(new Span($this->mockParent, '', RequestId::new()));
+        $span->stop();
+
+        self::assertSame(1, $span->collectedSpans());
+    }
+
+    /** @throws Exception */
     public function testSpanNameOverride() : void
     {
         $span = new Span($this->mockParent, 'original', RequestId::new());

@@ -337,6 +337,8 @@ final class Agent implements ScoutApmAgent
 
             $this->request->stopIfRunning();
 
+            $this->logger->debug(sprintf('Sending metrics from %d collected spans', $this->request->collectedSpans()));
+
             if (! $this->connector->sendCommand($this->request)) {
                 $this->logger->debug('Send command returned false for Request');
 

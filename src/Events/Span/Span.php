@@ -12,6 +12,7 @@ use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Backtrace;
+use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
 use function array_filter;
 use function strpos;
@@ -127,6 +128,11 @@ class Span implements CommandWithParent, CommandWithChildren
     public function duration() : ?float
     {
         return $this->timer->duration();
+    }
+
+    public function collectedSpans() : int
+    {
+        return RecursivelyCountSpans::forCommands($this->children);
     }
 
     /**

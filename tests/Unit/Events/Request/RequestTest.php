@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Events\Request;
 
+use Exception;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Span\Span;
 use function json_decode;
 use function json_encode;
 use function next;
@@ -139,5 +142,19 @@ final class RequestTest extends TestCase
         self::assertArrayHasKey('TagRequest', next($commands));
 
         self::assertArrayHasKey('FinishRequest', next($commands));
+    }
+
+    /** @throws Exception */
+    public function testSpansCanBeCounted() : void
+    {
+        $request = new Request();
+        $request->tag('t', 'v');
+        $span = $request->startSpan('foo');
+        $span->tag('spantag', 'spanvalue');
+        $span->appendChild(new Span($span, 'sub', RequestId::new()));
+        $request->stopSpan();
+        $request->stop();
+
+        self::assertSame(2, $request->collectedSpans());
     }
 }
