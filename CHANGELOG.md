@@ -6,6 +6,16 @@
 
  - Added `language_version` key to be sent with metadata (#110)
  - Added more debug logging to isolate issues easier (#111, #115)
+ - **[BC]** `\Scoutapm\Connector\Connector::sendCommand` now returns `string` not `bool`
+ - **[BC]** `\Scoutapm\Agent::fromConfig()` second parameter for a `\Psr\Log\LoggerInterface` implementation is no longer optional
+   - You should pass in an implementation of `\Psr\Log\LoggerInterface` as the second parameter
+   - If you do not want logging, you can use `\Psr\Log\NullLogger` (although this is not advisable)
+ - **[BC]** `\Scoutapm\Agent::__construct` is now private
+   - Use the named constructor `\Scoutapm\Agent::fromConfig()` instead
+
+### Removed
+ - **[BC]** `\Scoutapm\Agent::fromDefaults()` named constructor was removed
+   - For exactly matching behaviour, use `::fromConfig(new \Scoutapm\Config(), new \Psr\Log\NullLogger())`
 
 ## [1.0.0] 2019-11-05
 
