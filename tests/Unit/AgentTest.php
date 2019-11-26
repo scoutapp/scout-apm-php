@@ -265,7 +265,7 @@ final class AgentTest extends TestCase
         $config = new Config();
         $config->set(ConfigKey::IGNORED_ENDPOINTS, ['/foo']);
 
-        $agent = Agent::fromConfig($config);
+        $agent = Agent::fromConfig($config, new NullLogger());
 
         self::assertTrue($agent->ignored('/foo'));
         self::assertFalse($agent->ignored('/bar'));

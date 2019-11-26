@@ -8,7 +8,6 @@ use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
@@ -102,12 +101,12 @@ final class Agent implements ScoutApmAgent
         return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    public static function fromConfig(Config $config, ?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    public static function fromConfig(Config $config, LoggerInterface $logger, ?Connector $connector = null) : self
     {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger(),
+            $logger,
             new PotentiallyAvailableExtensionCapabilities()
         );
     }
