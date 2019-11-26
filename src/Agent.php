@@ -102,23 +102,6 @@ final class Agent implements ScoutApmAgent
         return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    /**
-     * @deprecated Once getConfig is removed, you cannot overwrite config using this...
-     *
-     * @todo alternative API to be discussed...
-     */
-    public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
-    {
-        $config = new Config();
-
-        return new self(
-            $config,
-            $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger(),
-            new PotentiallyAvailableExtensionCapabilities()
-        );
-    }
-
     public static function fromConfig(Config $config, ?LoggerInterface $logger = null, ?Connector $connector = null) : self
     {
         return new self(
