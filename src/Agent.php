@@ -61,7 +61,7 @@ final class Agent implements ScoutApmAgent
     /** @var ExtentionCapabilities */
     private $phpExtension;
 
-    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
+    private function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
     {
         $this->config       = $configuration;
         $this->connector    = $connector;
