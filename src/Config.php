@@ -17,6 +17,7 @@ use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
+use Scoutapm\Helper\LibcDetection;
 use function array_combine;
 use function array_key_exists;
 use function array_map;
@@ -40,7 +41,7 @@ class Config
         $this->sources = [
             new EnvSource(),
             $this->userSettingsSource,
-            new DerivedSource($this),
+            new DerivedSource($this, new LibcDetection()),
             new DefaultSource(),
             new NullSource(),
         ];
