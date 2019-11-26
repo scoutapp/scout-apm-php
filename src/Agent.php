@@ -316,36 +316,25 @@ final class Agent implements ScoutApmAgent
         }
 
         try {
-            if (! $this->connector->sendCommand(new RegisterMessage(
+            $this->connector->sendCommand(new RegisterMessage(
                 (string) $this->config->get(ConfigKey::APPLICATION_NAME),
                 (string) $this->config->get(ConfigKey::APPLICATION_KEY),
                 $this->config->get(ConfigKey::API_VERSION)
-            ))) {
-                $this->logger->debug('Send command returned false for RegisterMessage');
+            ));
 
-                return false;
-            }
-
-            if (! $this->connector->sendCommand(new Metadata(
+            $this->connector->sendCommand(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config
-            ))) {
-                $this->logger->debug('Send command returned false for Metadata');
-
-                return false;
-            }
+            ));
 
             $this->request->stopIfRunning();
 
             $this->logger->debug(sprintf('Sending metrics from %d collected spans', $this->request->collectedSpans()));
 
-            if (! $this->connector->sendCommand($this->request)) {
-                $this->logger->debug('Send command returned false for Request');
-
-                return false;
-            }
-
-            $this->logger->debug('Sent whole payload successfully to core agent.');
+            $this->logger->debug(sprintf(
+                'Sent whole payload successfully to core agent. Core agent response was: %s',
+                $this->connector->sendCommand($this->request)
+            ));
 
             return true;
         } catch (NotConnected $notConnected) {

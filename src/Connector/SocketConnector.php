@@ -69,7 +69,7 @@ final class SocketConnector implements Connector
         return $this->connected;
     }
 
-    public function sendCommand(Command $message) : bool
+    public function sendCommand(Command $message) : string
     {
         if (! $this->connected()) {
             throw NotConnected::fromSocketPath($this->socketPath);
@@ -97,11 +97,13 @@ final class SocketConnector implements Connector
             throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
         }
 
-        if (socket_read($this->socket, unpack('N', $responseLength)[1]) === false) {
+        $dataRead = socket_read($this->socket, unpack('N', $responseLength)[1]);
+
+        if ($dataRead === false) {
             throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->socketPath);
         }
 
-        return true;
+        return $dataRead;
     }
 
     public function shutdown() : void

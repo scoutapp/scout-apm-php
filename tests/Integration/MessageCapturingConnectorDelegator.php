@@ -30,7 +30,7 @@ final class MessageCapturingConnectorDelegator implements Connector
         return $this->delegate->connected();
     }
 
-    public function sendCommand(Command $message) : bool
+    public function sendCommand(Command $message) : string
     {
         $this->sentMessages[] = $message;
 
