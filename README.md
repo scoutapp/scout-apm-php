@@ -25,15 +25,22 @@ To install the ScoutAPM Agent for a specific framework, use the specific package
 ### Using the base library directly
 
 ```php
+use Psr\Log\LoggerInterface;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 
-$agent = Agent::fromConfig(Config::fromArray([
-    ConfigKey::APPLICATION_NAME => 'Your application name',
-    ConfigKey::APPLICATION_KEY => 'your scout key',
-    ConfigKey::MONITORING_ENABLED => true,
-]));
+// It is assumed you are using a PSR Logger
+/** @var LoggerInterface $psrLoggerImplementation */
+
+$agent = Agent::fromConfig(
+    Config::fromArray([
+        ConfigKey::APPLICATION_NAME => 'Your application name',
+        ConfigKey::APPLICATION_KEY => 'your scout key',
+        ConfigKey::MONITORING_ENABLED => true,
+    ]),
+    $psrLoggerImplementation
+);
 // If the core agent is not already running, this will download and run it (from /tmp by default)
 $agent->connect();
 
@@ -41,6 +48,33 @@ $agent->connect();
 
 // Nothing is sent to Scout until you call this - so call this at the end of your request
 $agent->send();
+```
+
+#### Default log level
+
+By default, the library is *very* noisy in logging by design - this is to help us figure out what is going wrong if you
+need assistance. If you are confident everything is working, and you can see data in your Scout dashboard, then you
+can increase the minimum log level by adding the following configuration to set the "minimum" log level (which **only**
+applies to Scout's logging):
+
+```php
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use Scoutapm\Agent;
+use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
+
+/** @var LoggerInterface $psrLoggerImplementation */
+
+$agent = Agent::fromConfig(
+    Config::fromArray([
+        ConfigKey::APPLICATION_NAME => 'Your application name',
+        ConfigKey::APPLICATION_KEY => 'your scout key',
+        ConfigKey::MONITORING_ENABLED => true,
+        ConfigKey::LOG_LEVEL => LogLevel::ERROR, // <-- add this configuration
+    ]),
+    $psrLoggerImplementation
+);
 ```
 
 ## Monitoring of PHP internal functions
