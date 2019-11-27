@@ -8,11 +8,12 @@
     "require": {
         "php": ">=7.1.0,<7.5.0",
         "ext-json": "*",
+        "ext-openssl": "*",
         "ext-sockets": "*",
         "ext-zlib": "*",
-        "ext-openssl": "*",
         "ocramius/package-versions": "^1.4",
         "psr/log": "^1.0",
+        "psr/simple-cache": "^1.0",
         "ralouphie/getallheaders": "^2.0.5|^3.0",
         "ramsey/uuid": "^3.0",
         "webmozart/assert": "^1.0"
