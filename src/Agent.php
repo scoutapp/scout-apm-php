@@ -8,13 +8,14 @@ use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\FailedToSendCommand;
+use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
@@ -113,14 +114,14 @@ final class Agent implements ScoutApmAgent
         return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    public static function fromConfig(Config $config, LoggerInterface $logger, ?Connector $connector = null) : self
+    public static function fromConfig(Config $config, LoggerInterface $logger, ?CacheInterface $cache = null, ?Connector $connector = null) : self
     {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
             new PotentiallyAvailableExtensionCapabilities(),
-            new DevNullCache()
+            $cache ?? new DevNullCache()
         );
     }
 
