@@ -8,12 +8,13 @@ use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Psr\SimpleCache\CacheInterface;
+use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
-use Scoutapm\Connector\Exception\FailedToSendCommand;
-use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
@@ -32,6 +33,8 @@ use function sprintf;
 
 final class Agent implements ScoutApmAgent
 {
+    private const CACHE_KEY_REGISTRATION_COMPLETE = 'scout_registration_completed';
+
     /** @var Config */
     private $config;
 
@@ -61,12 +64,21 @@ final class Agent implements ScoutApmAgent
     /** @var ExtentionCapabilities */
     private $phpExtension;
 
-    private function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
-    {
+    /** @var CacheInterface */
+    private $cache;
+
+    private function __construct(
+        Config $configuration,
+        Connector $connector,
+        LoggerInterface $logger,
+        ExtentionCapabilities $phpExtension,
+        CacheInterface $cache
+    ) {
         $this->config       = $configuration;
         $this->connector    = $connector;
         $this->logger       = $logger;
         $this->phpExtension = $phpExtension;
+        $this->cache        = $cache;
 
         if (! $this->logger instanceof FilteredLogLevelDecorator) {
             $this->logger = new FilteredLogLevelDecorator(
@@ -107,7 +119,8 @@ final class Agent implements ScoutApmAgent
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
-            new PotentiallyAvailableExtensionCapabilities()
+            new PotentiallyAvailableExtensionCapabilities(),
+            new DevNullCache()
         );
     }
 
@@ -298,16 +311,20 @@ final class Agent implements ScoutApmAgent
         }
 
         try {
-            $this->connector->sendCommand(new RegisterMessage(
-                (string) $this->config->get(ConfigKey::APPLICATION_NAME),
-                (string) $this->config->get(ConfigKey::APPLICATION_KEY),
-                $this->config->get(ConfigKey::API_VERSION)
-            ));
+            if (! $this->registrationIsComplete()) {
+                $this->connector->sendCommand(new RegisterMessage(
+                    (string) $this->config->get(ConfigKey::APPLICATION_NAME),
+                    (string) $this->config->get(ConfigKey::APPLICATION_KEY),
+                    $this->config->get(ConfigKey::API_VERSION)
+                ));
 
-            $this->connector->sendCommand(new Metadata(
-                new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                $this->config
-            ));
+                $this->connector->sendCommand(new Metadata(
+                    new DateTimeImmutable('now', new DateTimeZone('UTC')),
+                    $this->config
+                ));
+
+                $this->markRegistrationComplete();
+            }
 
             $this->request->stopIfRunning();
 
@@ -328,6 +345,20 @@ final class Agent implements ScoutApmAgent
 
             return false;
         }
+    }
+
+    private function registrationIsComplete() : bool
+    {
+        return (bool) $this->cache->get(self::CACHE_KEY_REGISTRATION_COMPLETE, false);
+    }
+
+    private function markRegistrationComplete() : void
+    {
+        if ($this->registrationIsComplete()) {
+            return;
+        }
+
+        $this->cache->set(self::CACHE_KEY_REGISTRATION_COMPLETE, true);
     }
 
     /**
