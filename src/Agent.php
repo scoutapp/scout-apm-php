@@ -8,7 +8,6 @@ use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
@@ -62,7 +61,7 @@ final class Agent implements ScoutApmAgent
     /** @var ExtentionCapabilities */
     private $phpExtension;
 
-    public function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
+    private function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
     {
         $this->config       = $configuration;
         $this->connector    = $connector;
@@ -102,29 +101,12 @@ final class Agent implements ScoutApmAgent
         return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    /**
-     * @deprecated Once getConfig is removed, you cannot overwrite config using this...
-     *
-     * @todo alternative API to be discussed...
-     */
-    public static function fromDefaults(?LoggerInterface $logger = null, ?Connector $connector = null) : self
-    {
-        $config = new Config();
-
-        return new self(
-            $config,
-            $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger(),
-            new PotentiallyAvailableExtensionCapabilities()
-        );
-    }
-
-    public static function fromConfig(Config $config, ?LoggerInterface $logger = null, ?Connector $connector = null) : self
+    public static function fromConfig(Config $config, LoggerInterface $logger, ?Connector $connector = null) : self
     {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
-            $logger ?? new NullLogger(),
+            $logger,
             new PotentiallyAvailableExtensionCapabilities()
         );
     }
@@ -316,34 +298,25 @@ final class Agent implements ScoutApmAgent
         }
 
         try {
-            if (! $this->connector->sendCommand(new RegisterMessage(
+            $this->connector->sendCommand(new RegisterMessage(
                 (string) $this->config->get(ConfigKey::APPLICATION_NAME),
                 (string) $this->config->get(ConfigKey::APPLICATION_KEY),
                 $this->config->get(ConfigKey::API_VERSION)
-            ))) {
-                $this->logger->debug('Send command returned false for RegisterMessage');
+            ));
 
-                return false;
-            }
-
-            if (! $this->connector->sendCommand(new Metadata(
+            $this->connector->sendCommand(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config
-            ))) {
-                $this->logger->debug('Send command returned false for Metadata');
-
-                return false;
-            }
+            ));
 
             $this->request->stopIfRunning();
 
-            if (! $this->connector->sendCommand($this->request)) {
-                $this->logger->debug('Send command returned false for Request');
+            $this->logger->debug(sprintf('Sending metrics from %d collected spans', $this->request->collectedSpans()));
 
-                return false;
-            }
-
-            $this->logger->debug('Sent whole payload successfully to core agent.');
+            $this->logger->debug(sprintf(
+                'Sent whole payload successfully to core agent. Core agent response was: %s',
+                $this->connector->sendCommand($this->request)
+            ));
 
             return true;
         } catch (NotConnected $notConnected) {

@@ -5,9 +5,14 @@ declare(strict_types=1);
 namespace Scoutapm\CoreAgent;
 
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Throwable;
+use const JSON_ERROR_NONE;
 use function file_get_contents;
 use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
+use function sprintf;
 
 /** @internal */
 class Manifest
@@ -38,19 +43,24 @@ class Manifest
         try {
             $this->parse();
         } catch (Throwable $e) {
+            $this->logger->debug(
+                sprintf('Exception raised whilst parsing manifest: %s', $e->getMessage()),
+                ['exception' => $e]
+            );
             $this->valid = false;
         }
     }
 
     private function parse() : void
     {
-        $this->logger->info('Parsing Core Agent Manifest at ' . $this->manifestPath);
+        $this->logger->info(sprintf('Parsing Core Agent Manifest at "%s"', $this->manifestPath));
 
         $raw  = file_get_contents($this->manifestPath);
         $json = json_decode($raw, true); // decode the JSON into an associative array
 
-        // @todo unused, do we need this?
-        //$this->version    = $json['version'];
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new RuntimeException(sprintf('Decoded JSON was null, last JSON error: %s', json_last_error_msg()));
+        }
 
         $this->binVersion = $json['core_agent_version'];
         $this->binName    = $json['core_agent_binary'];

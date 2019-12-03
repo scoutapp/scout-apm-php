@@ -8,6 +8,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -144,7 +145,7 @@ final class AgentTest extends TestCase
 
     public function testFullAgentSequence() : void
     {
-        $agent = Agent::fromDefaults();
+        $agent = Agent::fromConfig(new Config(), new NullLogger());
 
         // Start a Parent Controller Span
         $agent->startSpan('Controller/Test');
@@ -169,7 +170,7 @@ final class AgentTest extends TestCase
 
     public function testInstrument() : void
     {
-        $agent  = Agent::fromDefaults();
+        $agent  = Agent::fromConfig(new Config(), new NullLogger());
         $retval = $agent->instrument('Custom', 'Test', static function (Span $span) {
             $span->tag('OMG', 'Thingy');
 
@@ -192,7 +193,7 @@ final class AgentTest extends TestCase
 
     public function testWebTransaction() : void
     {
-        $retval = Agent::fromDefaults()->webTransaction('Test', static function (Span $span) {
+        $retval = Agent::fromConfig(new Config(), new NullLogger())->webTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Controller"
             self::assertSame($span->getName(), 'Controller/Test');
 
@@ -204,7 +205,7 @@ final class AgentTest extends TestCase
 
     public function testBackgroundTransaction() : void
     {
-        $retval = Agent::fromDefaults()->backgroundTransaction('Test', static function (Span $span) {
+        $retval = Agent::fromConfig(new Config(), new NullLogger())->backgroundTransaction('Test', static function (Span $span) {
             // Check span name is prefixed with "Job"
             self::assertSame($span->getName(), 'Job/Test');
 
@@ -216,13 +217,13 @@ final class AgentTest extends TestCase
 
     public function testStartSpan() : void
     {
-        $span = Agent::fromDefaults()->startSpan('foo/bar');
+        $span = Agent::fromConfig(new Config(), new NullLogger())->startSpan('foo/bar');
         self::assertSame('foo/bar', $span->getName());
     }
 
     public function testStopSpan() : void
     {
-        $agent = Agent::fromDefaults();
+        $agent = Agent::fromConfig(new Config(), new NullLogger());
         $span  = $agent->startSpan('foo/bar');
         self::assertNull($span->getStopTime());
 
@@ -233,7 +234,7 @@ final class AgentTest extends TestCase
 
     public function testTagRequest() : void
     {
-        $agent = Agent::fromDefaults();
+        $agent = Agent::fromConfig(new Config(), new NullLogger());
         $agent->tagRequest('foo', 'bar');
 
         $events = $agent->getRequest()->getEvents();
@@ -248,14 +249,14 @@ final class AgentTest extends TestCase
     public function testEnabled() : void
     {
         // without affirmatively enabling, it's not enabled.
-        $agentWithoutEnabling = Agent::fromDefaults();
+        $agentWithoutEnabling = Agent::fromConfig(new Config(), new NullLogger());
         self::assertFalse($agentWithoutEnabling->enabled());
 
         // but a config that has monitor = true, it is set
         $config = new Config();
         $config->set(ConfigKey::MONITORING_ENABLED, 'true');
 
-        $enabledAgent = Agent::fromConfig($config);
+        $enabledAgent = Agent::fromConfig($config, new NullLogger());
         self::assertTrue($enabledAgent->enabled());
     }
 
@@ -264,7 +265,7 @@ final class AgentTest extends TestCase
         $config = new Config();
         $config->set(ConfigKey::IGNORED_ENDPOINTS, ['/foo']);
 
-        $agent = Agent::fromConfig($config);
+        $agent = Agent::fromConfig($config, new NullLogger());
 
         self::assertTrue($agent->ignored('/foo'));
         self::assertFalse($agent->ignored('/bar'));
@@ -275,7 +276,7 @@ final class AgentTest extends TestCase
      */
     public function testIgnoredAgentSequence() : void
     {
-        $agent = Agent::fromDefaults();
+        $agent = Agent::fromConfig(new Config(), new NullLogger());
         $agent->ignore();
 
         // Start a Parent Controller Span

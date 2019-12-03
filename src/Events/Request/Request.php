@@ -11,6 +11,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\MemoryUsage;
+use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
 use function is_string;
 
@@ -161,6 +162,11 @@ class Request implements CommandWithChildren
         return [
             'BatchCommand' => ['commands' => $commands],
         ];
+    }
+
+    public function collectedSpans() : int
+    {
+        return RecursivelyCountSpans::forCommands($this->children);
     }
 
     /**

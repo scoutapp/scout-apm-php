@@ -104,7 +104,10 @@ class Downloader
             $this->downloadPackage();
             $this->untar();
         } catch (Throwable $e) {
-            $this->logger->error('Exception raised while downloading Core Agent: ' . $e);
+            $this->logger->error(
+                sprintf('Exception raised while downloading Core Agent: %s', $e->getMessage()),
+                ['exception' => $e]
+            );
         } finally {
             $this->releaseDownloadLock();
         }
@@ -122,7 +125,10 @@ class Downloader
                 throw new RuntimeException(sprintf('Directory "%s" was not created', $destination));
             }
         } catch (Throwable $e) {
-            $this->logger->error('Failed to create directory: ' . $destination);
+            $this->logger->error(
+                sprintf('Failed to create directory "%s": %s', $destination, $e->getMessage()),
+                ['exception' => $e]
+            );
         }
     }
 
@@ -131,13 +137,12 @@ class Downloader
         $this->cleanStaleDownloadLock();
 
         try {
-            $this->download_lock_fd = fopen(
-                $this->download_lock_path,
-                'x+' // This is the same as O_RDWR | O_EXCL | O_CREAT
-                // O_RDWR | O_CREAT | O_EXCL | O_NONBLOCK
-            );
+            $this->download_lock_fd = fopen($this->download_lock_path, 'xb+');
         } catch (Throwable $e) {
-            $this->logger->debug('Could not obtain download lock on ' . $this->download_lock_path . ': ' . $e);
+            $this->logger->debug(
+                sprintf('Could not obtain download lock on "%s": %s', $this->download_lock_path, $e->getMessage()),
+                ['exception' => $e]
+            );
             $this->download_lock_fd = null;
         }
     }
@@ -147,11 +152,18 @@ class Downloader
         try {
             $delta = time() - filectime($this->download_lock_path);
             if ($delta > $this->stale_download_secs) {
-                $this->logger->debug('Clearing stale download lock file.');
+                $this->logger->debug(sprintf('Clearing stale download lock file "%s".', $this->download_lock_path));
                 unlink($this->download_lock_path);
             }
         } catch (Throwable $e) {
-            // Log this
+            $this->logger->debug(
+                sprintf(
+                    'Failed to clean stale download lock on "%s": %s',
+                    $this->download_lock_path,
+                    $e->getMessage()
+                ),
+                ['exception' => $e]
+            );
         }
     }
 
@@ -168,6 +180,9 @@ class Downloader
     private function downloadPackage() : void
     {
         $fullUrl = $this->fullUrl();
+
+        $this->logger->debug(sprintf('Downloading package from "%s" to "%s"', $fullUrl, $this->package_location));
+
         copy($fullUrl, $this->package_location);
 
         if (! file_exists($this->package_location)) {
@@ -183,10 +198,11 @@ class Downloader
     {
         $tgzFilename = $this->package_location;
         $destination = $this->coreAgentDir;
+        $tarFilename = dirname($tgzFilename) . '/' . basename($tgzFilename, '.tgz') . '.tar';
+
+        $this->logger->debug(sprintf('Decompressing archive "%s" to "%s"', $tgzFilename, $tarFilename));
 
         (new PharData($tgzFilename))->decompress();
-
-        $tarFilename = dirname($tgzFilename) . '/' . basename($tgzFilename, '.tgz') . '.tar';
 
         if (! file_exists($tarFilename)) {
             throw new RuntimeException(sprintf(
@@ -196,7 +212,8 @@ class Downloader
             ));
         }
 
-        // Extract it to destination
+        $this->logger->debug(sprintf('Extracting "%s" to path "%s"', $tarFilename, $destination));
+
         (new PharData($tarFilename))->extractTo($destination);
     }
 
