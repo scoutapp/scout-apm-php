@@ -56,6 +56,7 @@ final class AgentTest extends TestCase
     /** @throws Exception */
     public function testLoggingIsSent() : void
     {
+        // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
         $scoutApmKey = getenv('SCOUT_APM_KEY');
 
         if ($scoutApmKey === false) {
