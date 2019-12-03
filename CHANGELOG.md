@@ -6,6 +6,7 @@
 
  - Added `language_version` key to be sent with metadata (#110)
  - Added more debug logging to isolate issues easier (#111, #115)
+ - Added detection of `musl` by checking if `/etc/alpine-release` exists (#118)
  - **[BC]** `\Scoutapm\Connector\Connector::sendCommand` now returns `string` not `bool`
  - **[BC]** `\Scoutapm\Agent::fromConfig()` second parameter for a `\Psr\Log\LoggerInterface` implementation is no longer optional
    - You should pass in an implementation of `\Psr\Log\LoggerInterface` as the second parameter

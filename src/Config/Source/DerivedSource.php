@@ -14,6 +14,7 @@ namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Helper\LibcDetection;
 use function in_array;
 use function php_uname;
 
@@ -30,9 +31,13 @@ final class DerivedSource implements ConfigSource
     /** @var Config */
     private $config;
 
-    public function __construct(Config $config)
+    /** @var LibcDetection */
+    private $libcDetection;
+
+    public function __construct(Config $config, LibcDetection $libcDetection)
     {
-        $this->config = $config;
+        $this->config        = $config;
+        $this->libcDetection = $libcDetection;
     }
 
     /** @inheritDoc */
@@ -75,24 +80,27 @@ final class DerivedSource implements ConfigSource
         return $name . '-' . $version . '-' . $triple;
     }
 
-    private function coreAgentTriple() : string
+    private function architecture() : string
     {
-        $arch      = 'unknown';
         $unameArch = php_uname('m');
-        if ($unameArch === 'i686') {
-            $arch = 'i686';
-        }
-        if ($unameArch === 'x86_64') {
-            $arch = 'x86_64';
+
+        if (in_array($unameArch, ['i686', 'x86_64'], true)) {
+            return $unameArch;
         }
 
-        $platform      = 'unknown-linux-gnu';
+        return 'unknown';
+    }
+
+    private function coreAgentTriple() : string
+    {
+        $platform = 'unknown-linux-' . $this->libcDetection->detect();
+
         $unamePlatform = php_uname('s');
         if ($unamePlatform === 'Darwin') {
             $platform = 'apple-darwin';
         }
 
-        return $arch . '-' . $platform;
+        return $this->architecture() . '-' . $platform;
     }
 
     /**
