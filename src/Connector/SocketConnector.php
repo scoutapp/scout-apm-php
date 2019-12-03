@@ -4,14 +4,20 @@ declare(strict_types=1);
 
 namespace Scoutapm\Connector;
 
+use ErrorException;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\NotConnected;
 use Throwable;
 use const AF_UNIX;
+use const E_NOTICE;
+use const E_STRICT;
+use const E_WARNING;
 use const SOCK_STREAM;
 use function json_encode;
 use function pack;
 use function register_shutdown_function;
+use function restore_error_handler;
+use function set_error_handler;
 use function socket_clear_error;
 use function socket_close;
 use function socket_connect;
@@ -56,11 +62,23 @@ final class SocketConnector implements Connector
 
         try {
             socket_clear_error($this->socket);
+
+            // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.IncorrectReturnTypeHint
+            set_error_handler(
+                static function (int $severity, string $message, string $file = '', int $line = 0, array $context = []) : bool {
+                    throw new ErrorException($message, 0, $severity, $file, $line);
+                },
+                E_STRICT | E_NOTICE | E_WARNING
+            );
+            // phpcs:enable
+
             $this->connected = socket_connect($this->socket, $this->socketPath);
             register_shutdown_function([&$this, 'shutdown']);
         } catch (Throwable $e) {
             $this->connected = false;
             throw FailedToConnect::fromSocketPathAndPrevious($this->socketPath, $e);
+        } finally {
+            restore_error_handler();
         }
     }
 

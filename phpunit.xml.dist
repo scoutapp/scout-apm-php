@@ -9,6 +9,10 @@
     beStrictAboutChangesToGlobalState="true"
     beStrictAboutTodoAnnotatedTests="true"
     forceCoversAnnotation="true"
+    convertWarningsToExceptions="false"
+    convertErrorsToExceptions="false"
+    convertNoticesToExceptions="false"
+    convertDeprecationsToExceptions="false"
 >
     <testsuites>
         <testsuite name="unit">
@@ -20,6 +24,7 @@
     </testsuites>
     <php>
         <ini name="error_reporting" value="E_ALL" />
+        <ini name="display_errors" value="On" />
     </php>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
