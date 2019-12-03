@@ -6,6 +6,7 @@ namespace Scoutapm\Cache;
 
 use Psr\SimpleCache\CacheInterface;
 use Traversable;
+use function array_combine;
 use function array_map;
 use function is_array;
 use function iterator_to_array;
@@ -47,12 +48,15 @@ final class DevNullCache implements CacheInterface
             $keysAsArray = iterator_to_array($keys, false);
         }
 
-        return array_map(
-            /** @return mixed */
-            function (string $key) use ($default) {
-                return $this->get($key, $default);
-            },
-            $keysAsArray
+        return array_combine(
+            $keysAsArray,
+            array_map(
+                /** @return mixed */
+                function (string $key) use ($default) {
+                    return $this->get($key, $default);
+                },
+                $keysAsArray
+            )
         );
     }
 
