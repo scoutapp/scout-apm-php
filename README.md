@@ -101,11 +101,13 @@ implementation when creating the agent:
 
 ```php
 use Doctrine\Common\Cache\RedisCache;
+use Psr\Log\LoggerInterface;
 use Roave\DoctrineSimpleCache\SimpleCacheAdapter;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 
+/** @var LoggerInterface $psrLoggerImplementation */
 $yourPsrSimpleCacheImplementation = new SimpleCacheAdapter(new RedisCache());
 
 $agent = Agent::fromConfig(
@@ -114,7 +116,7 @@ $agent = Agent::fromConfig(
         ConfigKey::APPLICATION_KEY => 'your scout key',
         ConfigKey::MONITORING_ENABLED => true,
     ]),
-    null, // or a logging implementation
+    $psrLoggerImplementation,
     $yourPsrSimpleCacheImplementation
 );
 ```
