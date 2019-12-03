@@ -8,6 +8,7 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use function array_filter;
 use function array_key_exists;
 use function array_slice;
+use function array_values;
 use function debug_backtrace;
 use function strpos;
 
@@ -76,7 +77,7 @@ final class Backtrace
     {
         $stillInsideScout = true;
 
-        return array_filter(
+        return array_values(array_filter(
             $formattedStack,
             static function (array $frame) use (&$stillInsideScout) : bool {
                 if (! $stillInsideScout) {
@@ -91,6 +92,6 @@ final class Backtrace
 
                 return true;
             }
-        );
+        ));
     }
 }
