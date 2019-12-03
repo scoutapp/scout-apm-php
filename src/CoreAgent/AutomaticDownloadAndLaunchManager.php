@@ -146,13 +146,16 @@ final class AutomaticDownloadAndLaunchManager implements Manager
 
             $escapedCommand = implode(' ', array_map('escapeshellarg', $commandParts));
 
-            $this->logger->debug('Core Agent: ' . $escapedCommand);
+            $this->logger->debug(sprintf('Launching core agent with command: %s', $escapedCommand));
             exec($escapedCommand);
 
             return true;
         } catch (Throwable $e) {
-            // TODO detect failure of launch properly
-            // logger.error("Error running Core Agent: %r", e);
+            $this->logger->debug(
+                sprintf('Failed to launch core agent - exception %s', $e->getMessage()),
+                ['exception' => $e]
+            );
+
             return false;
         }
     }
