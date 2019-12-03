@@ -13,7 +13,7 @@
    - If you do not want logging, you can use `\Psr\Log\NullLogger` (although this is not advisable)
  - **[BC]** `\Scoutapm\Agent::__construct` is now private
    - Use the named constructor `\Scoutapm\Agent::fromConfig()` instead
- - **[BC]** Third parameter for `\Scoutapm\Agent::fromConfig` is now a `\Psr\SimpleCache\CacheInterface` implementation (`null`-able)
+ - **[BC]** Third parameter for `\Scoutapm\Agent::fromConfig` is now a `\Psr\SimpleCache\CacheInterface` implementation (`null`-able) (#123)
 
 ### Removed
  - **[BC]** `\Scoutapm\Agent::fromDefaults()` named constructor was removed
