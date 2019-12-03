@@ -7,6 +7,7 @@ namespace Scoutapm;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Scoutapm\Cache\DevNullCache;
@@ -34,7 +35,7 @@ use function sprintf;
 
 final class Agent implements ScoutApmAgent
 {
-    private const CACHE_KEY_REGISTRATION_COMPLETE = 'scout_registration_completed';
+    private const CACHE_KEY_METADATA_SENT = 'scout_metadata_sent';
 
     /** @var Config */
     private $config;
@@ -312,20 +313,13 @@ final class Agent implements ScoutApmAgent
         }
 
         try {
-            if (! $this->registrationIsComplete()) {
-                $this->connector->sendCommand(new RegisterMessage(
-                    (string) $this->config->get(ConfigKey::APPLICATION_NAME),
-                    (string) $this->config->get(ConfigKey::APPLICATION_KEY),
-                    $this->config->get(ConfigKey::API_VERSION)
-                ));
+            $this->connector->sendCommand(new RegisterMessage(
+                (string) $this->config->get(ConfigKey::APPLICATION_NAME),
+                (string) $this->config->get(ConfigKey::APPLICATION_KEY),
+                $this->config->get(ConfigKey::API_VERSION)
+            ));
 
-                $this->connector->sendCommand(new Metadata(
-                    new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                    $this->config
-                ));
-
-                $this->markRegistrationComplete();
-            }
+            $this->sendMetadataIfRequired();
 
             $this->request->stopIfRunning();
 
@@ -348,18 +342,41 @@ final class Agent implements ScoutApmAgent
         }
     }
 
-    private function registrationIsComplete() : bool
+    /**
+     * @throws Exception
+     */
+    private function sendMetadataIfRequired() : void
     {
-        return (bool) $this->cache->get(self::CACHE_KEY_REGISTRATION_COMPLETE, false);
-    }
+        if ($this->metadataWasSent()) {
+            $this->logger->debug('Skipping metadata send, already sent');
 
-    private function markRegistrationComplete() : void
-    {
-        if ($this->registrationIsComplete()) {
             return;
         }
 
-        $this->cache->set(self::CACHE_KEY_REGISTRATION_COMPLETE, true);
+        if (! $this->connector->sendCommand(new Metadata(
+            new DateTimeImmutable('now', new DateTimeZone('UTC')),
+            $this->config
+        ))) {
+            $this->logger->debug('Send command returned false for Metadata');
+
+            return;
+        }
+
+        $this->markMetadataSent();
+    }
+
+    private function metadataWasSent() : bool
+    {
+        return (bool) $this->cache->get(self::CACHE_KEY_METADATA_SENT, false);
+    }
+
+    private function markMetadataSent() : void
+    {
+        if ($this->metadataWasSent()) {
+            return;
+        }
+
+        $this->cache->set(self::CACHE_KEY_METADATA_SENT, true);
     }
 
     /**
