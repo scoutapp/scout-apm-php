@@ -19,10 +19,11 @@
         "webmozart/assert": "^1.0"
     },
     "require-dev": {
-        "psr/log": "^1.1",
         "doctrine/coding-standard": "^6.0",
         "monolog/monolog": "^1.24",
         "phpunit/phpunit": "^7.5",
+        "psr/log": "^1.1",
+        "roave/doctrine-simplecache": "^2.2",
         "spatie/phpunit-watcher": "^1.8",
         "vimeo/psalm": "^3.4"
     },
