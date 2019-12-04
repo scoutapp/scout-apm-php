@@ -7,7 +7,10 @@ namespace Scoutapm;
 use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
+use Exception;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
+use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
 use Scoutapm\Connector\Connector;
@@ -32,6 +35,8 @@ use function sprintf;
 
 final class Agent implements ScoutApmAgent
 {
+    private const CACHE_KEY_METADATA_SENT = 'scout_metadata_sent';
+
     /** @var Config */
     private $config;
 
@@ -61,12 +66,21 @@ final class Agent implements ScoutApmAgent
     /** @var ExtentionCapabilities */
     private $phpExtension;
 
-    private function __construct(Config $configuration, Connector $connector, LoggerInterface $logger, ExtentionCapabilities $phpExtension)
-    {
+    /** @var CacheInterface */
+    private $cache;
+
+    private function __construct(
+        Config $configuration,
+        Connector $connector,
+        LoggerInterface $logger,
+        ExtentionCapabilities $phpExtension,
+        CacheInterface $cache
+    ) {
         $this->config       = $configuration;
         $this->connector    = $connector;
         $this->logger       = $logger;
         $this->phpExtension = $phpExtension;
+        $this->cache        = $cache;
 
         if (! $this->logger instanceof FilteredLogLevelDecorator) {
             $this->logger = new FilteredLogLevelDecorator(
@@ -101,13 +115,14 @@ final class Agent implements ScoutApmAgent
         return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    public static function fromConfig(Config $config, LoggerInterface $logger, ?Connector $connector = null) : self
+    public static function fromConfig(Config $config, LoggerInterface $logger, ?CacheInterface $cache = null, ?Connector $connector = null) : self
     {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
-            new PotentiallyAvailableExtensionCapabilities()
+            new PotentiallyAvailableExtensionCapabilities(),
+            $cache ?? new DevNullCache()
         );
     }
 
@@ -304,10 +319,7 @@ final class Agent implements ScoutApmAgent
                 $this->config->get(ConfigKey::API_VERSION)
             ));
 
-            $this->connector->sendCommand(new Metadata(
-                new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                $this->config
-            ));
+            $this->sendMetadataIfRequired();
 
             $this->request->stopIfRunning();
 
@@ -328,6 +340,43 @@ final class Agent implements ScoutApmAgent
 
             return false;
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function sendMetadataIfRequired() : void
+    {
+        if ($this->metadataWasSent()) {
+            $this->logger->debug('Skipping metadata send, already sent');
+
+            return;
+        }
+
+        if (! $this->connector->sendCommand(new Metadata(
+            new DateTimeImmutable('now', new DateTimeZone('UTC')),
+            $this->config
+        ))) {
+            $this->logger->debug('Send command returned false for Metadata');
+
+            return;
+        }
+
+        $this->markMetadataSent();
+    }
+
+    private function metadataWasSent() : bool
+    {
+        return (bool) $this->cache->get(self::CACHE_KEY_METADATA_SENT, false);
+    }
+
+    private function markMetadataSent() : void
+    {
+        if ($this->metadataWasSent()) {
+            return;
+        }
+
+        $this->cache->set(self::CACHE_KEY_METADATA_SENT, true);
     }
 
     /**

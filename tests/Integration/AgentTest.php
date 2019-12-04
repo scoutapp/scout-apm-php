@@ -75,7 +75,7 @@ final class AgentTest extends TestCase
 
         $_SERVER['REQUEST_URI'] = '/fake-path';
 
-        $agent = Agent::fromConfig($config, $this->logger, $connector);
+        $agent = Agent::fromConfig($config, $this->logger, null, $connector);
 
         $agent->connect();
 

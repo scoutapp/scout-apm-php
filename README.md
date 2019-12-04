@@ -93,6 +93,34 @@ With the extension enabled, specific IO-bound functions in PHP are monitored, fo
 
 Alternatively, you can [install from source](https://github.com/scoutapp/scout-apm-php-ext).
 
+## Enable caching for Scout
+
+Due to PHP's stateless and "shared-nothing" architecture, the Scout library performs some checks (such as sending some
+metadata about the running system) on every request. These can be eliminated by giving Scout a PSR-16 (Simple Cache)
+implementation when creating the agent:
+
+```php
+use Doctrine\Common\Cache\RedisCache;
+use Psr\Log\LoggerInterface;
+use Roave\DoctrineSimpleCache\SimpleCacheAdapter;
+use Scoutapm\Agent;
+use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
+
+/** @var LoggerInterface $psrLoggerImplementation */
+$yourPsrSimpleCacheImplementation = new SimpleCacheAdapter(new RedisCache());
+
+$agent = Agent::fromConfig(
+    Config::fromArray([
+        ConfigKey::APPLICATION_NAME => 'Your application name',
+        ConfigKey::APPLICATION_KEY => 'your scout key',
+        ConfigKey::MONITORING_ENABLED => true,
+    ]),
+    $psrLoggerImplementation,
+    $yourPsrSimpleCacheImplementation
+);
+```
+
 ## Documentation
 
 For full installation and troubleshooting documentation, visit our [help site](http://docs.scoutapm.com/#php-agent).

@@ -1,20 +1,33 @@
 # Changelog
 
-## Pending
+## Pending - [2.0.0]
+
+### Added
+
+ - Added `language_version` key to be sent with metadata (#110)
+ - Added more debug logging to isolate issues easier (#111, #115, #117)
+ - Added detection of `musl` by checking if `/etc/alpine-release` exists (#118)
+ - **[BC]** Third parameter for `\Scoutapm\Agent::fromConfig` is now a `\Psr\SimpleCache\CacheInterface` implementation (`null`-able) (#123)
+   - Unlikely to affect most customers, unless they explicitly provided a `\Scoutapm\Connector\Connector` implementation to the `Agent`
 
 ### Changed
 
- - Added `language_version` key to be sent with metadata (#110)
- - Added more debug logging to isolate issues easier (#111, #115)
- - Added detection of `musl` by checking if `/etc/alpine-release` exists (#118)
  - **[BC]** `\Scoutapm\Connector\Connector::sendCommand` now returns `string` not `bool`
+   - Unlikely to affect most customers, unless they wrote a custom implementation of `\Scoutapm\Connector\Connector`
  - **[BC]** `\Scoutapm\Agent::fromConfig()` second parameter for a `\Psr\Log\LoggerInterface` implementation is no longer optional
    - You should pass in an implementation of `\Psr\Log\LoggerInterface` as the second parameter
    - If you do not want logging, you can use `\Psr\Log\NullLogger` (although this is not advisable)
- - **[BC]** `\Scoutapm\Agent::__construct` is now private
-   - Use the named constructor `\Scoutapm\Agent::fromConfig()` instead
+ - Updated core agent version to `1.2.6` (#127)
+
+### Fixed
+
+ - Fixing bug with instrumentation delivery to dashboard (#126)
+ - Handle warning that was escaping from `socket_connect` (#124)
 
 ### Removed
+
+ - **[BC]** `\Scoutapm\Agent::__construct` is now private
+   - Use the named constructor `\Scoutapm\Agent::fromConfig()` instead
  - **[BC]** `\Scoutapm\Agent::fromDefaults()` named constructor was removed
    - For exactly matching behaviour, use `::fromConfig(new \Scoutapm\Config(), new \Psr\Log\NullLogger())`
 
