@@ -1,6 +1,9 @@
 # Changelog
 
-## Pending - [2.0.0]
+## Pending - 2.next
+
+
+## [2.0.0] 2019-12-04
 
 ### Added
 
