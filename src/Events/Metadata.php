@@ -116,7 +116,7 @@ final class Metadata implements Command
             return $scmSubdirectoryConfiguration;
         }
 
-        return $this->locateFileOrFolder('.git') ?? $this->applicationRoot();
+        return $this->locateFileOrFolder('.git') ?? '';
     }
 
     private function rootPackageGitSha() : string
