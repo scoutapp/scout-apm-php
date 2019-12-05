@@ -7,6 +7,7 @@ namespace Scoutapm\CoreAgent;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
+use Webmozart\Assert\Assert;
 use const JSON_ERROR_NONE;
 use function file_get_contents;
 use function json_decode;
@@ -54,6 +55,10 @@ class Manifest
     private function parse() : void
     {
         $this->logger->info(sprintf('Parsing Core Agent Manifest at "%s"', $this->manifestPath));
+
+        Assert::fileExists($this->manifestPath);
+        Assert::file($this->manifestPath);
+        Assert::readable($this->manifestPath);
 
         $raw  = file_get_contents($this->manifestPath);
         $json = json_decode($raw, true); // decode the JSON into an associative array

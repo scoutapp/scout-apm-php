@@ -8,6 +8,7 @@ use PharData;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
+use Webmozart\Assert\Assert;
 use function basename;
 use function copy;
 use function dirname;
@@ -149,7 +150,16 @@ class Downloader
 
     private function cleanStaleDownloadLock() : void
     {
+        if (! file_exists($this->download_lock_path)) {
+            $this->logger->debug(sprintf('Lock path "%s" did not exist, nothing to clean', $this->download_lock_path));
+
+            return;
+        }
+
         try {
+            Assert::fileExists($this->download_lock_path);
+            Assert::file($this->download_lock_path);
+
             $delta = time() - filectime($this->download_lock_path);
             if ($delta > $this->stale_download_secs) {
                 $this->logger->debug(sprintf('Clearing stale download lock file "%s".', $this->download_lock_path));
