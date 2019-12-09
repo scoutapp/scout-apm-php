@@ -296,7 +296,7 @@ final class AgentTest extends TestCase
             $connector
         );
 
-        $connector->method('connected')->wilLReturn(true);
+        $connector->method('connected')->willReturn(true);
 
         $connector->expects(self::at(1))
             ->method('sendCommand')
