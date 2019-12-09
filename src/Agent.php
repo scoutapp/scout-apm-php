@@ -29,6 +29,7 @@ use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
+use Throwable;
 use function is_string;
 use function json_encode;
 use function sprintf;
@@ -353,16 +354,19 @@ final class Agent implements ScoutApmAgent
             return;
         }
 
-        if (! $this->connector->sendCommand(new Metadata(
-            new DateTimeImmutable('now', new DateTimeZone('UTC')),
-            $this->config
-        ))) {
-            $this->logger->debug('Send command returned false for Metadata');
+        try {
+            $this->connector->sendCommand(new Metadata(
+                new DateTimeImmutable('now', new DateTimeZone('UTC')),
+                $this->config
+            ));
 
-            return;
+            $this->markMetadataSent();
+        } catch (Throwable $exception) {
+            $this->logger->notice(
+                sprintf('Sending metadata raised an exception: %s', $exception->getMessage()),
+                ['exception' => $exception]
+            );
         }
-
-        $this->markMetadataSent();
     }
 
     private function metadataWasSent() : bool
