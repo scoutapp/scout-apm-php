@@ -4,20 +4,28 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
+use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
+use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Connector\Connector;
+use Scoutapm\Events\Metadata;
+use Scoutapm\Events\RegisterMessage;
+use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use function array_map;
 use function count;
 use function end;
 use function sprintf;
+use function uniqid;
 
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
@@ -269,6 +277,43 @@ final class AgentTest extends TestCase
 
         self::assertTrue($agent->ignored('/foo'));
         self::assertFalse($agent->ignored('/bar'));
+    }
+
+    public function testMetadataExceptionsAreLogged() : void
+    {
+        $logger    = new TestLogger();
+        $connector = $this->createMock(Connector::class);
+
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => 'My test app',
+                ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+                ConfigKey::MONITORING_ENABLED => true,
+                ConfigKey::LOG_LEVEL => LogLevel::NOTICE,
+            ]),
+            $logger,
+            new DevNullCache(),
+            $connector
+        );
+
+        $connector->method('connected')->wilLReturn(true);
+
+        $connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"success"}');
+        $connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willThrowException(new OutOfBoundsException('Some obscure exception happened'));
+        $connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"success"}');
+
+        $agent->send();
+
+        self::assertTrue($logger->hasNoticeThatContains('Sending metadata raised an exception: Some obscure exception happened'));
     }
 
     /**
