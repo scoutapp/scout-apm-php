@@ -111,7 +111,7 @@ final class MetadataTest extends TestCase
                         ),
                         'paas' => '',
                         'application_root' => '/fake/document/root',
-                        'scm_subdirectory' => '/fake/document/root',
+                        'scm_subdirectory' => '',
                         'git_sha' => explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1],
                     ],
                     'event_type' => 'scout.metadata',
