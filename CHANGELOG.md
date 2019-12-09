@@ -1,7 +1,13 @@
 # Changelog
 
-## Pending - 2.next
+## Pending - [2.0.next]
 
+## [2.0.1] 2019-12-09
+
+ - Correctly handle warnings raised during core agent connections (#130)
+ - Support PHP 7.4 (#131)
+ - Removed incorrect auto detection of SCM subdirectory (#133)
+ - Catch exceptions raised whilst sending metadata (#134)
 
 ## [2.0.0] 2019-12-04
 
