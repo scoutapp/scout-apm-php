@@ -331,6 +331,8 @@ final class Agent implements ScoutApmAgent
                 $this->connector->sendCommand($this->request)
             ));
 
+            $this->request = new Request();
+
             return true;
         } catch (NotConnected $notConnected) {
             $this->logger->error($notConnected->getMessage());
