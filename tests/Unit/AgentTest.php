@@ -7,9 +7,7 @@ namespace Scoutapm\UnitTests;
 use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
@@ -21,8 +19,8 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
+use Scoutapm\ScoutApmAgent;
 use function array_map;
-use function count;
 use function end;
 use function sprintf;
 use function uniqid;
@@ -30,130 +28,133 @@ use function uniqid;
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
 {
+    /** @var TestLogger */
+    private $logger;
+
+    /** @var Connector&MockObject */
+    private $connector;
+
+    public function setUp() : void
+    {
+        parent::setUp();
+
+        $this->logger    = new TestLogger();
+        $this->connector = $this->createMock(Connector::class);
+    }
+
+    /** @param mixed[]|array<string, mixed> $config */
+    private function agentFromConfigArray(array $config = []) : ScoutApmAgent
+    {
+        return Agent::fromConfig(Config::fromArray($config), $this->logger, new DevNullCache(), $this->connector);
+    }
+
     /**
      * @return Config[][]|string[][][]
      *
-     * @psalm-return array<string, array{config: Config, missingKeys: array<int, string>}>
+     * @psalm-return array<string, array{config: array<string, mixed>, missingKeys: array<int, string>}>
      */
     public function invalidConfigurationProvider() : array
     {
         return [
             'withoutName' => [
-                'config' => Config::fromArray([
+                'config' => [
                     ConfigKey::MONITORING_ENABLED => true,
                     ConfigKey::APPLICATION_KEY => 'abc123',
-                ]),
+                ],
                 'missingKeys' => [
                     ConfigKey::APPLICATION_NAME,
                 ],
             ],
             'withoutKey' => [
-                'config' => Config::fromArray([
+                'config' => [
                     ConfigKey::MONITORING_ENABLED => true,
                     ConfigKey::APPLICATION_NAME => 'My Application',
-                ]),
+                ],
                 'missingKeys' => [
                     ConfigKey::APPLICATION_KEY,
                 ],
             ],
             'withoutAnything' => [
-                'config' => Config::fromArray([ConfigKey::MONITORING_ENABLED => true]),
+                'config' => [ConfigKey::MONITORING_ENABLED => true],
                 'missingKeys' => [
                     ConfigKey::APPLICATION_NAME,
                     ConfigKey::APPLICATION_KEY,
                 ],
             ],
-            'withoutAnythingButMonitoringIsDisabled' => [
-                'config' => Config::fromArray([]),
-                'missingKeys' => [],
-            ],
         ];
     }
 
     /**
-     * @param string[]|array<int, string> $missingKeys
+     * @param mixed[]|array<string, mixed> $config
+     * @param string[]|array<int, string>  $missingKeys
      *
      * @dataProvider invalidConfigurationProvider
      */
-    public function testCreatingAgentWithoutRequiredConfigKeysLogsWarning(Config $config, array $missingKeys) : void
+    public function testCreatingAgentWithoutRequiredConfigKeysLogsWarning(array $config, array $missingKeys) : void
     {
-        /** @var LoggerInterface&MockObject $logger */
-        $logger = $this->createMock(LoggerInterface::class);
+        $this->agentFromConfigArray($config);
 
-        $logger->expects(self::exactly(count($missingKeys)))
-            ->method('log')
-            ->withConsecutive(...array_map(
-                static function (string $missingKey) : array {
-                    return [
-                        'warning',
-                        self::stringContains(sprintf(
-                            'Config key "%s" should be set, but it was empty',
-                            $missingKey
-                        )),
-                    ];
-                },
-                $missingKeys
-            ));
-
-        Agent::fromConfig($config, $logger);
+        array_map(
+            function (string $missingKey) : void {
+                self::assertTrue($this->logger->hasWarningThatContains(sprintf(
+                    'Config key "%s" should be set, but it was empty',
+                    $missingKey
+                )));
+            },
+            $missingKeys
+        );
     }
 
     public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages() : void
     {
-        /** @var LoggerInterface&MockObject $logger */
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $logger->expects(self::never())
-            ->method('log');
-
-        $agent = Agent::fromConfig(
-            Config::fromArray([
-                ConfigKey::APPLICATION_NAME => 'My Application',
-                ConfigKey::APPLICATION_KEY => 'abc123',
-                ConfigKey::LOG_LEVEL => LogLevel::WARNING,
-                ConfigKey::MONITORING_ENABLED => false,
-            ]),
-            $logger
-        );
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My Application',
+            ConfigKey::APPLICATION_KEY => 'abc123',
+            ConfigKey::LOG_LEVEL => LogLevel::WARNING,
+            ConfigKey::MONITORING_ENABLED => false,
+        ]);
 
         $agent->connect();
+
+        self::assertFalse($this->logger->hasDebugRecords());
     }
 
     public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration() : void
     {
-        /** @var LoggerInterface&MockObject $logger */
-        $logger = $this->createMock(LoggerInterface::class);
-
-        $logger->expects(self::exactly(2))
-            ->method('log')
-            ->withConsecutive(
-                [
-                    LogLevel::DEBUG,
-                    self::stringContains('Configuration'),
-                    [],
-                ],
-                [
-                    LogLevel::DEBUG,
-                    self::stringContains('Connection skipped, since monitoring is disabled'),
-                    [],
-                ]
-            );
-
-        $agent = Agent::fromConfig(
-            Config::fromArray([
-                ConfigKey::APPLICATION_NAME => 'My Application',
-                ConfigKey::APPLICATION_KEY => 'abc123',
-                ConfigKey::MONITORING_ENABLED => false,
-            ]),
-            $logger
-        );
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My Application',
+            ConfigKey::APPLICATION_KEY => 'abc123',
+            ConfigKey::MONITORING_ENABLED => false,
+        ]);
 
         $agent->connect();
+
+        self::assertTrue($this->logger->hasDebugThatContains('Configuration'));
+        self::assertTrue($this->logger->hasDebugThatContains('Connection skipped, since monitoring is disabled'));
     }
 
     public function testFullAgentSequence() : void
     {
-        $agent = Agent::fromConfig(new Config(), new NullLogger());
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->method('connected')->willReturn(true);
+
+        $this->connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"Success"}');
 
         // Start a Parent Controller Span
         $agent->startSpan('Controller/Test');
@@ -173,12 +174,15 @@ final class AgentTest extends TestCase
         // Stop Controller Span
         $agent->stopSpan();
 
-        self::assertNotNull($agent);
+        $agent->send();
+
+        self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent'));
     }
 
-    public function testInstrument() : void
+    public function testInstrumentNamesSpanAndReturnsValueFromClosureAndStopsSpan() : void
     {
-        $agent  = Agent::fromConfig(new Config(), new NullLogger());
+        $agent = $this->agentFromConfigArray();
+
         $retval = $agent->instrument('Custom', 'Test', static function (Span $span) {
             $span->tag('OMG', 'Thingy');
 
@@ -199,39 +203,41 @@ final class AgentTest extends TestCase
         self::assertSame($foundSpan->getTags()[0]->getValue(), 'Thingy');
     }
 
-    public function testWebTransaction() : void
+    public function testWebTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
-        $retval = Agent::fromConfig(new Config(), new NullLogger())->webTransaction('Test', static function (Span $span) {
-            // Check span name is prefixed with "Controller"
-            self::assertSame($span->getName(), 'Controller/Test');
+        self::assertSame(
+            $this->agentFromConfigArray()->webTransaction('Test', static function (Span $span) {
+                // Check span name is prefixed with "Controller"
+                self::assertSame($span->getName(), 'Controller/Test');
 
-            return 'arbitrary return value';
-        });
-        // Check that the instrument helper propagates the return value
-        self::assertSame($retval, 'arbitrary return value');
+                return 'arbitrary return value';
+            }),
+            'arbitrary return value'
+        );
     }
 
-    public function testBackgroundTransaction() : void
+    public function testBackgroundTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
-        $retval = Agent::fromConfig(new Config(), new NullLogger())->backgroundTransaction('Test', static function (Span $span) {
-            // Check span name is prefixed with "Job"
-            self::assertSame($span->getName(), 'Job/Test');
+        self::assertSame(
+            $this->agentFromConfigArray()->backgroundTransaction('Test', static function (Span $span) {
+                // Check span name is prefixed with "Job"
+                self::assertSame($span->getName(), 'Job/Test');
 
-            return 'arbitrary return value';
-        });
-        // Check that the instrument helper propagates the return value
-        self::assertSame($retval, 'arbitrary return value');
+                return 'arbitrary return value';
+            }),
+            'arbitrary return value'
+        );
     }
 
     public function testStartSpan() : void
     {
-        $span = Agent::fromConfig(new Config(), new NullLogger())->startSpan('foo/bar');
+        $span = $this->agentFromConfigArray()->startSpan('foo/bar');
         self::assertSame('foo/bar', $span->getName());
     }
 
     public function testStopSpan() : void
     {
-        $agent = Agent::fromConfig(new Config(), new NullLogger());
+        $agent = $this->agentFromConfigArray();
         $span  = $agent->startSpan('foo/bar');
         self::assertNull($span->getStopTime());
 
@@ -242,7 +248,7 @@ final class AgentTest extends TestCase
 
     public function testTagRequest() : void
     {
-        $agent = Agent::fromConfig(new Config(), new NullLogger());
+        $agent = $this->agentFromConfigArray();
         $agent->tagRequest('foo', 'bar');
 
         $events = $agent->getRequest()->getEvents();
@@ -257,23 +263,19 @@ final class AgentTest extends TestCase
     public function testEnabled() : void
     {
         // without affirmatively enabling, it's not enabled.
-        $agentWithoutEnabling = Agent::fromConfig(new Config(), new NullLogger());
+        $agentWithoutEnabling = $this->agentFromConfigArray();
         self::assertFalse($agentWithoutEnabling->enabled());
 
         // but a config that has monitor = true, it is set
-        $config = new Config();
-        $config->set(ConfigKey::MONITORING_ENABLED, 'true');
-
-        $enabledAgent = Agent::fromConfig($config, new NullLogger());
+        $enabledAgent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => 'true']);
         self::assertTrue($enabledAgent->enabled());
     }
 
     public function testIgnoredEndpoints() : void
     {
-        $config = new Config();
-        $config->set(ConfigKey::IGNORED_ENDPOINTS, ['/foo']);
-
-        $agent = Agent::fromConfig($config, new NullLogger());
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::IGNORED_ENDPOINTS => ['/foo'],
+        ]);
 
         self::assertTrue($agent->ignored('/foo'));
         self::assertFalse($agent->ignored('/bar'));
@@ -281,39 +283,31 @@ final class AgentTest extends TestCase
 
     public function testMetadataExceptionsAreLogged() : void
     {
-        $logger    = new TestLogger();
-        $connector = $this->createMock(Connector::class);
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::NOTICE,
+        ]);
 
-        $agent = Agent::fromConfig(
-            Config::fromArray([
-                ConfigKey::APPLICATION_NAME => 'My test app',
-                ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
-                ConfigKey::MONITORING_ENABLED => true,
-                ConfigKey::LOG_LEVEL => LogLevel::NOTICE,
-            ]),
-            $logger,
-            new DevNullCache(),
-            $connector
-        );
+        $this->connector->method('connected')->willReturn(true);
 
-        $connector->method('connected')->willReturn(true);
-
-        $connector->expects(self::at(1))
+        $this->connector->expects(self::at(1))
             ->method('sendCommand')
             ->with(self::isInstanceOf(RegisterMessage::class))
-            ->willReturn('{"Register":"success"}');
-        $connector->expects(self::at(2))
+            ->willReturn('{"Register":"Success"}');
+        $this->connector->expects(self::at(2))
             ->method('sendCommand')
             ->with(self::isInstanceOf(Metadata::class))
             ->willThrowException(new OutOfBoundsException('Some obscure exception happened'));
-        $connector->expects(self::at(3))
+        $this->connector->expects(self::at(3))
             ->method('sendCommand')
             ->with(self::isInstanceOf(Request::class))
-            ->willReturn('{"Request":"success"}');
+            ->willReturn('{"Request":"Success"}');
 
         $agent->send();
 
-        self::assertTrue($logger->hasNoticeThatContains('Sending metadata raised an exception: Some obscure exception happened'));
+        self::assertTrue($this->logger->hasNoticeThatContains('Sending metadata raised an exception: Some obscure exception happened'));
     }
 
     /**
@@ -321,7 +315,7 @@ final class AgentTest extends TestCase
      */
     public function testIgnoredAgentSequence() : void
     {
-        $agent = Agent::fromConfig(new Config(), new NullLogger());
+        $agent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => true]);
         $agent->ignore();
 
         // Start a Parent Controller Span
@@ -344,6 +338,6 @@ final class AgentTest extends TestCase
 
         $agent->send();
 
-        self::assertNotNull($agent);
+        self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, request has been ignored'));
     }
 }
