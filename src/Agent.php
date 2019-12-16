@@ -30,6 +30,7 @@ use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
+use function count;
 use function is_string;
 use function json_encode;
 use function sprintf;
@@ -213,7 +214,13 @@ final class Agent implements ScoutApmAgent
 
         foreach ($this->phpExtension->getCalls() as $recordedCall) {
             $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
-            $callSpan->tag(Tag::TAG_ARGUMENTS, $recordedCall->filteredArguments());
+
+            $arguments = $recordedCall->filteredArguments();
+
+            if (count($arguments) > 0) {
+                $callSpan->tag(Tag::TAG_ARGUMENTS, $arguments);
+            }
+
             $this->request->stopSpan($recordedCall->timeExited());
         }
     }
