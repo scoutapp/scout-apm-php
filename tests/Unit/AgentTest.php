@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
+use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -133,6 +134,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Connection skipped, since monitoring is disabled'));
     }
 
+    /** @throws Exception */
     public function testFullAgentSequence() : void
     {
         $agent = $this->agentFromConfigArray([
@@ -174,7 +176,7 @@ final class AgentTest extends TestCase
         // Stop Controller Span
         $agent->stopSpan();
 
-        $agent->send();
+        self::assertTrue($agent->send());
 
         self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent'));
     }
@@ -281,6 +283,7 @@ final class AgentTest extends TestCase
         self::assertFalse($agent->ignored('/bar'));
     }
 
+    /** @throws Exception */
     public function testMetadataExceptionsAreLogged() : void
     {
         $agent = $this->agentFromConfigArray([
@@ -305,13 +308,15 @@ final class AgentTest extends TestCase
             ->with(self::isInstanceOf(Request::class))
             ->willReturn('{"Request":"Success"}');
 
-        $agent->send();
+        self::assertTrue($agent->send());
 
         self::assertTrue($this->logger->hasNoticeThatContains('Sending metadata raised an exception: Some obscure exception happened'));
     }
 
     /**
      * Many instrumentation calls are NOOPs when ignore is called. Make sure the sequence works as expected
+     *
+     * @throws Exception
      */
     public function testIgnoredAgentSequence() : void
     {
@@ -336,8 +341,27 @@ final class AgentTest extends TestCase
         // Stop Controller Span
         $agent->stopSpan();
 
-        $agent->send();
+        self::assertFalse($agent->send());
 
         self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, request has been ignored'));
+    }
+
+    /** @throws Exception */
+    public function testRequestIsResetAfterCallingSend() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $requestBeforeSend = $agent->getRequest();
+
+        $this->connector->method('connected')->willReturn(true);
+        $this->connector->expects(self::exactly(3))->method('sendCommand');
+
+        self::assertTrue($agent->send());
+
+        self::assertNotSame($requestBeforeSend, $agent->getRequest());
     }
 }
