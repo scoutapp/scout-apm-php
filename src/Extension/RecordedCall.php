@@ -84,7 +84,8 @@ final class RecordedCall
 
     /**
      * We should never return the full set of arguments, only specific arguments for specific functions. This is to
-     * avoid potentially spilling personally identifiable information.
+     * avoid potentially spilling personally identifiable information. Another reason to only return specific arguments
+     * is to avoid sending loads of data unnecessarily.
      *
      * @return mixed[]
      */
