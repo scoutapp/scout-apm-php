@@ -1,8 +1,16 @@
 # Changelog
 
-## Pending - [2.0.next]
+## Pending - [2.1.1]
+
+## [2.1.0] 2019-12-16
+
+### Added
+
+ - Reset the request after each call to `send()`
 
 ## [2.0.1] 2019-12-09
+
+### Changed
 
  - Correctly handle warnings raised during core agent connections (#130)
  - Support PHP 7.4 (#131)
