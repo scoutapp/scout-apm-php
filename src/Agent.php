@@ -71,6 +71,9 @@ final class Agent implements ScoutApmAgent
     /** @var CacheInterface */
     private $cache;
 
+    /** @var bool */
+    private $registered = false;
+
     private function __construct(
         Config $configuration,
         Connector $connector,
@@ -321,12 +324,7 @@ final class Agent implements ScoutApmAgent
         }
 
         try {
-            $this->connector->sendCommand(new RegisterMessage(
-                (string) $this->config->get(ConfigKey::APPLICATION_NAME),
-                (string) $this->config->get(ConfigKey::APPLICATION_KEY),
-                $this->config->get(ConfigKey::API_VERSION)
-            ));
-
+            $this->registerIfRequired();
             $this->sendMetadataIfRequired();
 
             $this->request->stopIfRunning();
@@ -350,6 +348,21 @@ final class Agent implements ScoutApmAgent
 
             return false;
         }
+    }
+
+    private function registerIfRequired() : void
+    {
+        if ($this->registered) {
+            return;
+        }
+
+        $this->connector->sendCommand(new RegisterMessage(
+            (string) $this->config->get(ConfigKey::APPLICATION_NAME),
+            (string) $this->config->get(ConfigKey::APPLICATION_KEY),
+            $this->config->get(ConfigKey::API_VERSION)
+        ));
+
+        $this->registered = true;
     }
 
     /**
