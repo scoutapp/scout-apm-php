@@ -113,22 +113,22 @@ final class SocketConnector implements Connector
         // Socket error is a global state, so we must reset to a known state first...
         socket_clear_error($this->socket);
 
-        if (socket_send($this->socket, pack('N', $size), 4, 0) === false) {
+        if (@socket_send($this->socket, pack('N', $size), 4, 0) === false) {
             throw Exception\FailedToSendCommand::writingMessageSizeToSocket($message, $this->socket, $this->socketPath);
         }
 
-        if (socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
+        if (@socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
             throw Exception\FailedToSendCommand::writingMessageContentToSocket($message, $this->socket, $this->socketPath);
         }
 
         // Read the response back and drop it. Needed for socket liveness
-        $responseLength = socket_read($this->socket, 4);
+        $responseLength = @socket_read($this->socket, 4);
 
         if ($responseLength === false) {
             throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
         }
 
-        $dataRead = socket_read($this->socket, unpack('N', $responseLength)[1]);
+        $dataRead = @socket_read($this->socket, unpack('N', $responseLength)[1]);
 
         if ($dataRead === false) {
             throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->socketPath);
