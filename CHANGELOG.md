@@ -1,6 +1,20 @@
 # Changelog
 
-## Pending - [2.1.1]
+## Pending - [2.1.2]
+
+## [2.1.1] 2019-12-17
+
+### Changed
+
+ - Increase core version to 1.2.7 (#140)
+   - Fixes some upstream bugs with payload delivery
+ - Only tag args from PHP internal functions if there are any (#141)
+
+### Fixed
+
+ - Suppress notices/errors emitted from socket calls (#144)
+ - Only register with core agent once per connection (#145)
+ - Do not pre-emptively connect if monitoring is disabled (#146)
 
 ## [2.1.0] 2019-12-16
 
