@@ -54,6 +54,27 @@ final class SocketConnector implements Connector
         }
     }
 
+    /** @return mixed */
+    private function convertErrorsToExceptions(callable $functionToRun)
+    {
+        // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.IncorrectReturnTypeHint
+        set_error_handler(
+            static function (int $severity, string $message, string $file = '', int $line = 0, array $context = []) : bool {
+                throw new ErrorException($message, 0, $severity, $file, $line);
+            },
+            E_STRICT | E_NOTICE | E_WARNING
+        );
+        // phpcs:enable
+
+        try {
+            $returnValue = $functionToRun();
+        } finally {
+            restore_error_handler();
+        }
+
+        return $returnValue;
+    }
+
     public function connect() : void
     {
         if ($this->connected()) {
@@ -63,22 +84,14 @@ final class SocketConnector implements Connector
         try {
             socket_clear_error($this->socket);
 
-            // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.IncorrectReturnTypeHint
-            set_error_handler(
-                static function (int $severity, string $message, string $file = '', int $line = 0, array $context = []) : bool {
-                    throw new ErrorException($message, 0, $severity, $file, $line);
-                },
-                E_STRICT | E_NOTICE | E_WARNING
-            );
-            // phpcs:enable
+            $this->connected = $this->convertErrorsToExceptions(function () {
+                return socket_connect($this->socket, $this->socketPath);
+            });
 
-            $this->connected = socket_connect($this->socket, $this->socketPath);
             register_shutdown_function([&$this, 'shutdown']);
         } catch (Throwable $e) {
             $this->connected = false;
             throw FailedToConnect::fromSocketPathAndPrevious($this->socketPath, $e);
-        } finally {
-            restore_error_handler();
         }
     }
 
@@ -100,16 +113,16 @@ final class SocketConnector implements Connector
         // Socket error is a global state, so we must reset to a known state first...
         socket_clear_error($this->socket);
 
-        if (socket_send($this->socket, pack('N', $size), 4, 0) === false) {
+        if (@socket_send($this->socket, pack('N', $size), 4, 0) === false) {
             throw Exception\FailedToSendCommand::writingMessageSizeToSocket($message, $this->socket, $this->socketPath);
         }
 
-        if (socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
+        if (@socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
             throw Exception\FailedToSendCommand::writingMessageContentToSocket($message, $this->socket, $this->socketPath);
         }
 
         // Read the response back and drop it. Needed for socket liveness
-        $responseLength = socket_read($this->socket, 4);
+        $responseLength = @socket_read($this->socket, 4);
 
         if ($responseLength === false) {
             throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
@@ -119,7 +132,7 @@ final class SocketConnector implements Connector
             throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->socketPath);
         }
 
-        $dataRead = socket_read($this->socket, unpack('N', $responseLength)[1]);
+        $dataRead = @socket_read($this->socket, unpack('N', $responseLength)[1]);
 
         if ($dataRead === false) {
             throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->socketPath);
