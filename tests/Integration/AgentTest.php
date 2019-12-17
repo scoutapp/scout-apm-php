@@ -71,7 +71,9 @@ final class AgentTest extends TestCase
             'monitor' => true,
         ]);
 
-        $connector = new MessageCapturingConnectorDelegator(new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH)));
+        $connector = new MessageCapturingConnectorDelegator(
+            new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH), true)
+        );
 
         $_SERVER['REQUEST_URI'] = '/fake-path';
 

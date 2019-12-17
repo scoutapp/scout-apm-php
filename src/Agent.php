@@ -117,7 +117,10 @@ final class Agent implements ScoutApmAgent
 
     private static function createConnectorFromConfig(Config $config) : SocketConnector
     {
-        return new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
+        return new SocketConnector(
+            $config->get(ConfigKey::CORE_AGENT_SOCKET_PATH),
+            $config->get(ConfigKey::MONITORING_ENABLED)
+        );
     }
 
     public static function fromConfig(Config $config, LoggerInterface $logger, ?CacheInterface $cache = null, ?Connector $connector = null) : self
