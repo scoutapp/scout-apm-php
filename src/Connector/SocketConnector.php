@@ -128,6 +128,10 @@ final class SocketConnector implements Connector
             throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
         }
 
+        if ($responseLength === '') {
+            throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->socketPath);
+        }
+
         $dataRead = @socket_read($this->socket, unpack('N', $responseLength)[1]);
 
         if ($dataRead === false) {

@@ -55,6 +55,15 @@ final class FailedToSendCommand extends RuntimeException
         ));
     }
 
+    public static function fromEmptyResponseSize(Command $attemptedCommand, string $socketPath) : self
+    {
+        return new self(sprintf(
+            'Response size was not returned for %s (empty string). Socket path was: %s',
+            get_class($attemptedCommand),
+            $socketPath
+        ));
+    }
+
     /** @param resource $socketResource */
     public static function readingResponseContentFromSocket(Command $attemptedCommand, $socketResource, string $socketPath) : self
     {

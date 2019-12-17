@@ -364,4 +364,37 @@ final class AgentTest extends TestCase
 
         self::assertNotSame($requestBeforeSend, $agent->getRequest());
     }
+
+    public function testRegisterEventIsOnlySentOnceWhenSendingTwoRequestsWithSameAgent() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->method('connected')->willReturn(true);
+
+        // First send() call expectations
+        $this->connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class));
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class));
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class));
+
+        // Second send() call expectations - note Metadata is sent again because we are using DevNullCache
+        $this->connector->expects(self::at(5))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class));
+        $this->connector->expects(self::at(6))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class));
+
+        $agent->send();
+        $agent->send();
+    }
 }
