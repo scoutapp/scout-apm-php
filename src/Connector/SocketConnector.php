@@ -40,11 +40,15 @@ final class SocketConnector implements Connector
     /** @var string */
     private $socketPath;
 
-    public function __construct(string $socketPath)
+    public function __construct(string $socketPath, bool $preEmptivelyAttemptToConnect)
     {
         $this->socketPath = $socketPath;
 
         $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+
+        if (! $preEmptivelyAttemptToConnect) {
+            return;
+        }
 
         // Pre-emptive attempt to connect, strictly speaking `__construct` should not have side-effects, so if this
         // fails then swallow it. The `Agent` goes on to call connect() anyway, and handles launching of the core agent.
