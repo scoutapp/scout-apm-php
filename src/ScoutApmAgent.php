@@ -75,6 +75,11 @@ interface ScoutApmAgent
     public function send() : bool;
 
     /**
+     * Clears any currently recorded request data/spans, and start a new request.
+     */
+    public function startNewRequest() : void;
+
+    /**
      * You probably don't need this, it's useful in testing
      *
      * @internal
