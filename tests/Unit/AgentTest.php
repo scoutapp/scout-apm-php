@@ -397,4 +397,19 @@ final class AgentTest extends TestCase
         $agent->send();
         $agent->send();
     }
+
+    public function testRequestIsResetAfterStartingANewRequest() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $requestBeforeReset = $agent->getRequest();
+
+        $agent->startNewRequest();
+
+        self::assertNotSame($requestBeforeReset, $agent->getRequest());
+    }
 }

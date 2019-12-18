@@ -99,7 +99,7 @@ final class Agent implements ScoutApmAgent
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
         }
 
-        $this->request = new Request();
+        $this->startNewRequest();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
     }
@@ -339,7 +339,7 @@ final class Agent implements ScoutApmAgent
                 $this->connector->sendCommand($this->request)
             ));
 
-            $this->request = new Request();
+            $this->startNewRequest();
 
             return true;
         } catch (NotConnected $notConnected) {
@@ -351,6 +351,12 @@ final class Agent implements ScoutApmAgent
 
             return false;
         }
+    }
+
+    /** {@inheritDoc} */
+    public function startNewRequest() : void
+    {
+        $this->request = new Request();
     }
 
     private function registerIfRequired() : void
