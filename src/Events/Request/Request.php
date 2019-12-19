@@ -14,6 +14,7 @@ use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
+use function array_key_exists;
 use function is_string;
 
 /** @internal */
@@ -75,11 +76,12 @@ class Request implements CommandWithChildren
         $headers = FetchRequestHeaders::fromServerGlobal();
 
         foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
-            if (array_key_exists($headerToCheck, $headers)) {
-                $headerValue = $headers[$headerToCheck];
-                // @todo header value format?
-//                $this->tag(Tag::TAG_QUEUE_TIME, $queueTime);
+            if (! array_key_exists($headerToCheck, $headers)) {
+                continue;
             }
+
+            $headerValue = (float) $headers[$headerToCheck] / 10000;
+            $this->tag(Tag::TAG_QUEUE_TIME, $this->timer->getStartAsMicrotime() - $headerValue);
         }
     }
 
@@ -98,6 +100,8 @@ class Request implements CommandWithChildren
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
         $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
+
+        $this->tagRequestIfRequestQueueTimeHeaderExists();
     }
 
     /** @throws Exception */

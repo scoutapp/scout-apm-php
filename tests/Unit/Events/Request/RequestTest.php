@@ -9,11 +9,14 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use function array_key_exists;
 use function json_decode;
 use function json_encode;
+use function microtime;
 use function next;
 use function reset;
 use function str_repeat;
+use function str_replace;
 use function time;
 
 /** @covers \Scoutapm\Events\Request\Request */
@@ -156,5 +159,28 @@ final class RequestTest extends TestCase
         $request->stop();
 
         self::assertSame(2, $request->collectedSpans());
+    }
+
+    public function testRequestIsTaggedWithQueueTime() : void
+    {
+        $_SERVER['HTTP_X_REQUEST_START'] = str_replace('.', '', (string) (microtime(true) - 2));
+
+        $request = new Request();
+        $request->stop();
+
+        $f = $request->jsonSerialize();
+
+        $foundTag = false;
+        foreach ($f['BatchCommand']['commands'] as $command) {
+            if (! array_key_exists('TagRequest', $command) || $command['TagRequest']['tag'] !== 'scout.queue_time_ns') {
+                continue;
+            }
+
+            self::assertGreaterThanOrEqual(1.9, $command['TagRequest']['value']);
+            self::assertLessThanOrEqual(2.1, $command['TagRequest']['value']);
+            $foundTag = true;
+        }
+
+        self::assertTrue($foundTag, 'Could not find queue time tag');
     }
 }

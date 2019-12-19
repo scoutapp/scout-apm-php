@@ -74,6 +74,11 @@ final class Timer
         return $timestamp->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
+    public function getStartAsMicrotime() : float
+    {
+        return $this->start;
+    }
+
     /**
      * Returns the duration in microseconds. If the timer has not yet been stopped yet, `null` is returned.
      */
