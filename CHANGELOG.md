@@ -1,6 +1,8 @@
 # Changelog
 
-## Pending - [3.0.0]
+## Pending - [3.0.1]
+
+## [3.0.0] 2019-12-19
 
  - [BC] Added new method `Scoutapm\ScoutApmAgent::startNewRequest` (#148)
    - implementors of `Scoutapm\ScoutApmAgent` will now need to implement this new method
