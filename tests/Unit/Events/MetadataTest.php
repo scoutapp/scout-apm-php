@@ -35,6 +35,8 @@ final class MetadataTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My amazing application',
             ConfigKey::REVISION_SHA => 'abc123',
             ConfigKey::HOSTNAME => 'fake-hostname.scoutapm.com',
+            ConfigKey::FRAMEWORK => 'Great Framework',
+            ConfigKey::FRAMEWORK_VERSION => '1.2.3',
         ]);
 
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
@@ -48,8 +50,8 @@ final class MetadataTest extends TestCase
                         'version' => PHP_VERSION,
                         'language_version' => PHP_VERSION,
                         'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
-                        'framework' => 'laravel',
-                        'framework_version' => '',
+                        'framework' => 'Great Framework',
+                        'framework_version' => '1.2.3',
                         'environment' => '',
                         'app_server' => '',
                         'hostname' => 'fake-hostname.scoutapm.com',
@@ -94,7 +96,7 @@ final class MetadataTest extends TestCase
                         'version' => PHP_VERSION,
                         'language_version' => PHP_VERSION,
                         'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
-                        'framework' => 'laravel',
+                        'framework' => '',
                         'framework_version' => '',
                         'environment' => '',
                         'app_server' => '',

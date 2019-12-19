@@ -33,6 +33,8 @@ abstract class ConfigKey
     public const CORE_AGENT_VERSION          = 'core_agent_version';
     public const CORE_AGENT_TRIPLE           = 'core_agent_triple';
     public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
+    public const FRAMEWORK                   = 'framework';
+    public const FRAMEWORK_VERSION           = 'framework_version';
 
     private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
 
