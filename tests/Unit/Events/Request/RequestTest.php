@@ -16,7 +16,6 @@ use function microtime;
 use function next;
 use function reset;
 use function str_repeat;
-use function str_replace;
 use function time;
 
 /** @covers \Scoutapm\Events\Request\Request */
@@ -163,7 +162,7 @@ final class RequestTest extends TestCase
 
     public function testRequestIsTaggedWithQueueTime() : void
     {
-        $_SERVER['HTTP_X_REQUEST_START'] = str_replace('.', '', (string) (microtime(true) - 2));
+        $_SERVER['HTTP_X_REQUEST_START'] = (string) ((microtime(true) - 2) * 10000);
 
         $request = new Request();
         $request->stop();
