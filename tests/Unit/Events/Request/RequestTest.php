@@ -176,8 +176,8 @@ final class RequestTest extends TestCase
                 continue;
             }
 
-            self::assertGreaterThanOrEqual(1.9, $command['TagRequest']['value']);
-            self::assertLessThanOrEqual(2.1, $command['TagRequest']['value']);
+            self::assertGreaterThanOrEqual(1900000000, $command['TagRequest']['value']);
+            self::assertLessThanOrEqual(2100000000, $command['TagRequest']['value']);
             $foundTag = true;
         }
 

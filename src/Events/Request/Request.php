@@ -81,7 +81,7 @@ class Request implements CommandWithChildren
             }
 
             $headerValue = (float) $headers[$headerToCheck] / 10000;
-            $this->tag(Tag::TAG_QUEUE_TIME, $this->timer->getStartAsMicrotime() - $headerValue);
+            $this->tag(Tag::TAG_QUEUE_TIME, ($this->timer->getStartAsMicrotime() - $headerValue) * 1e9);
         }
     }
 
