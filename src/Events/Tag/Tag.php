@@ -15,6 +15,7 @@ abstract class Tag implements Command
     public const TAG_ARGUMENTS    = 'args';
     public const TAG_MEMORY_DELTA = 'memory_delta';
     public const TAG_REQUEST_PATH = 'path';
+    public const TAG_QUEUE_TIME   = 'scout.queue_time_ns';
 
     /** @var RequestId */
     protected $requestId;

@@ -10,6 +10,7 @@ use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
+use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
@@ -67,6 +68,19 @@ class Request implements CommandWithChildren
         }
 
         return '/';
+    }
+
+    private function tagRequestIfRequestQueueTimeHeaderExists() : void
+    {
+        $headers = FetchRequestHeaders::fromServerGlobal();
+
+        foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
+            if (array_key_exists($headerToCheck, $headers)) {
+                $headerValue = $headers[$headerToCheck];
+                // @todo header value format?
+//                $this->tag(Tag::TAG_QUEUE_TIME, $queueTime);
+            }
+        }
     }
 
     public function stopIfRunning() : void
