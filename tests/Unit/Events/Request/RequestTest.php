@@ -182,5 +182,7 @@ final class RequestTest extends TestCase
         }
 
         self::assertTrue($foundTag, 'Could not find queue time tag');
+
+        unset($_SERVER['HTTP_X_REQUEST_START']);
     }
 }
