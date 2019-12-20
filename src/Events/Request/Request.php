@@ -10,9 +10,11 @@ use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
+use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
+use function array_key_exists;
 use function is_string;
 
 /** @internal */
@@ -69,6 +71,20 @@ class Request implements CommandWithChildren
         return '/';
     }
 
+    private function tagRequestIfRequestQueueTimeHeaderExists() : void
+    {
+        $headers = FetchRequestHeaders::fromServerGlobal();
+
+        foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
+            if (! array_key_exists($headerToCheck, $headers)) {
+                continue;
+            }
+
+            $headerValue = (float) $headers[$headerToCheck] / 10000;
+            $this->tag(Tag::TAG_QUEUE_TIME, ($this->timer->getStartAsMicrotime() - $headerValue) * 1e9);
+        }
+    }
+
     public function stopIfRunning() : void
     {
         if ($this->timer->getStop() !== null) {
@@ -84,6 +100,8 @@ class Request implements CommandWithChildren
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
         $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
+
+        $this->tagRequestIfRequestQueueTimeHeaderExists();
     }
 
     /** @throws Exception */
