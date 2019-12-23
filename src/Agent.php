@@ -390,7 +390,8 @@ final class Agent implements ScoutApmAgent
         try {
             $this->connector->sendCommand(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                $this->config
+                $this->config,
+                $this->phpExtension
             ));
 
             $this->markMetadataSent();
