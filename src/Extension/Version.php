@@ -50,7 +50,7 @@ final class Version
         return new self((int) $parts['major'], (int) $parts['minor'], (int) $parts['patch']);
     }
 
-    public function olderThan(self $otherVersion) : bool
+    public function isOlderThan(self $otherVersion) : bool
     {
         if ($this->major > $otherVersion->major) {
             return false;

@@ -159,7 +159,7 @@ final class Agent implements ScoutApmAgent
 
         $theMinimumRecommendedVersion = Version::fromString(self::WARN_WHEN_EXTENSION_IS_OLDER_THAN);
 
-        if (! $extensionVersion->olderThan($theMinimumRecommendedVersion)) {
+        if (! $extensionVersion->isOlderThan($theMinimumRecommendedVersion)) {
             return;
         }
 

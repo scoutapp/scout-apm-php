@@ -13,22 +13,22 @@ final class VersionTest extends TestCase
     /**
      * @return string[][]|bool[][]
      *
-     * @psalm-return array<int, array{testVersion: string, olderThan: string, expectedResult: bool}>
+     * @psalm-return array<int, array{testVersion: string, isOlderThan: string, expectedResult: bool}>
      */
     public function olderThanVersionProvider() : array
     {
         return [
-            ['testVersion' => '1.0.0', 'olderThan' => '2.0.0', 'expectedResult' => true],
-            ['testVersion' => '1.1.0', 'olderThan' => '1.2.0', 'expectedResult' => true],
-            ['testVersion' => '1.1.1', 'olderThan' => '1.1.2', 'expectedResult' => true],
-            ['testVersion' => '2.0.0', 'olderThan' => '1.0.0', 'expectedResult' => false],
-            ['testVersion' => '1.2.0', 'olderThan' => '1.1.0', 'expectedResult' => false],
-            ['testVersion' => '1.1.2', 'olderThan' => '1.1.1', 'expectedResult' => false],
-            ['testVersion' => '1.0.0', 'olderThan' => '1.0.0', 'expectedResult' => false],
-            ['testVersion' => '1.1.0', 'olderThan' => '1.1.0', 'expectedResult' => false],
-            ['testVersion' => '1.1.1', 'olderThan' => '1.1.1', 'expectedResult' => false],
-            ['testVersion' => '2.0.0', 'olderThan' => '1.0.2', 'expectedResult' => false],
-            ['testVersion' => '2.0.0', 'olderThan' => '1.2.0', 'expectedResult' => false],
+            ['testVersion' => '1.0.0', 'isOlderThan' => '2.0.0', 'expectedResult' => true],
+            ['testVersion' => '1.1.0', 'isOlderThan' => '1.2.0', 'expectedResult' => true],
+            ['testVersion' => '1.1.1', 'isOlderThan' => '1.1.2', 'expectedResult' => true],
+            ['testVersion' => '2.0.0', 'isOlderThan' => '1.0.0', 'expectedResult' => false],
+            ['testVersion' => '1.2.0', 'isOlderThan' => '1.1.0', 'expectedResult' => false],
+            ['testVersion' => '1.1.2', 'isOlderThan' => '1.1.1', 'expectedResult' => false],
+            ['testVersion' => '1.0.0', 'isOlderThan' => '1.0.0', 'expectedResult' => false],
+            ['testVersion' => '1.1.0', 'isOlderThan' => '1.1.0', 'expectedResult' => false],
+            ['testVersion' => '1.1.1', 'isOlderThan' => '1.1.1', 'expectedResult' => false],
+            ['testVersion' => '2.0.0', 'isOlderThan' => '1.0.2', 'expectedResult' => false],
+            ['testVersion' => '2.0.0', 'isOlderThan' => '1.2.0', 'expectedResult' => false],
         ];
     }
 
@@ -40,7 +40,7 @@ final class VersionTest extends TestCase
         self::assertSame(
             $expectedResult,
             Version::fromString($testVersion)
-                ->olderThan(Version::fromString($olderThan))
+                ->isOlderThan(Version::fromString($olderThan))
         );
     }
 
