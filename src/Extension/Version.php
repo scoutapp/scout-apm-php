@@ -52,6 +52,18 @@ final class Version
 
     public function olderThan(self $otherVersion) : bool
     {
+        if ($this->major > $otherVersion->major) {
+            return false;
+        }
+
+        if ($this->minor > $otherVersion->minor) {
+            return false;
+        }
+
+        if ($this->patch > $otherVersion->patch) {
+            return false;
+        }
+
         return $otherVersion->major > $this->major
             || $otherVersion->minor > $this->minor
             || $otherVersion->patch > $this->patch;
