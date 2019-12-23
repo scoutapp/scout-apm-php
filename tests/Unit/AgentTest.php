@@ -23,6 +23,8 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
+use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\Version;
 use Scoutapm\ScoutApmAgent;
 use function array_map;
 use function end;
@@ -39,18 +41,28 @@ final class AgentTest extends TestCase
     /** @var Connector&MockObject */
     private $connector;
 
+    /** @var ExtentionCapabilities&MockObject */
+    private $phpExtension;
+
     public function setUp() : void
     {
         parent::setUp();
 
-        $this->logger    = new TestLogger();
-        $this->connector = $this->createMock(Connector::class);
+        $this->logger       = new TestLogger();
+        $this->connector    = $this->createMock(Connector::class);
+        $this->phpExtension = $this->createMock(ExtentionCapabilities::class);
     }
 
     /** @param mixed[]|array<string, mixed> $config */
     private function agentFromConfigArray(array $config = []) : ScoutApmAgent
     {
-        return Agent::fromConfig(Config::fromArray($config), $this->logger, new DevNullCache(), $this->connector);
+        return Agent::fromConfig(
+            Config::fromArray($config),
+            $this->logger,
+            new DevNullCache(),
+            $this->connector,
+            $this->phpExtension
+        );
     }
 
     /**
@@ -638,5 +650,41 @@ final class AgentTest extends TestCase
         self::assertFalse($agent->send());
 
         self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
+    }
+
+    public function testOlderVersionsOfExtensionIsNotedInLogs() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->phpExtension
+            ->method('version')
+            ->willReturn(Version::fromString('0.0.1'));
+
+        $agent->connect();
+
+        self::assertTrue($this->logger->hasInfoThatContains(
+            'scoutapm PHP extension is currently 0.0.1, which is older than the minimum recommended version'
+        ));
+    }
+
+    public function testNewerVersionsOfExtensionIsNotLogged() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->phpExtension
+            ->method('version')
+            ->willReturn(Version::fromString('100.0.0'));
+
+        $agent->connect();
+
+        self::assertFalse($this->logger->hasInfoThatContains('scoutapm PHP extension is currently'));
     }
 }
