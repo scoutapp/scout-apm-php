@@ -9,31 +9,34 @@ use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\RecordedCall;
 use function extension_loaded;
 use function file_get_contents;
+use function phpversion;
 use function reset;
 
 /** @covers \Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities */
 final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
 {
+    /** @var PotentiallyAvailableExtensionCapabilities */
+    private $capabilities;
+
     public function setUp() : void
     {
         parent::setUp();
 
+        $this->capabilities = new PotentiallyAvailableExtensionCapabilities();
+
         // First call is to clear any existing logged calls from the extension so we are in a known state
-        /** @noinspection UnusedFunctionResultInspection */
-        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
+        $this->capabilities->clearRecordedCalls();
     }
 
     public function testGetCallsReturnsEmptyArrayWhenExtensionNotAvailable() : void
     {
         if (extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is not available');
-
-            return;
         }
 
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
-        self::assertEquals([], (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+        self::assertEquals([], $this->capabilities->getCalls());
     }
 
     public function testGetCallsReturnsFileGetContentsCallWhenExtensionIsAvailable() : void
@@ -45,7 +48,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
-        $calls = (new PotentiallyAvailableExtensionCapabilities())->getCalls();
+        $calls = $this->capabilities->getCalls();
 
         self::assertCount(1, $calls);
         self::assertContainsOnlyInstancesOf(RecordedCall::class, $calls);
@@ -65,15 +68,33 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
-        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
+        $this->capabilities->clearRecordedCalls();
 
-        self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+        self::assertCount(0, $this->capabilities->getCalls());
 
         /** @noinspection UnusedFunctionResultInspection */
         file_get_contents(__FILE__);
 
-        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
+        $this->capabilities->clearRecordedCalls();
 
-        self::assertCount(0, (new PotentiallyAvailableExtensionCapabilities())->getCalls());
+        self::assertCount(0, $this->capabilities->getCalls());
+    }
+
+    public function testVersionIsReturnedWhenAvailable() : void
+    {
+        if (! extension_loaded('scoutapm')) {
+            self::markTestSkipped('Test can only be run when extension is loaded');
+        }
+
+        self::assertSame(phpversion('scoutapm'), $this->capabilities->version()->toString());
+    }
+
+    public function testVersionReturnsNullWhenExtensionNotLoaded() : void
+    {
+        if (extension_loaded('scoutapm')) {
+            self::markTestSkipped('Test can only be run when extension is not available');
+        }
+
+        self::assertNull($this->capabilities->version());
     }
 }

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Scoutapm\Extension;
 
+use Throwable;
 use function array_map;
 use function extension_loaded;
 use function function_exists;
+use function phpversion;
 use function scoutapm_get_calls;
 
 final class PotentiallyAvailableExtensionCapabilities implements ExtentionCapabilities
@@ -41,5 +43,18 @@ final class PotentiallyAvailableExtensionCapabilities implements ExtentionCapabi
     {
         return extension_loaded('scoutapm')
             && function_exists('scoutapm_get_calls');
+    }
+
+    public function version() : ?Version
+    {
+        if (! $this->extensionIsAvailable()) {
+            return null;
+        }
+
+        try {
+            return Version::fromString(phpversion('scoutapm'));
+        } catch (Throwable $anything) {
+            return null;
+        }
     }
 }
