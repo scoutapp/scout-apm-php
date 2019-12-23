@@ -134,6 +134,13 @@ final class Agent implements ScoutApmAgent
         );
     }
 
+    private function extensionVersion() : string
+    {
+        $extensionVersion = $this->phpExtension->version();
+
+        return $extensionVersion === null ? 'n/a' : $extensionVersion->toString();
+    }
+
     public function connect() : void
     {
         $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
@@ -146,8 +153,9 @@ final class Agent implements ScoutApmAgent
 
         if (! $this->connector->connected()) {
             $this->logger->info(sprintf(
-                'Scout Core Agent (app=%s) not connected yet, attempting to start',
-                $this->config->get(ConfigKey::APPLICATION_NAME)
+                'Scout Core Agent (app=%s, ext=%s) not connected yet, attempting to start',
+                $this->config->get(ConfigKey::APPLICATION_NAME),
+                $this->extensionVersion()
             ));
             $manager = new AutomaticDownloadAndLaunchManager(
                 $this->config,
@@ -175,8 +183,9 @@ final class Agent implements ScoutApmAgent
             }
         } else {
             $this->logger->debug(sprintf(
-                'Scout Core Agent Connected (app=%s)',
-                $this->config->get(ConfigKey::APPLICATION_NAME)
+                'Scout Core Agent Connected (app=%s, ext=%s)',
+                $this->config->get(ConfigKey::APPLICATION_NAME),
+                $this->extensionVersion()
             ));
         }
     }
