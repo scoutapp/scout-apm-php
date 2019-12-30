@@ -15,6 +15,9 @@ use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Connector;
+use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\FailedToSendCommand;
+use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
@@ -23,6 +26,7 @@ use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\ScoutApmAgent;
 use function array_map;
 use function end;
+use function json_encode;
 use function sprintf;
 use function uniqid;
 
@@ -332,6 +336,8 @@ final class AgentTest extends TestCase
         // Start a Child Span
         $span = $agent->startSpan('SQL/Query');
 
+        $agent->changeRequestUri('new request URI');
+
         // Tag the span
         $span->tag('sql.query', 'select * from foo');
 
@@ -411,5 +417,226 @@ final class AgentTest extends TestCase
         $agent->startNewRequest();
 
         self::assertNotSame($requestBeforeReset, $agent->getRequest());
+    }
+
+    public function testAgentLogsWarningWhenFailingToConnectToSocket() : void
+    {
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => 'My test app',
+                ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+                ConfigKey::MONITORING_ENABLED => true,
+                ConfigKey::CORE_AGENT_SOCKET_PATH => '/socket/path/should/not/exist',
+                ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ]),
+            $this->logger,
+            new DevNullCache()
+        );
+        $agent->connect();
+
+        self::assertTrue($this->logger->hasWarningThatContains(
+            'Failed to connect to socket on path "/socket/path/should/not/exist"'
+        ));
+    }
+
+    public function testAgentLogsDebugWhenConnectedToSocket() : void
+    {
+        $this->connector
+            ->expects(self::once())
+            ->method('connected')
+            ->willReturn(false);
+
+        $this->connector
+            ->expects(self::once())
+            ->method('connect');
+
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+        ]);
+
+        $agent->connect();
+
+        self::assertTrue($this->logger->hasDebugThatContains('Connected to connector.'));
+    }
+
+    public function testAgentLogsDebugWhenAlreadyConnectedToSocket() : void
+    {
+        $this->connector
+            ->expects(self::once())
+            ->method('connected')
+            ->willReturn(true);
+
+        $this->connector
+            ->expects(self::never())
+            ->method('connect');
+
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+        ]);
+
+        $agent->connect();
+
+        self::assertTrue($this->logger->hasDebugThatContains('Scout Core Agent Connected'));
+    }
+
+    public function testRequestUriCanBeChanged() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::NOTICE,
+        ]);
+
+        $requestUri = uniqid('requestUri', true);
+
+        $this->connector->method('connected')->willReturn(true);
+
+        $this->connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::callback(static function (Request $request) use ($requestUri) {
+                $serialisedRequest = json_encode($request);
+
+                self::assertContains(sprintf('"tag":"path","value":"%s"', $requestUri), $serialisedRequest);
+
+                return true;
+            }))
+            ->willReturn('{"Request":"Success"}');
+
+        $agent->changeRequestUri($requestUri);
+
+        self::assertTrue($agent->send());
+    }
+
+    public function testDisablingMonitoringDoesNotSendPayload() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => false,
+        ]);
+
+        $this->connector->expects(self::never())->method('connected')->willReturn(true);
+
+        $this->connector->expects(self::never())
+            ->method('sendCommand');
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, monitoring is not enabled'));
+    }
+
+    public function testSendingRequestAttemptsToConnectIfNotAlreadyConnected() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(false);
+
+        $this->connector->expects(self::once())
+            ->method('connect');
+
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        $this->connector->expects(self::at(4))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"Success"}');
+
+        self::assertTrue($agent->send());
+
+        self::assertTrue($this->logger->hasDebugThatContains('Connected to connector whilst sending'));
+    }
+
+    public function testFailureToConnectWhilstSendingIsLoggedAsAnError() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(false);
+
+        $this->connector->expects(self::once())
+            ->method('connect')
+            ->willThrowException(new FailedToConnect('Uh oh, failed to reticulate the splines'));
+
+        $this->connector->expects(self::never())
+            ->method('sendCommand');
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasErrorThatContains('Uh oh, failed to reticulate the splines'));
+    }
+
+    public function testNotConnectedExceptionIsCaughtWhilstSending() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(true);
+
+        // This scenario is very unlikely, but ensure it's caught anyway...
+        $this->connector->expects(self::once())
+            ->method('sendCommand')
+            ->willThrowException(new NotConnected('Lost connectivity whilst reticulating splines'));
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasErrorThatContains('Lost connectivity whilst reticulating splines'));
+    }
+
+    public function testFailureToSendCommandExceptionIsCaughtWhilstSending() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(true);
+
+        $this->connector->expects(self::once())
+            ->method('sendCommand')
+            ->willThrowException(new FailedToSendCommand('Splines did not reticulate to send the message'));
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
     }
 }
