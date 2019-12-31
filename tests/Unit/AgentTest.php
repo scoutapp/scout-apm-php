@@ -24,11 +24,16 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\RecordedCall;
 use Scoutapm\Extension\Version;
+use Scoutapm\IntegrationTests\TestHelper;
 use Scoutapm\ScoutApmAgent;
 use function array_map;
 use function end;
 use function json_encode;
+use function microtime;
+use function next;
+use function reset;
 use function sprintf;
 use function uniqid;
 
@@ -159,6 +164,19 @@ final class AgentTest extends TestCase
             ConfigKey::MONITORING_ENABLED => true,
         ]);
 
+        $microtime = microtime(true);
+
+        $this->phpExtension->expects(self::at(0))
+            ->method('getCalls')
+            ->willReturn([RecordedCall::fromExtensionLoggedCallArray([
+                'function' => 'file_get_contents',
+                'entered' => $microtime - 1,
+                'exited' => $microtime,
+                'time_taken' => 1,
+                'argv' => ['http://some-url'],
+            ]),
+            ]);
+
         $this->connector->method('connected')->willReturn(true);
 
         $this->connector->expects(self::at(1))
@@ -171,7 +189,35 @@ final class AgentTest extends TestCase
             ->willReturn('{"Metadata":"Success"}');
         $this->connector->expects(self::at(3))
             ->method('sendCommand')
-            ->with(self::isInstanceOf(Request::class))
+            ->with(self::callback(static function (Request $request) : bool {
+                TestHelper::assertUnserializedCommandContainsPayload(
+                    'BatchCommand',
+                    [
+                        'commands' => static function (array $commands) : bool {
+                            TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Test'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'SQL/Query'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'sql.query', 'value' => 'select * from foo'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'uri', 'value' => 'example.com/foo/bar.php'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
+
+                            return true;
+                        },
+                    ],
+                    $request->jsonSerialize(),
+                    null
+                );
+
+                return true;
+            }))
             ->willReturn('{"Request":"Success"}');
 
         // Start a Parent Controller Span

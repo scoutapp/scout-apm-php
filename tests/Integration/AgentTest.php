@@ -14,20 +14,15 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Helper\Timer;
-use function array_keys;
 use function file_get_contents;
 use function getenv;
 use function gethostname;
-use function implode;
-use function is_callable;
-use function is_string;
 use function json_decode;
 use function json_encode;
 use function next;
 use function reset;
 use function sleep;
 use function sprintf;
-use function var_export;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
@@ -105,7 +100,7 @@ final class AgentTest extends TestCase
 
         $unserialized = json_decode(json_encode($connector->sentMessages), true);
 
-        $this->assertUnserializedCommandContainsPayload(
+        TestHelper::assertUnserializedCommandContainsPayload(
             'Register',
             [
                 'app' => 'Agent Integration Test',
@@ -116,7 +111,7 @@ final class AgentTest extends TestCase
             reset($unserialized),
             null
         );
-        $this->assertUnserializedCommandContainsPayload(
+        TestHelper::assertUnserializedCommandContainsPayload(
             'ApplicationEvent',
             [
                 'event_type' => 'scout.metadata',
@@ -133,11 +128,11 @@ final class AgentTest extends TestCase
         );
 
         $batchCommand = next($unserialized);
-        $this->assertUnserializedCommandContainsPayload(
+        TestHelper::assertUnserializedCommandContainsPayload(
             'BatchCommand',
             [
                 'commands' => function (array $commands) : bool {
-                    $requestId = $this->assertUnserializedCommandContainsPayload(
+                    $requestId = TestHelper::assertUnserializedCommandContainsPayload(
                         'StartRequest',
                         [
                             'timestamp' => [$this, 'assertValidTimestamp'],
@@ -146,56 +141,56 @@ final class AgentTest extends TestCase
                         'request_id'
                     );
 
-                    $controllerSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
+                    $controllerSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
-                    $fooSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
+                    $fooSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
-                    $barSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
+                    $barSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
-                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
 
                     if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        $this->assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                     }
 
-                    $dbSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
+                    $dbSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
+                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
 
-                    $quxSpanId = $this->assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
-                    $this->assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
+                    $quxSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
+                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [$this, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
-                    $this->assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [$this, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
 
-                    $this->assertUnserializedCommandContainsPayload(
+                    TestHelper::assertUnserializedCommandContainsPayload(
                         'FinishRequest',
                         [
                             'request_id' => $requestId,
@@ -232,68 +227,5 @@ final class AgentTest extends TestCase
 
         return true;
     }
-
     // phpcs:enable
-
-    /**
-     * @param string[]|callable[]|array<string, (string|callable)>        $keysAndValuesToExpect
-     * @param mixed[][]|array<string, array<string, (string|null|array)>> $actualCommand
-     */
-    private function assertUnserializedCommandContainsPayload(
-        string $expectedCommand,
-        array $keysAndValuesToExpect,
-        array $actualCommand,
-        ?string $identifierKeyToReturn
-    ) : ?string {
-        self::assertArrayHasKey(
-            $expectedCommand,
-            $actualCommand,
-            sprintf('Expected %s command, got %s', $expectedCommand, implode(',', array_keys($actualCommand)))
-        );
-        $commandPayload = $actualCommand[$expectedCommand];
-
-        foreach ($keysAndValuesToExpect as $expectedKey => $expectedValue) {
-            self::assertArrayHasKey(
-                $expectedKey,
-                $commandPayload,
-                sprintf(
-                    'Expected %s command to have %s key, contained: %s',
-                    $expectedCommand,
-                    $expectedKey,
-                    implode(',', array_keys($commandPayload))
-                )
-            );
-
-            if (! is_string($expectedValue) && is_callable($expectedValue)) {
-                self::assertTrue(
-                    $expectedValue($commandPayload[$expectedKey]),
-                    sprintf(
-                        'Callable for %s command %s did not return true - value was %s',
-                        $expectedCommand,
-                        $expectedKey,
-                        var_export($commandPayload[$expectedKey], true)
-                    )
-                );
-                continue;
-            }
-
-            self::assertSame(
-                $expectedValue,
-                $commandPayload[$expectedKey],
-                sprintf(
-                    'Value for %s command %s was expected to be %s, was %s',
-                    $expectedCommand,
-                    $expectedKey,
-                    var_export($expectedValue, true),
-                    var_export($commandPayload[$expectedKey], true)
-                )
-            );
-        }
-
-        if ($identifierKeyToReturn === null) {
-            return null;
-        }
-
-        return $commandPayload[$identifierKeyToReturn];
-    }
 }
