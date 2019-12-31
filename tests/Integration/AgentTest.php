@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm\IntegrationTests;
 
-use DateTimeImmutable;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
@@ -13,7 +12,6 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
-use Scoutapm\Helper\Timer;
 use function file_get_contents;
 use function getenv;
 use function gethostname;
@@ -131,11 +129,11 @@ final class AgentTest extends TestCase
         TestHelper::assertUnserializedCommandContainsPayload(
             'BatchCommand',
             [
-                'commands' => function (array $commands) : bool {
+                'commands' => static function (array $commands) : bool {
                     $requestId = TestHelper::assertUnserializedCommandContainsPayload(
                         'StartRequest',
                         [
-                            'timestamp' => [$this, 'assertValidTimestamp'],
+                            'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
                         ],
                         reset($commands),
                         'request_id'
@@ -187,14 +185,14 @@ final class AgentTest extends TestCase
                     $quxSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
                     TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [$this, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
+                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [TestHelper::class, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
                     TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
 
                     TestHelper::assertUnserializedCommandContainsPayload(
                         'FinishRequest',
                         [
                             'request_id' => $requestId,
-                            'timestamp' => [$this, 'assertValidTimestamp'],
+                            'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
                         ],
                         next($commands),
                         null
@@ -207,25 +205,4 @@ final class AgentTest extends TestCase
             null
         );
     }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    /** @throws Exception */
-    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
-    private function assertValidTimestamp(?string $timestamp) : bool
-    {
-        self::assertNotNull($timestamp, 'Expected a non-null timestamp, but the timestamp was null');
-        self::assertSame($timestamp, (new DateTimeImmutable($timestamp))->format(Timer::FORMAT_FOR_CORE_AGENT));
-
-        return true;
-    }
-
-    /** @noinspection PhpUnusedPrivateMethodInspection */
-    private function assertValidMemoryUsage(?float $memoryUsageInMb) : bool
-    {
-        self::assertIsFloat($memoryUsageInMb, 'Expected an float memory usage, but was it was null');
-        self::assertGreaterThan(0, $memoryUsageInMb, 'Memory usage should be greater than zero');
-
-        return true;
-    }
-    // phpcs:enable
 }

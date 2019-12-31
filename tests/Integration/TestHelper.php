@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Scoutapm\IntegrationTests;
 
+use DateTimeImmutable;
+use Exception;
 use PHPUnit\Framework\Assert;
+use Scoutapm\Helper\Timer;
 use function array_keys;
 use function extension_loaded;
 use function implode;
@@ -80,5 +83,22 @@ abstract class TestHelper
         }
 
         return $commandPayload[$identifierKeyToReturn];
+    }
+
+    /** @throws Exception */
+    public static function assertValidTimestamp(?string $timestamp) : bool
+    {
+        Assert::assertNotNull($timestamp, 'Expected a non-null timestamp, but the timestamp was null');
+        Assert::assertSame($timestamp, (new DateTimeImmutable($timestamp))->format(Timer::FORMAT_FOR_CORE_AGENT));
+
+        return true;
+    }
+
+    public static function assertValidMemoryUsage(?float $memoryUsageInMb) : bool
+    {
+        Assert::assertIsFloat($memoryUsageInMb, 'Expected an float memory usage, but was it was null');
+        Assert::assertGreaterThan(0, $memoryUsageInMb, 'Memory usage should be greater than zero');
+
+        return true;
     }
 }
