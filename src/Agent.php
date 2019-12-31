@@ -296,7 +296,7 @@ final class Agent implements ScoutApmAgent
     {
         // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
-            $this->logger->debug('Not sending payload, logging is not enabled');
+            $this->logger->debug('Not sending payload, monitoring is not enabled');
 
             return false;
         }
@@ -308,6 +308,8 @@ final class Agent implements ScoutApmAgent
             return false;
         }
 
+        // Logic dictates that this can't happen, but static analysis would disagree since the annotation is nullable
+        // $this->request is only null when the request has been ignored (for now).
         if ($this->request === null) {
             $this->logger->debug('Not sending payload, request was not set');
 
