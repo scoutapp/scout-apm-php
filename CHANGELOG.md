@@ -1,8 +1,22 @@
 # Changelog
 
-## Pending - [3.0.1]
+## Pending - [3.1.1]
+
+## [3.1.0] 2019-12-31
+
+### Added
+
+ - Add check to make sure we have a recent version of the PHP extension (#151)
+ - Capture request queue time (#149)
+
+### Changed
+
+ - Added some Agent test coverage (#152)
+ - Updated framework/framework version to come from configuration, not hard-coded (#150)
 
 ## [3.0.0] 2019-12-19
+
+### Added
 
  - [BC] Added new method `Scoutapm\ScoutApmAgent::startNewRequest` (#148)
    - implementors of `Scoutapm\ScoutApmAgent` will now need to implement this new method
