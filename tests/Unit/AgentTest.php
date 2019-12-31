@@ -23,10 +23,17 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\TagRequest;
+use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\RecordedCall;
+use Scoutapm\Extension\Version;
+use Scoutapm\IntegrationTests\TestHelper;
 use Scoutapm\ScoutApmAgent;
 use function array_map;
 use function end;
 use function json_encode;
+use function microtime;
+use function next;
+use function reset;
 use function sprintf;
 use function uniqid;
 
@@ -39,18 +46,28 @@ final class AgentTest extends TestCase
     /** @var Connector&MockObject */
     private $connector;
 
+    /** @var ExtentionCapabilities&MockObject */
+    private $phpExtension;
+
     public function setUp() : void
     {
         parent::setUp();
 
-        $this->logger    = new TestLogger();
-        $this->connector = $this->createMock(Connector::class);
+        $this->logger       = new TestLogger();
+        $this->connector    = $this->createMock(Connector::class);
+        $this->phpExtension = $this->createMock(ExtentionCapabilities::class);
     }
 
     /** @param mixed[]|array<string, mixed> $config */
     private function agentFromConfigArray(array $config = []) : ScoutApmAgent
     {
-        return Agent::fromConfig(Config::fromArray($config), $this->logger, new DevNullCache(), $this->connector);
+        return Agent::fromConfig(
+            Config::fromArray($config),
+            $this->logger,
+            new DevNullCache(),
+            $this->connector,
+            $this->phpExtension
+        );
     }
 
     /**
@@ -147,6 +164,19 @@ final class AgentTest extends TestCase
             ConfigKey::MONITORING_ENABLED => true,
         ]);
 
+        $microtime = microtime(true);
+
+        $this->phpExtension->expects(self::at(0))
+            ->method('getCalls')
+            ->willReturn([RecordedCall::fromExtensionLoggedCallArray([
+                'function' => 'file_get_contents',
+                'entered' => $microtime - 1,
+                'exited' => $microtime,
+                'time_taken' => 1,
+                'argv' => ['http://some-url'],
+            ]),
+            ]);
+
         $this->connector->method('connected')->willReturn(true);
 
         $this->connector->expects(self::at(1))
@@ -159,7 +189,35 @@ final class AgentTest extends TestCase
             ->willReturn('{"Metadata":"Success"}');
         $this->connector->expects(self::at(3))
             ->method('sendCommand')
-            ->with(self::isInstanceOf(Request::class))
+            ->with(self::callback(static function (Request $request) : bool {
+                TestHelper::assertUnserializedCommandContainsPayload(
+                    'BatchCommand',
+                    [
+                        'commands' => static function (array $commands) : bool {
+                            TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Test'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'SQL/Query'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'sql.query', 'value' => 'select * from foo'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'uri', 'value' => 'example.com/foo/bar.php'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
+
+                            return true;
+                        },
+                    ],
+                    $request->jsonSerialize(),
+                    null
+                );
+
+                return true;
+            }))
             ->willReturn('{"Request":"Success"}');
 
         // Start a Parent Controller Span
@@ -638,5 +696,41 @@ final class AgentTest extends TestCase
         self::assertFalse($agent->send());
 
         self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
+    }
+
+    public function testOlderVersionsOfExtensionIsNotedInLogs() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->phpExtension
+            ->method('version')
+            ->willReturn(Version::fromString('0.0.1'));
+
+        $agent->connect();
+
+        self::assertTrue($this->logger->hasInfoThatContains(
+            'scoutapm PHP extension is currently 0.0.1, which is older than the minimum recommended version'
+        ));
+    }
+
+    public function testNewerVersionsOfExtensionIsNotLogged() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->phpExtension
+            ->method('version')
+            ->willReturn(Version::fromString('100.0.0'));
+
+        $agent->connect();
+
+        self::assertFalse($this->logger->hasInfoThatContains('scoutapm PHP extension is currently'));
     }
 }

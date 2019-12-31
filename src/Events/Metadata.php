@@ -9,11 +9,13 @@ use PackageVersions\Versions;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
+use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function dirname;
 use function explode;
 use function file_exists;
@@ -32,16 +34,18 @@ final class Metadata implements Command
 {
     /** @var Timer */
     private $timer;
-
     /** @var Config */
     private $config;
+    /** @var ExtentionCapabilities */
+    private $phpExtension;
 
-    public function __construct(DateTimeImmutable $now, Config $config)
+    public function __construct(DateTimeImmutable $now, Config $config, ExtentionCapabilities $phpExtension)
     {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer  = new Timer((float) $now->format('U.u'));
-        $this->config = $config;
+        $this->timer        = new Timer((float) $now->format('U.u'));
+        $this->config       = $config;
+        $this->phpExtension = $phpExtension;
     }
 
     /**
@@ -141,13 +145,18 @@ final class Metadata implements Command
      */
     private function getLibraries() : array
     {
-        return array_map(
-            /** @return string[][]|array<int, string> */
-            static function (string $package, string $version) : array {
-                return [$package, $version];
-            },
-            array_keys(Versions::VERSIONS),
-            Versions::VERSIONS
+        $extensionVersion = $this->phpExtension->version();
+
+        return array_merge(
+            array_map(
+                /** @return string[][]|array<int, string> */
+                static function (string $package, string $version) : array {
+                    return [$package, $version];
+                },
+                array_keys(Versions::VERSIONS),
+                Versions::VERSIONS
+            ),
+            ['ext-scoutapm' => $extensionVersion === null ? 'not installed' : $extensionVersion->toString()]
         );
     }
 

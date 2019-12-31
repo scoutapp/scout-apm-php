@@ -12,10 +12,13 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
+use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\Version;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function array_keys;
 use function array_map;
+use function array_merge;
 use function explode;
 use function gethostname;
 use function json_decode;
@@ -29,6 +32,11 @@ final class MetadataTest extends TestCase
     /** @throws Exception */
     public function testMetadataFromConfigurationSerializesToJson() : void
     {
+        $phpExtension = $this->createMock(ExtentionCapabilities::class);
+        $phpExtension->expects(self::once())
+            ->method('version')
+            ->willReturn(Version::fromString('1.2.3'));
+
         $config = Config::fromArray([
             ConfigKey::APPLICATION_ROOT => '/fake/app/root',
             ConfigKey::SCM_SUBDIRECTORY => '/fake/scm/subdirectory',
@@ -58,12 +66,15 @@ final class MetadataTest extends TestCase
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => 'My amazing application',
-                        'libraries' => array_map(
-                            static function ($package, $version) {
-                                return [$package, $version];
-                            },
-                            array_keys(Versions::VERSIONS),
-                            Versions::VERSIONS
+                        'libraries' => array_merge(
+                            array_map(
+                                static function ($package, $version) {
+                                    return [$package, $version];
+                                },
+                                array_keys(Versions::VERSIONS),
+                                Versions::VERSIONS
+                            ),
+                            ['ext-scoutapm' => '1.2.3']
                         ),
                         'paas' => '',
                         'application_root' => '/fake/app/root',
@@ -74,13 +85,18 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($time, $config)), true)
+            json_decode(json_encode(new Metadata($time, $config, $phpExtension)), true)
         );
     }
 
     /** @throws Exception */
     public function testAutoDetectedMetadataSerializesToJson() : void
     {
+        $phpExtension = $this->createMock(ExtentionCapabilities::class);
+        $phpExtension->expects(self::once())
+            ->method('version')
+            ->willReturn(null);
+
         $config = Config::fromArray([]);
 
         $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
@@ -104,12 +120,15 @@ final class MetadataTest extends TestCase
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => '',
-                        'libraries' => array_map(
-                            static function ($package, $version) {
-                                return [$package, $version];
-                            },
-                            array_keys(Versions::VERSIONS),
-                            Versions::VERSIONS
+                        'libraries' => array_merge(
+                            array_map(
+                                static function ($package, $version) {
+                                    return [$package, $version];
+                                },
+                                array_keys(Versions::VERSIONS),
+                                Versions::VERSIONS
+                            ),
+                            ['ext-scoutapm' => 'not installed']
                         ),
                         'paas' => '',
                         'application_root' => '/fake/document/root',
@@ -120,7 +139,7 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($time, $config)), true)
+            json_decode(json_encode(new Metadata($time, $config, $phpExtension)), true)
         );
     }
 
@@ -135,7 +154,8 @@ final class MetadataTest extends TestCase
             $testHerokuSlugCommit,
             json_decode(json_encode(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                Config::fromArray([])
+                Config::fromArray([]),
+                $this->createMock(ExtentionCapabilities::class)
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

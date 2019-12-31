@@ -28,6 +28,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\Extension\Version;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use function count;
@@ -38,6 +39,8 @@ use function sprintf;
 final class Agent implements ScoutApmAgent
 {
     private const CACHE_KEY_METADATA_SENT = 'scout_metadata_sent';
+
+    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.0.2';
 
     /** @var Config */
     private $config;
@@ -123,15 +126,48 @@ final class Agent implements ScoutApmAgent
         );
     }
 
-    public static function fromConfig(Config $config, LoggerInterface $logger, ?CacheInterface $cache = null, ?Connector $connector = null) : self
-    {
+    public static function fromConfig(
+        Config $config,
+        LoggerInterface $logger,
+        ?CacheInterface $cache = null,
+        ?Connector $connector = null,
+        ?ExtentionCapabilities $extentionCapabilities = null
+    ) : self {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
-            new PotentiallyAvailableExtensionCapabilities(),
+            $extentionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache()
         );
+    }
+
+    private function extensionVersion() : string
+    {
+        $extensionVersion = $this->phpExtension->version();
+
+        return $extensionVersion === null ? 'n/a' : $extensionVersion->toString();
+    }
+
+    private function checkExtensionVersion() : void
+    {
+        $extensionVersion = $this->phpExtension->version();
+
+        if ($extensionVersion === null) {
+            return;
+        }
+
+        $theMinimumRecommendedVersion = Version::fromString(self::WARN_WHEN_EXTENSION_IS_OLDER_THAN);
+
+        if (! $extensionVersion->isOlderThan($theMinimumRecommendedVersion)) {
+            return;
+        }
+
+        $this->logger->info(sprintf(
+            'scoutapm PHP extension is currently %s, which is older than the minimum recommended version %s',
+            $extensionVersion->toString(),
+            $theMinimumRecommendedVersion->toString()
+        ));
     }
 
     public function connect() : void
@@ -144,10 +180,13 @@ final class Agent implements ScoutApmAgent
             return;
         }
 
+        $this->checkExtensionVersion();
+
         if (! $this->connector->connected()) {
             $this->logger->info(sprintf(
-                'Scout Core Agent (app=%s) not connected yet, attempting to start',
-                $this->config->get(ConfigKey::APPLICATION_NAME)
+                'Scout Core Agent (app=%s, ext=%s) not connected yet, attempting to start',
+                $this->config->get(ConfigKey::APPLICATION_NAME),
+                $this->extensionVersion()
             ));
             $manager = new AutomaticDownloadAndLaunchManager(
                 $this->config,
@@ -175,8 +214,9 @@ final class Agent implements ScoutApmAgent
             }
         } else {
             $this->logger->debug(sprintf(
-                'Scout Core Agent Connected (app=%s)',
-                $this->config->get(ConfigKey::APPLICATION_NAME)
+                'Scout Core Agent Connected (app=%s, ext=%s)',
+                $this->config->get(ConfigKey::APPLICATION_NAME),
+                $this->extensionVersion()
             ));
         }
     }
@@ -390,7 +430,8 @@ final class Agent implements ScoutApmAgent
         try {
             $this->connector->sendCommand(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
-                $this->config
+                $this->config,
+                $this->phpExtension
             ));
 
             $this->markMetadataSent();
