@@ -10,6 +10,11 @@ use Scoutapm\Config\ConfigKey;
 /** @covers \Scoutapm\Config\ConfigKey */
 final class ConfigKeyTest extends TestCase
 {
+    public function testAllConfigurationKeysReturnsArrayOfKeys() : void
+    {
+        self::assertContainsOnly('string', ConfigKey::allConfigurationKeys());
+    }
+
     public function testFilterSecretsFromConfigArray() : void
     {
         self::assertEquals(

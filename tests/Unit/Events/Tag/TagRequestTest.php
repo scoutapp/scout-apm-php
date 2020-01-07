@@ -9,14 +9,19 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\TagRequest;
 
-/** @covers \Scoutapm\Events\Tag\TagRequest */
+/**
+ * @covers \Scoutapm\Events\Tag\TagRequest
+ * @covers \Scoutapm\Events\Tag\Tag
+ */
 final class TagRequestTest extends TestCase
 {
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
         $tag = new TagRequest('t', 'v', RequestId::new());
-        self::assertNotNull($tag);
+
+        self::assertSame('t', $tag->getTag());
+        self::assertSame('v', $tag->getValue());
     }
 
     /** @throws Exception */
