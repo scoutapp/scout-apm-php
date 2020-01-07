@@ -25,7 +25,6 @@ final class DerivedSource implements ConfigSource
         ConfigKey::CORE_AGENT_SOCKET_PATH,
         ConfigKey::CORE_AGENT_FULL_NAME,
         ConfigKey::CORE_AGENT_TRIPLE,
-        'testing',
     ];
 
     /** @var Config */
@@ -56,8 +55,6 @@ final class DerivedSource implements ConfigSource
                 return $this->coreAgentFullName();
             case ConfigKey::CORE_AGENT_TRIPLE:
                 return $this->coreAgentTriple();
-            case 'testing':
-                return $this->testing();
         }
 
         return null;
@@ -101,16 +98,5 @@ final class DerivedSource implements ConfigSource
         }
 
         return $this->architecture() . '-' . $platform;
-    }
-
-    /**
-     * Used for testing this class, not a real configuration.
-     * We should remove this and adjust the test once we have a real use of this class.
-     */
-    private function testing() : string
-    {
-        $version = $this->config->get(ConfigKey::API_VERSION);
-
-        return 'derived api version: ' . $version;
     }
 }
