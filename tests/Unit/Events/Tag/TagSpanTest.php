@@ -10,14 +10,19 @@ use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanId;
 use Scoutapm\Events\Tag\TagSpan;
 
-/** @covers \Scoutapm\Events\Tag\TagSpan */
+/**
+ * @covers \Scoutapm\Events\Tag\TagSpan
+ * @covers \Scoutapm\Events\Tag\Tag
+ */
 final class TagSpanTest extends TestCase
 {
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {
         $tag = new TagSpan('t', 'v', RequestId::new(), SpanId::new());
-        self::assertNotNull($tag);
+
+        self::assertSame('t', $tag->getTag());
+        self::assertSame('v', $tag->getValue());
     }
 
     /** @throws Exception */

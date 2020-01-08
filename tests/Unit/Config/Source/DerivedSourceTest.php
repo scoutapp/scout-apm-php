@@ -17,36 +17,65 @@ use function unlink;
 /** @covers \Scoutapm\Config\Source\DerivedSource */
 final class DerivedSourceTest extends TestCase
 {
-    public function testHasKey() : void
-    {
-        $derived = new DerivedSource(new Config(), new LibcDetection());
+    /** @var Config */
+    private $config;
 
-        self::assertTrue($derived->hasKey('testing'));
-        self::assertFalse($derived->hasKey('is_array'));
+    /** @var DerivedSource */
+    private $derivedSource;
+
+    public function setUp() : void
+    {
+        parent::setUp();
+
+        $this->config = new Config();
+
+        $this->derivedSource = new DerivedSource($this->config, new LibcDetection('/' . uniqid('file_should_not_exist', true)));
     }
 
-    public function testGet() : void
+    public function testHasKey() : void
     {
-        $derived = new DerivedSource(new Config(), new LibcDetection());
+        self::assertTrue($this->derivedSource->hasKey(ConfigKey::CORE_AGENT_SOCKET_PATH));
+        self::assertTrue($this->derivedSource->hasKey(ConfigKey::CORE_AGENT_FULL_NAME));
+        self::assertTrue($this->derivedSource->hasKey(ConfigKey::CORE_AGENT_TRIPLE));
+        self::assertFalse($this->derivedSource->hasKey('is_array'));
+    }
 
-        self::assertSame('derived api version: 1.0', $derived->get('testing'));
+    public function testGetReturnsNullWhenConfigKeyDoesNotExist() : void
+    {
+        self::assertNull($this->derivedSource->get('not an actual key'));
+    }
+
+    public function testCoreAgentFullNameIsDerivedCorrectly() : void
+    {
+        self::assertStringMatchesFormat(
+            'scout_apm_core-v%d.%d.%d-%s-linux-gnu',
+            $this->derivedSource->get(ConfigKey::CORE_AGENT_FULL_NAME)
+        );
+    }
+
+    public function testSocketPathIsDerivedCorrectly() : void
+    {
+        $this->config->set(ConfigKey::CORE_AGENT_FULL_NAME, '__core_agent_full_name__');
+
+        self::assertSame(
+            '/tmp/scout_apm_core/__core_agent_full_name__/scout-agent.sock',
+            $this->derivedSource->get(ConfigKey::CORE_AGENT_SOCKET_PATH)
+        );
     }
 
     public function testMuslIsDetectedWhenAlpineFileDetected() : void
     {
         $muslHintFilename = tempnam(sys_get_temp_dir(), 'scoutapm_musl_hint_file');
 
-        $config = new DerivedSource(new Config(), new LibcDetection($muslHintFilename));
+        $derivedSource = new DerivedSource(new Config(), new LibcDetection($muslHintFilename));
 
-        self::assertStringEndsWith('linux-musl', $config->get(ConfigKey::CORE_AGENT_TRIPLE));
+        self::assertStringEndsWith('linux-musl', $derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
 
         unlink($muslHintFilename);
     }
 
     public function testGnuLibcIsDetectedWhenAlpineFileDoesNotExist() : void
     {
-        $config = new DerivedSource(new Config(), new LibcDetection('/' . uniqid('file_should_not_exist', true)));
-
-        self::assertStringEndsWith('linux-gnu', $config->get(ConfigKey::CORE_AGENT_TRIPLE));
+        self::assertStringEndsWith('linux-gnu', $this->derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
     }
 }
