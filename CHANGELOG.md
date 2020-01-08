@@ -1,6 +1,11 @@
 # Changelog
 
-## Pending - [3.1.1]
+## Pending - [4.0.1]
+
+## [4.0.0] 2020-01-08
+
+ - Added configuration option `disabled_instruments` to be used by framework specific bindings (#156)
+ - More test coverage (#155)
 
 ## [3.1.0] 2019-12-31
 
