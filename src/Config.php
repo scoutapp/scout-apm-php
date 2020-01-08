@@ -49,6 +49,7 @@ class Config
         $this->coercions = [
             ConfigKey::MONITORING_ENABLED => new CoerceBoolean(),
             ConfigKey::IGNORED_ENDPOINTS => new CoerceJson(),
+            ConfigKey::DISABLED_INSTRUMENTS => new CoerceJson(),
         ];
     }
 

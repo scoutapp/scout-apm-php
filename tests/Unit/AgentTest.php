@@ -345,6 +345,38 @@ final class AgentTest extends TestCase
         self::assertFalse($agent->ignored('/bar'));
     }
 
+    public function testInstrumentationIsNotDisabledWhenNoDisabledInstrumentsConfigured() : void
+    {
+        self::assertTrue(
+            $this->agentFromConfigArray([])
+                ->shouldInstrument('some functionality')
+        );
+    }
+
+    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsConfigurationIsWrong() : void
+    {
+        self::assertTrue(
+            $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => 'disabled functionality'])
+                ->shouldInstrument('some functionality')
+        );
+    }
+
+    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsAreConfigured() : void
+    {
+        self::assertTrue(
+            $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => '["disabled functionality"]'])
+                ->shouldInstrument('some functionality')
+        );
+    }
+
+    public function testInstrumentationIsDisabledWhenDisabledInstrumentsAreConfigured() : void
+    {
+        self::assertFalse(
+            $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => '["disabled functionality"]'])
+                ->shouldInstrument('disabled functionality')
+        );
+    }
+
     /** @throws Exception */
     public function testMetadataExceptionsAreLogged() : void
     {

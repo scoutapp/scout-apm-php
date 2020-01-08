@@ -60,6 +60,14 @@ interface ScoutApmAgent
     public function ignore() : void;
 
     /**
+     * Should the instrumentation be enabled for a particular functionality. This checks the `disabled_instruments`
+     * configuration - if an instrumentation is not explicitly disabled, this will return true.
+     *
+     * The list of functionality that can be disabled depends on the library binding being used.
+     */
+    public function shouldInstrument(string $functionality) : bool;
+
+    /**
      * If the automatically determined request URI is incorrect, please report an issue so we can investigate. You may
      * override the automatic determination of the request URI by calling this method.
      *

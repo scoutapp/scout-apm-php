@@ -21,6 +21,7 @@ abstract class ConfigKey
     public const SCM_SUBDIRECTORY            = 'scm_subdirectory';
     public const REVISION_SHA                = 'revision_sha';
     public const HOSTNAME                    = 'hostname';
+    public const DISABLED_INSTRUMENTS        = 'disabled_instruments';
     public const CORE_AGENT_LOG_LEVEL        = 'core_agent_log_level';
     public const CORE_AGENT_LOG_FILE         = 'core_agent_log_file';
     public const CORE_AGENT_CONFIG_FILE      = 'core_agent_config_file';
@@ -52,6 +53,7 @@ abstract class ConfigKey
             self::SCM_SUBDIRECTORY,
             self::REVISION_SHA,
             self::HOSTNAME,
+            self::DISABLED_INSTRUMENTS,
             self::CORE_AGENT_LOG_LEVEL,
             self::CORE_AGENT_LOG_FILE,
             self::CORE_AGENT_CONFIG_FILE,
