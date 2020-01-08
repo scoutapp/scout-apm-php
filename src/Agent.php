@@ -32,6 +32,8 @@ use Scoutapm\Extension\Version;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use function count;
+use function in_array;
+use function is_array;
 use function is_string;
 use function json_encode;
 use function sprintf;
@@ -320,6 +322,16 @@ final class Agent implements ScoutApmAgent
     {
         $this->request   = null;
         $this->isIgnored = true;
+    }
+
+    /** {@inheritDoc} */
+    public function shouldInstrument(string $functionality) : bool
+    {
+        $disabledInstruments = $this->config->get(ConfigKey::DISABLED_INSTRUMENTS);
+
+        return $disabledInstruments === null
+            || ! is_array($disabledInstruments)
+            || ! in_array($functionality, $disabledInstruments, true);
     }
 
     /** {@inheritDoc} */
