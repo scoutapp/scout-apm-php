@@ -27,12 +27,44 @@ final class AgentTest extends TestCase
 {
     /** @var TestLogger */
     private $logger;
+    /** @var MessageCapturingConnectorDelegator */
+    private $connector;
+    /** @var Agent */
+    private $agent;
+    /** @var string */
+    private $scoutApmKey;
 
     public function setUp() : void
     {
         parent::setUp();
 
         $this->logger = new TestLogger();
+
+        // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
+        $this->scoutApmKey = getenv('SCOUT_APM_KEY');
+
+        if ($this->scoutApmKey === false) {
+            self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
+
+            return;
+        }
+
+        $config = Config::fromArray([
+            'name' => 'Agent Integration Test',
+            'key' => $this->scoutApmKey,
+            'monitor' => true,
+        ]);
+
+        $this->connector = new MessageCapturingConnectorDelegator(
+            new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH), true)
+        );
+
+        $_SERVER['REQUEST_URI'] = '/fake-path';
+
+        $this->agent = Agent::fromConfig($config, $this->logger, null, $this->connector);
+        $this->agent->connect();
+
+        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
     }
 
     private function formatCapturedLogMessages() : string
@@ -49,60 +81,33 @@ final class AgentTest extends TestCase
     /** @throws Exception */
     public function testLoggingIsSent() : void
     {
-        // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
-        $scoutApmKey = getenv('SCOUT_APM_KEY');
-
-        if ($scoutApmKey === false) {
-            self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
-
-            return;
-        }
-
-        $config = Config::fromArray([
-            'name' => 'Agent Integration Test',
-            'key' => $scoutApmKey,
-            'monitor' => true,
-        ]);
-
-        $connector = new MessageCapturingConnectorDelegator(
-            new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH), true)
-        );
-
-        $_SERVER['REQUEST_URI'] = '/fake-path';
-
-        $agent = Agent::fromConfig($config, $this->logger, null, $connector);
-
-        $agent->connect();
-
-        (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
-
-        $agent->webTransaction('Yay', static function () use ($agent) : void {
+        $this->agent->webTransaction('Yay', function () : void {
             file_get_contents(__FILE__);
-            $agent->instrument('Test', 'foo', static function () use ($agent) : void {
+            $this->agent->instrument('Test', 'foo', function () : void {
                 file_get_contents(__FILE__);
                 sleep(1);
-                $agent->instrument('Test', 'bar', static function () : void {
+                $this->agent->instrument('Test', 'bar', static function () : void {
                     file_get_contents(__FILE__);
                     sleep(1);
                 });
             });
             file_get_contents(__FILE__);
-            $agent->tagRequest('testtag', '1.23');
-            $agent->instrument('DB', 'test', static function () : void {
+            $this->agent->tagRequest('testtag', '1.23');
+            $this->agent->instrument('DB', 'test', static function () : void {
             });
         });
-        $agent->instrument('Test', 'qux', static function () : void {
+        $this->agent->instrument('Test', 'qux', static function () : void {
         });
 
-        self::assertTrue($agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+        self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
 
-        $unserialized = json_decode(json_encode($connector->sentMessages), true);
+        $unserialized = json_decode(json_encode($this->connector->sentMessages), true);
 
         TestHelper::assertUnserializedCommandContainsPayload(
             'Register',
             [
                 'app' => 'Agent Integration Test',
-                'key' => $scoutApmKey,
+                'key' => $this->scoutApmKey,
                 'language' => 'php',
                 'api_version' => '1.0',
             ],
