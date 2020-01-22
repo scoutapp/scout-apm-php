@@ -15,6 +15,7 @@ use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
 use function array_filter;
+use function array_map;
 use function strpos;
 
 /** @internal */
@@ -55,6 +56,17 @@ class Span implements CommandWithParent, CommandWithChildren
         $this->requestId = $requestId;
 
         $this->timer = new Timer($override);
+    }
+
+    public function cleanUp() : void
+    {
+        array_map(
+            static function (Command $command) : void {
+                $command->cleanUp();
+            },
+            $this->children
+        );
+        unset($this->id, $this->requestId, $this->parent, $this->children, $this->name, $this->timer);
     }
 
     public function id() : SpanId

@@ -15,6 +15,7 @@ use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
 use function array_key_exists;
+use function array_map;
 use function is_string;
 
 /** @internal */
@@ -47,6 +48,17 @@ class Request implements CommandWithChildren
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
+    }
+
+    public function cleanUp() : void
+    {
+        array_map(
+            static function (Command $command) : void {
+                $command->cleanUp();
+            },
+            $this->children
+        );
+        unset($this->timer, $this->children, $this->currentCommand, $this->id, $this->startMemory, $this->requestUriOverride);
     }
 
     public function overrideRequestUri(string $newRequestUri) : void

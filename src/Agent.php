@@ -410,6 +410,10 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function startNewRequest() : void
     {
+        if ($this->request !== null) {
+            $this->request->cleanUp();
+        }
+
         $this->request = new Request();
     }
 
