@@ -11,16 +11,21 @@ use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
+use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use function file_get_contents;
+use function fopen;
+use function function_exists;
 use function getenv;
 use function gethostname;
 use function json_decode;
 use function json_encode;
+use function memory_get_usage;
 use function next;
 use function reset;
 use function sleep;
 use function sprintf;
+use function str_repeat;
 
 /** @coversNothing */
 final class AgentTest extends TestCase
@@ -76,6 +81,45 @@ final class AgentTest extends TestCase
         }
 
         return $return;
+    }
+
+    public function testForMemoryLeaksWhenHandlingJobQueues() : void
+    {
+        $tagSize = 500000;
+
+        $startingMemory = memory_get_usage();
+        for ($i = 1; $i <= 500; $i++) {
+            $this->agent->startNewRequest();
+            $span = $this->agent->startSpan(sprintf(
+                '%s/%s%d',
+                Span::INSTRUMENT_JOB,
+                'Test Job #',
+                $i
+            ));
+
+            $span->tag('something', str_repeat('a', $tagSize));
+
+            $this->agent->stopSpan();
+
+            $this->agent->connect();
+            $this->agent->send();
+        }
+
+        // Logging can affect memory usage since the TestLogger persists the messages in memory
+        $this->logger->records        = [];
+        $this->logger->recordsByLevel = [];
+
+        /**
+         * Install https://github.com/BitOne/php-meminfo to get memory analysis here to identify where memory is
+         * allocated, then use `bin/analyzer summary /tmp/my_dump_file.json` to show table.
+         */
+        if (function_exists('meminfo_dump')) {
+            meminfo_dump(fopen('/tmp/my_dump_file.json', 'w'));
+        }
+
+        // It is worth noting that other things are collecting information here too (e.g. xdebug, phpunit), so we can
+        // expect memory to increase regardless.
+        self::assertLessThan($tagSize * 2, memory_get_usage() - $startingMemory);
     }
 
     /** @throws Exception */
