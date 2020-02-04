@@ -10,9 +10,13 @@ use Scoutapm\Config\ConfigKey;
 use Throwable;
 use function array_map;
 use function exec;
+use function explode;
 use function file_get_contents;
+use function function_exists;
 use function hash;
 use function implode;
+use function in_array;
+use function ini_get;
 use function sprintf;
 
 /** @internal */
@@ -42,8 +46,37 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         $this->downloader = $downloader;
     }
 
+    private function phpCanExec() : bool
+    {
+        if (! function_exists('exec')) {
+            $this->logger->warning('PHP function exec is not available');
+
+            return false;
+        }
+
+        if (in_array('exec', array_map('trim', explode(',', ini_get('disable_functions'))))) {
+            $this->logger->warning('PHP function exec is in disabled_functions');
+
+            return false;
+        }
+
+        if (exec('echo scoutapm') !== 'scoutapm') {
+            $this->logger->warning('PHP function exec did not return expected value');
+
+            return false;
+        }
+
+        $this->logger->debug('exec is available');
+
+        return true;
+    }
+
     public function launch() : bool
     {
+        if (! $this->phpCanExec()) {
+            return false;
+        }
+
         if (! $this->config->get(ConfigKey::CORE_AGENT_LAUNCH_ENABLED)) {
             $this->logger->debug(sprintf(
                 "Not attempting to launch Core Agent due to '%s' setting.",
