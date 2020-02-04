@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\IntegrationTests\CoreAgent;
+namespace Scoutapm\UnitTests\CoreAgent;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
