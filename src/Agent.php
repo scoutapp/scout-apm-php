@@ -21,6 +21,7 @@ use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
 use Scoutapm\CoreAgent\Launcher;
+use Scoutapm\CoreAgent\Verifier;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
@@ -191,11 +192,12 @@ final class Agent implements ScoutApmAgent
                 $this->config->get(ConfigKey::APPLICATION_NAME),
                 $this->extensionVersion()
             ));
-            $manager = new AutomaticDownloadAndLaunchManager(
+            $coreAgentDownloadPath = $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME);
+            $manager               = new AutomaticDownloadAndLaunchManager(
                 $this->config,
                 $this->logger,
                 new Downloader(
-                    $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
+                    $coreAgentDownloadPath,
                     $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME),
                     $this->logger,
                     $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL),
@@ -207,6 +209,10 @@ final class Agent implements ScoutApmAgent
                     $this->config->get(ConfigKey::CORE_AGENT_LOG_LEVEL),
                     $this->config->get(ConfigKey::CORE_AGENT_LOG_FILE),
                     $this->config->get(ConfigKey::CORE_AGENT_CONFIG_FILE)
+                ),
+                new Verifier(
+                    $this->logger,
+                    $coreAgentDownloadPath
                 )
             );
             $manager->launch();
