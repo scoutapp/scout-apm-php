@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\CoreAgent;
 
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Throwable;
 use function array_map;
 use function exec;
@@ -14,6 +15,7 @@ use function implode;
 use function in_array;
 use function ini_get;
 use function sprintf;
+use function stripos;
 
 class Launcher
 {
@@ -76,7 +78,9 @@ class Launcher
 
             $this->logger->debug(sprintf('Launching core agent with command: %s', $escapedCommand));
 
-            exec($escapedCommand);
+            exec($escapedCommand . ' 2>&1', $output, $exitStatus);
+
+            $this->assertOutputDoesNotContainErrors(implode("\n", $output), $exitStatus);
 
             return true;
         } catch (Throwable $e) {
@@ -112,5 +116,16 @@ class Launcher
         $this->logger->debug('exec is available');
 
         return true;
+    }
+
+    private function assertOutputDoesNotContainErrors(string $output, int $exitStatus) : void
+    {
+        if (stripos($output, "version `GLIBC_2.18' not found") !== false) {
+            throw new RuntimeException('core-agent currently needs at least glibc 2.18. Output: ' . $output);
+        }
+
+        if ($exitStatus !== 0) {
+            throw new RuntimeException('core-agent exited with non-zero status. Output: ' . $output);
+        }
     }
 }
