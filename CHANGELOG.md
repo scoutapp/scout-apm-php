@@ -1,6 +1,12 @@
 # Changelog
 
-## Pending - [4.0.1]
+## Pending - [4.0.2]
+
+## [4.0.1] 2020-02-04
+
+### Fixed
+
+ - Fixed bug where cyclic references would cause memory leak in long-running processes (#158)
 
 ## [4.0.0] 2020-01-08
 
