@@ -46,6 +46,11 @@ abstract class Tag implements Command
         $this->timestamp = $timestamp;
     }
 
+    public function cleanUp() : void
+    {
+        unset($this->tag, $this->value, $this->requestId, $this->timestamp);
+    }
+
     /**
      * Get the 'key' portion of this Tag
      */

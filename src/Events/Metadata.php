@@ -48,6 +48,11 @@ final class Metadata implements Command
         $this->phpExtension = $phpExtension;
     }
 
+    public function cleanUp() : void
+    {
+        unset($this->timer);
+    }
+
     /**
      * @return array<string, (string|array<int, array<int, string>>|null)>
      */

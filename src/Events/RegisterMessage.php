@@ -25,6 +25,10 @@ final class RegisterMessage implements Command
         $this->apiVersion = $apiVersion;
     }
 
+    public function cleanUp() : void
+    {
+    }
+
     /** @return array<string, array<string, string>> */
     public function jsonSerialize() : array
     {
