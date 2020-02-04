@@ -6,6 +6,8 @@ namespace Scoutapm\IntegrationTests;
 
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\Connector;
+use function json_decode;
+use function json_encode;
 
 final class MessageCapturingConnectorDelegator implements Connector
 {
@@ -32,7 +34,7 @@ final class MessageCapturingConnectorDelegator implements Connector
 
     public function sendCommand(Command $message) : string
     {
-        $this->sentMessages[] = $message;
+        $this->sentMessages[] = json_decode(json_encode($message), true);
 
         return $this->delegate->sendCommand($message);
     }

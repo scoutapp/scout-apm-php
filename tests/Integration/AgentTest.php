@@ -18,8 +18,6 @@ use function fopen;
 use function function_exists;
 use function getenv;
 use function gethostname;
-use function json_decode;
-use function json_encode;
 use function memory_get_usage;
 use function next;
 use function reset;
@@ -145,7 +143,7 @@ final class AgentTest extends TestCase
 
         self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
 
-        $unserialized = json_decode(json_encode($this->connector->sentMessages), true);
+        $unserialized = $this->connector->sentMessages;
 
         TestHelper::assertUnserializedCommandContainsPayload(
             'Register',
