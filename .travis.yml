@@ -22,6 +22,7 @@ before_script:
 
 script:
   - $PHP vendor/bin/phpunit
+  - tests/check-memory-leaks.sh
 
 jobs:
   include:
