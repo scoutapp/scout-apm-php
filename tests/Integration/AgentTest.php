@@ -107,6 +107,9 @@ final class AgentTest extends TestCase
         $this->logger->records        = [];
         $this->logger->recordsByLevel = [];
 
+        // MessageCapturingConnectorDelegator also persists the sent messages in memory for tests, so free that up
+        $this->connector->sentMessages = [];
+
         /**
          * Install https://github.com/BitOne/php-meminfo to get memory analysis here to identify where memory is
          * allocated, then use `bin/analyzer summary /tmp/my_dump_file.json` to show table.
