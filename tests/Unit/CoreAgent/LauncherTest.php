@@ -49,10 +49,10 @@ final class LauncherTest extends TestCase
 
         $launcher = new Launcher(
             $logger,
-            'socket-path.sock',
-            null,
-            null,
-            null
+            '/tmp/socket-path.sock',
+            'TRACE',
+            '/tmp/core-agent.log',
+            '/tmp/core-agent-config.ini'
         );
 
         self::assertTrue($launcher->launch(__DIR__ . '/emulated-happy-path.sh'));
