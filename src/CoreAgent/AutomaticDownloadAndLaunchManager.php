@@ -7,16 +7,8 @@ namespace Scoutapm\CoreAgent;
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
-use Throwable;
-use function array_map;
-use function exec;
-use function explode;
-use function file_get_contents;
-use function function_exists;
-use function hash;
-use function implode;
-use function in_array;
-use function ini_get;
+use function hash_equals;
+use function hash_file;
 use function sprintf;
 
 /** @internal */
@@ -24,59 +16,27 @@ final class AutomaticDownloadAndLaunchManager implements Manager
 {
     /** @var Config */
     private $config;
-
     /** @var LoggerInterface */
     private $logger;
-
     /** @var string */
     private $coreAgentDir;
-
     /** @var Downloader */
     private $downloader;
+    /** @var Launcher */
+    private $launcher;
 
-    /** @var string|null */
-    private $coreAgentBinPath;
-
-    public function __construct(Config $config, LoggerInterface $logger, Downloader $downloader)
+    public function __construct(Config $config, LoggerInterface $logger, Downloader $downloader, Launcher $launcher)
     {
         $this->config       = $config;
         $this->logger       = $logger;
         $this->coreAgentDir = $config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $config->get(ConfigKey::CORE_AGENT_FULL_NAME);
 
         $this->downloader = $downloader;
-    }
-
-    private function phpCanExec() : bool
-    {
-        if (! function_exists('exec')) {
-            $this->logger->warning('PHP function exec is not available');
-
-            return false;
-        }
-
-        if (in_array('exec', array_map('trim', explode(',', ini_get('disable_functions'))))) {
-            $this->logger->warning('PHP function exec is in disabled_functions');
-
-            return false;
-        }
-
-        if (exec('echo scoutapm') !== 'scoutapm') {
-            $this->logger->warning('PHP function exec did not return expected value');
-
-            return false;
-        }
-
-        $this->logger->debug('exec is available');
-
-        return true;
+        $this->launcher   = $launcher;
     }
 
     public function launch() : bool
     {
-        if (! $this->phpCanExec()) {
-            return false;
-        }
-
         if (! $this->config->get(ConfigKey::CORE_AGENT_LAUNCH_ENABLED)) {
             $this->logger->debug(sprintf(
                 "Not attempting to launch Core Agent due to '%s' setting.",
@@ -86,7 +46,8 @@ final class AutomaticDownloadAndLaunchManager implements Manager
             return false;
         }
 
-        if (! $this->verify()) {
+        $coreAgentBinPath = $this->verify();
+        if ($coreAgentBinPath === null) {
             if (! $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED)) {
                 $this->logger->debug(sprintf(
                     "Not attempting to download Core Agent due to '%s' setting.",
@@ -96,10 +57,11 @@ final class AutomaticDownloadAndLaunchManager implements Manager
                 return false;
             }
 
-            $this->download();
+            $this->downloader->download();
         }
 
-        if (! $this->verify()) {
+        $coreAgentBinPath = $this->verify();
+        if ($coreAgentBinPath === null) {
             $this->logger->debug(
                 'Failed to verify Core Agent. Not launching Core Agent.'
             );
@@ -107,89 +69,27 @@ final class AutomaticDownloadAndLaunchManager implements Manager
             return false;
         }
 
-        return $this->run();
+        return $this->launcher->launch($coreAgentBinPath);
     }
 
-    /**
-     * Initiate download of the agent
-     */
-    private function download() : void
-    {
-        $this->downloader->download();
-    }
-
-    private function verify() : bool
+    private function verify() : ?string
     {
         // Check for a well formed manifest
         $manifest = new Manifest($this->coreAgentDir . '/manifest.json', $this->logger);
         if (! $manifest->isValid()) {
             $this->logger->debug('Core Agent verification failed: Manifest is not valid.');
-            $this->coreAgentBinPath = null;
 
-            return false;
+            return null;
         }
 
         // Check that the hash matches
         $binPath = $this->coreAgentDir . '/' . $manifest->binaryName();
-        if (hash('sha256', file_get_contents($binPath)) === $manifest->hashOfBinary()) {
-            $this->coreAgentBinPath = $binPath;
-
-            return true;
+        if (hash_equals($manifest->hashOfBinary(), hash_file('sha256', $binPath))) {
+            return $binPath;
         }
 
         $this->logger->debug('Core Agent verification failed: SHA mismatch.');
-        $this->coreAgentBinPath = null;
 
-        return false;
-    }
-
-    private function run() : bool
-    {
-        $this->logger->debug('Core Agent Launch in Progress');
-        try {
-            $logLevel   = $this->config->get(ConfigKey::CORE_AGENT_LOG_LEVEL);
-            $logFile    = $this->config->get(ConfigKey::CORE_AGENT_LOG_FILE);
-            $configFile = $this->config->get(ConfigKey::CORE_AGENT_CONFIG_FILE);
-
-            if ($logFile === null) {
-                $logFile = '/dev/null';
-            }
-
-            $commandParts = [
-                $this->coreAgentBinPath,
-                'start',
-                '--daemonize',
-                'true',
-                '--log-file',
-                $logFile,
-            ];
-
-            if ($logLevel !== null) {
-                $commandParts[] = '--log-level';
-                $commandParts[] = $logLevel;
-            }
-
-            if ($configFile !== null) {
-                $commandParts[] = '--config-file';
-                $commandParts[] = $configFile;
-            }
-
-            $commandParts[] = '--socket';
-            $commandParts[] = $this->config->get(ConfigKey::CORE_AGENT_SOCKET_PATH);
-
-            $escapedCommand = implode(' ', array_map('escapeshellarg', $commandParts));
-
-            $this->logger->debug(sprintf('Launching core agent with command: %s', $escapedCommand));
-            exec($escapedCommand);
-
-            return true;
-        } catch (Throwable $e) {
-            $this->logger->debug(
-                sprintf('Failed to launch core agent - exception %s', $e->getMessage()),
-                ['exception' => $e]
-            );
-
-            return false;
-        }
+        return null;
     }
 }

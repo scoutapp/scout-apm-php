@@ -20,6 +20,7 @@ use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
+use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
@@ -199,6 +200,13 @@ final class Agent implements ScoutApmAgent
                     $this->logger,
                     $this->config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL),
                     $this->config->get(ConfigKey::CORE_AGENT_PERMISSIONS)
+                ),
+                new Launcher(
+                    $this->logger,
+                    $this->config->get(ConfigKey::CORE_AGENT_SOCKET_PATH),
+                    $this->config->get(ConfigKey::CORE_AGENT_LOG_LEVEL),
+                    $this->config->get(ConfigKey::CORE_AGENT_LOG_FILE),
+                    $this->config->get(ConfigKey::CORE_AGENT_CONFIG_FILE)
                 )
             );
             $manager->launch();
