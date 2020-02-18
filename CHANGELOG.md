@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#164](https://github.com/scoutapp/scout-apm-php/pull/164) Added additional logging and testing around core-agent launching
 
 ### Changed
 
