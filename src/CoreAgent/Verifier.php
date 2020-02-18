@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use function hash_equals;
 use function hash_file;
 
+/** @internal */
 class Verifier
 {
     /** @var LoggerInterface */

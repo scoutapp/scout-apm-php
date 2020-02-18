@@ -17,6 +17,7 @@ use function ini_get;
 use function sprintf;
 use function stripos;
 
+/** @internal */
 class Launcher
 {
     /** @var LoggerInterface */
