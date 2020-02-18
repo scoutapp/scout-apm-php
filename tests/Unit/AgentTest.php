@@ -449,6 +449,8 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
         ]);
 
         $requestBeforeSend = $agent->getRequest();
@@ -518,6 +520,7 @@ final class AgentTest extends TestCase
                 ConfigKey::MONITORING_ENABLED => true,
                 ConfigKey::CORE_AGENT_SOCKET_PATH => '/socket/path/should/not/exist',
                 ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+                ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
             ]),
             $this->logger,
             new DevNullCache()
@@ -545,6 +548,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
         ]);
 
         $agent->connect();
@@ -736,6 +740,8 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
         ]);
 
         $this->phpExtension
@@ -755,6 +761,8 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
         ]);
 
         $this->phpExtension
