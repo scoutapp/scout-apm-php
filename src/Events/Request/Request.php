@@ -40,11 +40,11 @@ class Request implements CommandWithChildren
     private $requestUriOverride;
 
     /** @throws Exception */
-    public function __construct()
+    public function __construct(?float $override = null)
     {
         $this->id = RequestId::new();
 
-        $this->timer       = new Timer();
+        $this->timer       = new Timer($override);
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
