@@ -12,7 +12,6 @@ use Scoutapm\Events\Span\Span;
 use function array_key_exists;
 use function json_decode;
 use function json_encode;
-use function microtime;
 use function next;
 use function reset;
 use function str_repeat;
@@ -162,9 +161,11 @@ final class RequestTest extends TestCase
 
     public function testRequestIsTaggedWithQueueTime() : void
     {
-        $_SERVER['HTTP_X_REQUEST_START'] = (string) ((microtime(true) - 2) * 10000);
+        // 2 = 2ms after epoch
+        $_SERVER['HTTP_X_REQUEST_START'] = '2';
 
-        $request = new Request();
+        // 0.005 = 5ms after epoch
+        $request = new Request(0.005);
         $request->stop();
 
         $f = $request->jsonSerialize();
@@ -175,8 +176,8 @@ final class RequestTest extends TestCase
                 continue;
             }
 
-            self::assertGreaterThanOrEqual(1900000000, $command['TagRequest']['value']);
-            self::assertLessThanOrEqual(2100000000, $command['TagRequest']['value']);
+            // queue time should be 3ms (represented as 3000000 nanoseconds, as a float)
+            self::assertSame(3000000.0, $command['TagRequest']['value']);
             $foundTag = true;
         }
 
