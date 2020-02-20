@@ -92,7 +92,10 @@ class Request implements CommandWithChildren
                 continue;
             }
 
-            $headerValue = (float) $headers[$headerToCheck] / 10000;
+            // Header comes in as milliseconds, so divide by 1,000 to get value in seconds
+            $headerValue = (float) $headers[$headerToCheck] / 1000;
+
+            // Time tags should be in nanoseconds, so multiply seconds by 1e9 (1,000,000,000)
             $this->tag(Tag::TAG_QUEUE_TIME, ($this->timer->getStartAsMicrotime() - $headerValue) * 1e9);
         }
     }
