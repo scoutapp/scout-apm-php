@@ -14,12 +14,15 @@ use function json_decode;
 use function json_encode;
 use function next;
 use function reset;
+use function sprintf;
 use function str_repeat;
 use function time;
 
 /** @covers \Scoutapm\Events\Request\Request */
 final class RequestTest extends TestCase
 {
+    private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
+
     public function testCanBeInitialized() : void
     {
         $request = new Request();
@@ -165,31 +168,31 @@ final class RequestTest extends TestCase
         return [
             'requestStartMilliseconds' => [
                 'headerName' => 'HTTP_X_REQUEST_START',
-                'headerValue' => '2',
-                'currentTimeSeconds' => 0.0,
-                'requestStartTimeSeconds' => 0.005,
-                'expectedQueueTimeNanoseconds' => 3000000.0,
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
             ],
             'requestStartTEqualsMilliseconds' => [
                 'headerName' => 'HTTP_X_REQUEST_START',
-                'headerValue' => 't=2',
-                'currentTimeSeconds' => 0.0,
-                'requestStartTimeSeconds' => 0.005,
-                'expectedQueueTimeNanoseconds' => 3000000.0,
+                'headerValue' => sprintf('t=%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
             ],
             'queueStartMilliseconds' => [
                 'headerName' => 'HTTP_X_QUEUE_START',
-                'headerValue' => '2',
-                'currentTimeSeconds' => 0.0,
-                'requestStartTimeSeconds' => 0.005,
-                'expectedQueueTimeNanoseconds' => 3000000.0,
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
             ],
             'queueStartTEqualsMilliseconds' => [
                 'headerName' => 'HTTP_X_QUEUE_START',
-                'headerValue' => 't=2',
-                'currentTimeSeconds' => 0.0,
-                'requestStartTimeSeconds' => 0.005,
-                'expectedQueueTimeNanoseconds' => 3000000.0,
+                'headerValue' => sprintf('t=%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'requestStartSeconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%.3f', self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.002),
+            ],
+            'requestStartMicroseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000000) + 2000),
+            ],
+            'requestStartNanoseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000000000) + 2000000),
             ],
         ];
     }
@@ -199,19 +202,14 @@ final class RequestTest extends TestCase
      *
      * @dataProvider queueTimeRequestHeadersProvider
      */
-    public function testRequestIsTaggedWithQueueTime(
-        string $headerName,
-        string $headerValue,
-        float $currentTimeSeconds,
-        float $requestStartTimeSeconds,
-        float $expectedQueueTimeNanoseconds
-    ) : void {
+    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue) : void
+    {
         // 2 = 2ms after epoch
         $_SERVER[$headerName] = $headerValue;
 
         // 0.005 = 5ms after epoch
-        $request = new Request($requestStartTimeSeconds);
-        $request->stop(null, $currentTimeSeconds);
+        $request = new Request(self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
+        $request->stop(null, self::FIXED_POINT_UNIX_EPOCH_SECONDS);
 
         $f = $request->jsonSerialize();
 
@@ -221,7 +219,8 @@ final class RequestTest extends TestCase
                 continue;
             }
 
-            self::assertSame($expectedQueueTimeNanoseconds, $command['TagRequest']['value']);
+            // float rounding errors, yay!
+            self::assertSame(3000020, (int) $command['TagRequest']['value']);
             $foundTag = true;
         }
 

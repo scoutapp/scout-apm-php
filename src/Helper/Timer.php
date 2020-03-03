@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
-use DateTime;
+use DateTimeImmutable;
 use DateTimeZone;
 use function microtime;
 use function sprintf;
@@ -42,6 +42,15 @@ final class Timer
         $this->stop = $override ?? microtime(true);
     }
 
+    public static function utcDateTimeFromFloatTimestamp(float $timestamp) : DateTimeImmutable
+    {
+        return DateTimeImmutable::createFromFormat(
+            self::MICROTIME_FLOAT_FORMAT,
+            sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $timestamp),
+            new DateTimeZone('UTC')
+        );
+    }
+
     /**
      * Formats the stop time as a timestamp suitable for sending to CoreAgent
      */
@@ -51,13 +60,8 @@ final class Timer
             return null;
         }
 
-        $timestamp = DateTime::createFromFormat(
-            self::MICROTIME_FLOAT_FORMAT,
-            sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $this->stop),
-            new DateTimeZone('UTC')
-        );
-
-        return $timestamp->format(self::FORMAT_FOR_CORE_AGENT);
+        return self::utcDateTimeFromFloatTimestamp($this->stop)
+            ->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
     /**
@@ -65,13 +69,8 @@ final class Timer
      */
     public function getStart() : ?string
     {
-        $timestamp = DateTime::createFromFormat(
-            self::MICROTIME_FLOAT_FORMAT,
-            sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $this->start),
-            new DateTimeZone('UTC')
-        );
-
-        return $timestamp->format(self::FORMAT_FOR_CORE_AGENT);
+        return self::utcDateTimeFromFloatTimestamp($this->start)
+            ->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
     public function getStartAsMicrotime() : float

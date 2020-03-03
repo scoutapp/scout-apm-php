@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events\Request;
 
+use DateInterval;
 use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
@@ -81,6 +82,41 @@ class Request implements CommandWithChildren
         return '/';
     }
 
+    /**
+     * Convert an ambiguous float timestamp that could be in nanoseconds, microseconds, milliseconds, or seconds to
+     * nanoseconds. Return 0.0 for values in the more than 10 years ago.
+     *
+     * @throws Exception
+     */
+    private function convertAmbiguousTimestampToSeconds(float $timestamp, float $currentTimestamp) : float
+    {
+        $tenYearsAgo = Timer::utcDateTimeFromFloatTimestamp($currentTimestamp)
+            ->sub(new DateInterval('P10Y'));
+
+        $cutoffTimestamp = (float) $tenYearsAgo
+            ->setDate((int) $tenYearsAgo->format('Y'), 1, 1)
+            ->format('U.u');
+
+        if ($timestamp > ($cutoffTimestamp * 1000000000.0)) {
+            return $timestamp / 1000000000;
+        }
+
+        if ($timestamp > ($cutoffTimestamp * 1000000.0)) {
+            return $timestamp / 1000000;
+        }
+
+        if ($timestamp > ($cutoffTimestamp * 1000.0)) {
+            return $timestamp / 1000.0;
+        }
+
+        if ($timestamp > $cutoffTimestamp) {
+            return $timestamp;
+        }
+
+        return 0.0;
+    }
+
+    /** @throws Exception */
     private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds) : void
     {
         $headers = FetchRequestHeaders::fromServerGlobal();
@@ -96,8 +132,11 @@ class Request implements CommandWithChildren
                 $headerValue = substr($headerValue, 2);
             }
 
-            // Header comes in as milliseconds, so divide by 1,000 to get value in seconds
-            $headerValueInSeconds = (float) $headerValue / 1000;
+            $headerValueInSeconds = $this->convertAmbiguousTimestampToSeconds((float) $headerValue, $currentTimeInSeconds);
+
+            if ($headerValueInSeconds === 0.0) {
+                continue;
+            }
 
             // Time tags should be in nanoseconds, so multiply seconds by 1e9 (1,000,000,000)
             $this->tag(
