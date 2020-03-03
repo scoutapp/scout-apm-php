@@ -14,7 +14,6 @@ use function json_decode;
 use function json_encode;
 use function next;
 use function reset;
-use function sprintf;
 use function str_repeat;
 use function time;
 
@@ -164,10 +163,34 @@ final class RequestTest extends TestCase
     public function queueTimeRequestHeadersProvider() : array
     {
         return [
-            ['HTTP_X_REQUEST_START', '%d'],
-            ['HTTP_X_REQUEST_START', 't=%d'],
-            ['HTTP_X_QUEUE_START', '%d'],
-            ['HTTP_X_QUEUE_START', 't=%d'],
+            'requestStartMilliseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => '2',
+                'currentTimeSeconds' => 0.0,
+                'requestStartTimeSeconds' => 0.005,
+                'expectedQueueTimeNanoseconds' => 3000000.0,
+            ],
+            'requestStartTEqualsMilliseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => 't=2',
+                'currentTimeSeconds' => 0.0,
+                'requestStartTimeSeconds' => 0.005,
+                'expectedQueueTimeNanoseconds' => 3000000.0,
+            ],
+            'queueStartMilliseconds' => [
+                'headerName' => 'HTTP_X_QUEUE_START',
+                'headerValue' => '2',
+                'currentTimeSeconds' => 0.0,
+                'requestStartTimeSeconds' => 0.005,
+                'expectedQueueTimeNanoseconds' => 3000000.0,
+            ],
+            'queueStartTEqualsMilliseconds' => [
+                'headerName' => 'HTTP_X_QUEUE_START',
+                'headerValue' => 't=2',
+                'currentTimeSeconds' => 0.0,
+                'requestStartTimeSeconds' => 0.005,
+                'expectedQueueTimeNanoseconds' => 3000000.0,
+            ],
         ];
     }
 
@@ -176,14 +199,19 @@ final class RequestTest extends TestCase
      *
      * @dataProvider queueTimeRequestHeadersProvider
      */
-    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValueFormat) : void
-    {
+    public function testRequestIsTaggedWithQueueTime(
+        string $headerName,
+        string $headerValue,
+        float $currentTimeSeconds,
+        float $requestStartTimeSeconds,
+        float $expectedQueueTimeNanoseconds
+    ) : void {
         // 2 = 2ms after epoch
-        $_SERVER[$headerName] = sprintf($headerValueFormat, 2);
+        $_SERVER[$headerName] = $headerValue;
 
         // 0.005 = 5ms after epoch
-        $request = new Request(0.005);
-        $request->stop();
+        $request = new Request($requestStartTimeSeconds);
+        $request->stop(null, $currentTimeSeconds);
 
         $f = $request->jsonSerialize();
 
@@ -193,8 +221,7 @@ final class RequestTest extends TestCase
                 continue;
             }
 
-            // queue time should be 3ms (represented as 3000000 nanoseconds, as a float)
-            self::assertSame(3000000.0, $command['TagRequest']['value']);
+            self::assertSame($expectedQueueTimeNanoseconds, $command['TagRequest']['value']);
             $foundTag = true;
         }
 

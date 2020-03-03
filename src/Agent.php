@@ -48,36 +48,20 @@ final class Agent implements ScoutApmAgent
 
     /** @var Config */
     private $config;
-
     /** @var Request|null */
     private $request;
-
     /** @var Connector */
     private $connector;
-
     /** @var LoggerInterface */
     private $logger;
-
-    /**
-     * Class that helps check incoming http paths vs. the configured ignore list
-     *
-     * @var IgnoredEndpoints
-     */
+    /** @var IgnoredEndpoints Class that helps check incoming http paths vs. the configured ignore list*/
     private $ignoredEndpoints;
-
-    /**
-     * If this request was marked as ignored
-     *
-     * @var bool
-     */
+    /** @var bool If this request was marked as ignored*/
     private $isIgnored = false;
-
     /** @var ExtentionCapabilities */
     private $phpExtension;
-
     /** @var CacheInterface */
     private $cache;
-
     /** @var bool */
     private $registered = false;
 

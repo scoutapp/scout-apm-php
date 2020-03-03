@@ -17,6 +17,7 @@ use Scoutapm\Helper\Timer;
 use function array_key_exists;
 use function array_map;
 use function is_string;
+use function microtime;
 use function strpos;
 use function substr;
 
@@ -25,19 +26,14 @@ class Request implements CommandWithChildren
 {
     /** @var Timer */
     private $timer;
-
     /** @var Command[]|array<int, Command> */
     private $children = [];
-
     /** @var CommandWithChildren */
     private $currentCommand;
-
     /** @var RequestId */
     private $id;
-
     /** @var MemoryUsage */
     private $startMemory;
-
     /** @var string|null */
     private $requestUriOverride;
 
@@ -85,7 +81,7 @@ class Request implements CommandWithChildren
         return '/';
     }
 
-    private function tagRequestIfRequestQueueTimeHeaderExists() : void
+    private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds) : void
     {
         $headers = FetchRequestHeaders::fromServerGlobal();
 
@@ -120,14 +116,14 @@ class Request implements CommandWithChildren
         $this->stop();
     }
 
-    public function stop(?float $overrideTimestamp = null) : void
+    public function stop(?float $overrideTimestamp = null, ?float $currentTime = null) : void
     {
         $this->timer->stop($overrideTimestamp);
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
         $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
 
-        $this->tagRequestIfRequestQueueTimeHeaderExists();
+        $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
     }
 
     /** @throws Exception */
