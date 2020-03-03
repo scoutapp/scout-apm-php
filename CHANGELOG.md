@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#170](https://github.com/scoutapp/scout-apm-php/pull/170) Always use musl instead of trying to detect libc flavour
 
 ### Deprecated
 
