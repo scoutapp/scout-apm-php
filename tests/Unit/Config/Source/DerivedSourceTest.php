@@ -8,11 +8,6 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\Source\DerivedSource;
-use Scoutapm\Helper\LibcDetection;
-use function sys_get_temp_dir;
-use function tempnam;
-use function uniqid;
-use function unlink;
 
 /** @covers \Scoutapm\Config\Source\DerivedSource */
 final class DerivedSourceTest extends TestCase
@@ -29,7 +24,7 @@ final class DerivedSourceTest extends TestCase
 
         $this->config = new Config();
 
-        $this->derivedSource = new DerivedSource($this->config, new LibcDetection('/' . uniqid('file_should_not_exist', true)));
+        $this->derivedSource = new DerivedSource($this->config);
     }
 
     public function testHasKey() : void
@@ -48,7 +43,7 @@ final class DerivedSourceTest extends TestCase
     public function testCoreAgentFullNameIsDerivedCorrectly() : void
     {
         self::assertStringMatchesFormat(
-            'scout_apm_core-v%d.%d.%d-%s-linux-gnu',
+            'scout_apm_core-v%d.%d.%d-%s-linux-musl',
             $this->derivedSource->get(ConfigKey::CORE_AGENT_FULL_NAME)
         );
     }
@@ -63,19 +58,8 @@ final class DerivedSourceTest extends TestCase
         );
     }
 
-    public function testMuslIsDetectedWhenAlpineFileDetected() : void
+    public function testMuslIsUsedForLibcVersion() : void
     {
-        $muslHintFilename = tempnam(sys_get_temp_dir(), 'scoutapm_musl_hint_file');
-
-        $derivedSource = new DerivedSource(new Config(), new LibcDetection($muslHintFilename));
-
-        self::assertStringEndsWith('linux-musl', $derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
-
-        unlink($muslHintFilename);
-    }
-
-    public function testGnuLibcIsDetectedWhenAlpineFileDoesNotExist() : void
-    {
-        self::assertStringEndsWith('linux-gnu', $this->derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
+        self::assertStringEndsWith('linux-musl', $this->derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
     }
 }
