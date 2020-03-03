@@ -12,15 +12,17 @@ use Scoutapm\Events\Span\Span;
 use function array_key_exists;
 use function json_decode;
 use function json_encode;
-use function microtime;
 use function next;
 use function reset;
+use function sprintf;
 use function str_repeat;
 use function time;
 
 /** @covers \Scoutapm\Events\Request\Request */
 final class RequestTest extends TestCase
 {
+    private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
+
     public function testCanBeInitialized() : void
     {
         $request = new Request();
@@ -160,12 +162,54 @@ final class RequestTest extends TestCase
         self::assertSame(2, $request->collectedSpans());
     }
 
-    public function testRequestIsTaggedWithQueueTime() : void
+    /** @return string[][] */
+    public function queueTimeRequestHeadersProvider() : array
     {
-        $_SERVER['HTTP_X_REQUEST_START'] = (string) ((microtime(true) - 2) * 10000);
+        return [
+            'requestStartMilliseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'requestStartTEqualsMilliseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('t=%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'queueStartMilliseconds' => [
+                'headerName' => 'HTTP_X_QUEUE_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'queueStartTEqualsMilliseconds' => [
+                'headerName' => 'HTTP_X_QUEUE_START',
+                'headerValue' => sprintf('t=%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'requestStartSeconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%.3f', self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.002),
+            ],
+            'requestStartMicroseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000000) + 2000),
+            ],
+            'requestStartNanoseconds' => [
+                'headerName' => 'HTTP_X_REQUEST_START',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000000000) + 2000000),
+            ],
+        ];
+    }
 
-        $request = new Request();
-        $request->stop();
+    /**
+     * @throws Exception
+     *
+     * @dataProvider queueTimeRequestHeadersProvider
+     */
+    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue) : void
+    {
+        // 2 = 2ms after epoch
+        $_SERVER[$headerName] = $headerValue;
+
+        // 0.005 = 5ms after epoch
+        $request = new Request(self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
+        $request->stop(null, self::FIXED_POINT_UNIX_EPOCH_SECONDS);
 
         $f = $request->jsonSerialize();
 
@@ -175,13 +219,13 @@ final class RequestTest extends TestCase
                 continue;
             }
 
-            self::assertGreaterThanOrEqual(1900000000, $command['TagRequest']['value']);
-            self::assertLessThanOrEqual(2100000000, $command['TagRequest']['value']);
+            // float rounding errors, yay!
+            self::assertSame(3000020, (int) $command['TagRequest']['value']);
             $foundTag = true;
         }
 
         self::assertTrue($foundTag, 'Could not find queue time tag');
 
-        unset($_SERVER['HTTP_X_REQUEST_START']);
+        unset($_SERVER[$headerName]);
     }
 }

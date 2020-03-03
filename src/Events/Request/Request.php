@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events\Request;
 
+use DateInterval;
 use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
@@ -17,34 +18,32 @@ use Scoutapm\Helper\Timer;
 use function array_key_exists;
 use function array_map;
 use function is_string;
+use function microtime;
+use function strpos;
+use function substr;
 
 /** @internal */
 class Request implements CommandWithChildren
 {
     /** @var Timer */
     private $timer;
-
     /** @var Command[]|array<int, Command> */
     private $children = [];
-
     /** @var CommandWithChildren */
     private $currentCommand;
-
     /** @var RequestId */
     private $id;
-
     /** @var MemoryUsage */
     private $startMemory;
-
     /** @var string|null */
     private $requestUriOverride;
 
     /** @throws Exception */
-    public function __construct()
+    public function __construct(?float $override = null)
     {
         $this->id = RequestId::new();
 
-        $this->timer       = new Timer();
+        $this->timer       = new Timer($override);
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
@@ -83,7 +82,42 @@ class Request implements CommandWithChildren
         return '/';
     }
 
-    private function tagRequestIfRequestQueueTimeHeaderExists() : void
+    /**
+     * Convert an ambiguous float timestamp that could be in nanoseconds, microseconds, milliseconds, or seconds to
+     * nanoseconds. Return 0.0 for values in the more than 10 years ago.
+     *
+     * @throws Exception
+     */
+    private function convertAmbiguousTimestampToSeconds(float $timestamp, float $currentTimestamp) : float
+    {
+        $tenYearsAgo = Timer::utcDateTimeFromFloatTimestamp($currentTimestamp)
+            ->sub(new DateInterval('P10Y'));
+
+        $cutoffTimestamp = (float) $tenYearsAgo
+            ->setDate((int) $tenYearsAgo->format('Y'), 1, 1)
+            ->format('U.u');
+
+        if ($timestamp > ($cutoffTimestamp * 1000000000.0)) {
+            return $timestamp / 1000000000;
+        }
+
+        if ($timestamp > ($cutoffTimestamp * 1000000.0)) {
+            return $timestamp / 1000000;
+        }
+
+        if ($timestamp > ($cutoffTimestamp * 1000.0)) {
+            return $timestamp / 1000.0;
+        }
+
+        if ($timestamp > $cutoffTimestamp) {
+            return $timestamp;
+        }
+
+        return 0.0;
+    }
+
+    /** @throws Exception */
+    private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds) : void
     {
         $headers = FetchRequestHeaders::fromServerGlobal();
 
@@ -92,8 +126,23 @@ class Request implements CommandWithChildren
                 continue;
             }
 
-            $headerValue = (float) $headers[$headerToCheck] / 10000;
-            $this->tag(Tag::TAG_QUEUE_TIME, ($this->timer->getStartAsMicrotime() - $headerValue) * 1e9);
+            $headerValue = $headers[$headerToCheck];
+
+            if (strpos($headerValue, 't=') === 0) {
+                $headerValue = substr($headerValue, 2);
+            }
+
+            $headerValueInSeconds = $this->convertAmbiguousTimestampToSeconds((float) $headerValue, $currentTimeInSeconds);
+
+            if ($headerValueInSeconds === 0.0) {
+                continue;
+            }
+
+            // Time tags should be in nanoseconds, so multiply seconds by 1e9 (1,000,000,000)
+            $this->tag(
+                Tag::TAG_QUEUE_TIME,
+                ($this->timer->getStartAsMicrotime() - $headerValueInSeconds) * 1e9
+            );
         }
     }
 
@@ -106,14 +155,14 @@ class Request implements CommandWithChildren
         $this->stop();
     }
 
-    public function stop(?float $overrideTimestamp = null) : void
+    public function stop(?float $overrideTimestamp = null, ?float $currentTime = null) : void
     {
         $this->timer->stop($overrideTimestamp);
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
         $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
 
-        $this->tagRequestIfRequestQueueTimeHeaderExists();
+        $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
     }
 
     /** @throws Exception */

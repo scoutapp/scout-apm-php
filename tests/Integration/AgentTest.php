@@ -18,6 +18,7 @@ use function fopen;
 use function function_exists;
 use function getenv;
 use function gethostname;
+use function meminfo_dump;
 use function memory_get_usage;
 use function next;
 use function reset;
