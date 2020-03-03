@@ -14,7 +14,6 @@ namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
-use Scoutapm\Helper\LibcDetection;
 use function in_array;
 use function php_uname;
 
@@ -30,13 +29,9 @@ final class DerivedSource implements ConfigSource
     /** @var Config */
     private $config;
 
-    /** @var LibcDetection */
-    private $libcDetection;
-
-    public function __construct(Config $config, LibcDetection $libcDetection)
+    public function __construct(Config $config)
     {
-        $this->config        = $config;
-        $this->libcDetection = $libcDetection;
+        $this->config = $config;
     }
 
     /** @inheritDoc */
@@ -90,7 +85,12 @@ final class DerivedSource implements ConfigSource
 
     private function coreAgentTriple() : string
     {
-        $platform = 'unknown-linux-' . $this->libcDetection->detect();
+        /**
+         * Since the `musl`-based agent should work on `glibc`-based systems, we can hard-code this now.
+         *
+         * @see https://github.com/scoutapp/scout-apm-php/issues/166
+         */
+        $platform = 'unknown-linux-musl';
 
         $unamePlatform = php_uname('s');
         if ($unamePlatform === 'Darwin') {
