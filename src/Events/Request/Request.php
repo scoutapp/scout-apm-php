@@ -17,6 +17,8 @@ use Scoutapm\Helper\Timer;
 use function array_key_exists;
 use function array_map;
 use function is_string;
+use function strpos;
+use function substr;
 
 /** @internal */
 class Request implements CommandWithChildren
@@ -92,11 +94,20 @@ class Request implements CommandWithChildren
                 continue;
             }
 
+            $headerValue = $headers[$headerToCheck];
+
+            if (strpos($headerValue, 't=') === 0) {
+                $headerValue = substr($headerValue, 2);
+            }
+
             // Header comes in as milliseconds, so divide by 1,000 to get value in seconds
-            $headerValue = (float) $headers[$headerToCheck] / 1000;
+            $headerValueInSeconds = (float) $headerValue / 1000;
 
             // Time tags should be in nanoseconds, so multiply seconds by 1e9 (1,000,000,000)
-            $this->tag(Tag::TAG_QUEUE_TIME, ($this->timer->getStartAsMicrotime() - $headerValue) * 1e9);
+            $this->tag(
+                Tag::TAG_QUEUE_TIME,
+                ($this->timer->getStartAsMicrotime() - $headerValueInSeconds) * 1e9
+            );
         }
     }
 

@@ -14,6 +14,7 @@ use function json_decode;
 use function json_encode;
 use function next;
 use function reset;
+use function sprintf;
 use function str_repeat;
 use function time;
 
@@ -159,10 +160,26 @@ final class RequestTest extends TestCase
         self::assertSame(2, $request->collectedSpans());
     }
 
-    public function testRequestIsTaggedWithQueueTime() : void
+    /** @return string[][] */
+    public function queueTimeRequestHeadersProvider() : array
+    {
+        return [
+            ['HTTP_X_REQUEST_START', '%d'],
+            ['HTTP_X_REQUEST_START', 't=%d'],
+            ['HTTP_X_QUEUE_START', '%d'],
+            ['HTTP_X_QUEUE_START', 't=%d'],
+        ];
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @dataProvider queueTimeRequestHeadersProvider
+     */
+    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValueFormat) : void
     {
         // 2 = 2ms after epoch
-        $_SERVER['HTTP_X_REQUEST_START'] = '2';
+        $_SERVER[$headerName] = sprintf($headerValueFormat, 2);
 
         // 0.005 = 5ms after epoch
         $request = new Request(0.005);
@@ -183,6 +200,6 @@ final class RequestTest extends TestCase
 
         self::assertTrue($foundTag, 'Could not find queue time tag');
 
-        unset($_SERVER['HTTP_X_REQUEST_START']);
+        unset($_SERVER[$headerName]);
     }
 }
