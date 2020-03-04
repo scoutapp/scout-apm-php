@@ -56,6 +56,7 @@ final class DefaultSource implements ConfigSource
             ConfigKey::MONITORING_ENABLED => false,
             ConfigKey::IGNORED_ENDPOINTS => [],
             ConfigKey::LOG_LEVEL => 'debug',
+            ConfigKey::LOG_PAYLOAD_CONTENT => false,
         ];
     }
 }

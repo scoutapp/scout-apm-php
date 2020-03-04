@@ -15,6 +15,7 @@ abstract class ConfigKey
     public const APPLICATION_NAME            = 'name';
     public const APPLICATION_KEY             = 'key';
     public const LOG_LEVEL                   = 'log_level';
+    public const LOG_PAYLOAD_CONTENT         = 'log_payload_content';
     public const API_VERSION                 = 'api_version';
     public const IGNORED_ENDPOINTS           = 'ignore';
     public const APPLICATION_ROOT            = 'application_root';
@@ -47,6 +48,7 @@ abstract class ConfigKey
             self::APPLICATION_NAME,
             self::APPLICATION_KEY,
             self::LOG_LEVEL,
+            self::LOG_PAYLOAD_CONTENT,
             self::API_VERSION,
             self::IGNORED_ENDPOINTS,
             self::APPLICATION_ROOT,

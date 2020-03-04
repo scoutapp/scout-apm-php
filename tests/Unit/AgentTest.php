@@ -773,4 +773,46 @@ final class AgentTest extends TestCase
 
         self::assertFalse($this->logger->hasInfoThatContains('scoutapm PHP extension is currently'));
     }
+
+    public function testCoreAgentPayloadAndResponseAreLoggedWhenEnabled() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
+            ConfigKey::LOG_PAYLOAD_CONTENT => true,
+        ]);
+
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        $this->connector->expects(self::at(4))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"Success"}');
+
+        $agent->instrument(
+            'Test',
+            'Foo',
+            static function () : void {
+            }
+        );
+        $agent->instrument(
+            'Test',
+            'Bar',
+            static function () : void {
+            }
+        );
+        $agent->send();
+
+        self::assertTrue($this->logger->hasDebugThatContains('Sending metrics from 2 collected spans. Payload: {'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent. Response: {"Request":"Success"}'));
+    }
 }
