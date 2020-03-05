@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 4.0.2 - TBD
+## 4.1.0 - 2020-03-05
 
 ### Added
 
+- [#172](https://github.com/scoutapp/scout-apm-php/pull/172) Option to display payload content in debugging logs
 - [#164](https://github.com/scoutapp/scout-apm-php/pull/164) Added additional logging and testing around core-agent launching
 
 ### Changed
@@ -22,7 +23,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#169](https://github.com/scoutapp/scout-apm-php/pull/169) Fixed queue time calculation for various scales
 
 ## 4.0.1 - 2020-02-04
 
