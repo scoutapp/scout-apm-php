@@ -384,11 +384,19 @@ final class Agent implements ScoutApmAgent
 
             $this->request->stopIfRunning();
 
-            $this->logger->debug(sprintf('Sending metrics from %d collected spans', $this->request->collectedSpans()));
+            $shouldLogContent = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);
 
             $this->logger->debug(sprintf(
-                'Sent whole payload successfully to core agent. Core agent response was: %s',
-                $this->connector->sendCommand($this->request)
+                'Sending metrics from %d collected spans.%s',
+                $this->request->collectedSpans(),
+                $shouldLogContent ? sprintf(' Payload: %s', json_encode($this->request)) : ''
+            ));
+
+            $coreAgentResponse = $this->connector->sendCommand($this->request);
+
+            $this->logger->debug(sprintf(
+                'Sent whole payload successfully to core agent.%s',
+                $shouldLogContent ? sprintf(' Response: %s', $coreAgentResponse) : ''
             ));
 
             $this->startNewRequest();
