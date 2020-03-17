@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 4.2.0 - 2020-03-17
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#173](https://github.com/scoutapp/scout-apm-php/pull/173) Updated to use core-agent 1.2.8
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 4.1.0 - 2020-03-05
 
 ### Added
