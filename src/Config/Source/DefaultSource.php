@@ -50,7 +50,7 @@ final class DefaultSource implements ConfigSource
             ConfigKey::CORE_AGENT_DIRECTORY => '/tmp/scout_apm_core',
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => true,
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => true,
-            ConfigKey::CORE_AGENT_VERSION => 'v1.2.7',
+            ConfigKey::CORE_AGENT_VERSION => 'v1.2.8',
             ConfigKey::CORE_AGENT_DOWNLOAD_URL => 'https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release',
             ConfigKey::CORE_AGENT_PERMISSIONS => 0777,
             ConfigKey::MONITORING_ENABLED => false,
