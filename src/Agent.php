@@ -236,7 +236,9 @@ final class Agent implements ScoutApmAgent
             return new Span(new Request(), 'Ignored', RequestId::new());
         }
 
-        $this->addSpansFromExtension();
+        if ($overrideTimestamp === null) {
+            $this->addSpansFromExtension();
+        }
 
         return $this->request->startSpan($operation, $overrideTimestamp);
     }
