@@ -19,6 +19,8 @@
         "webmozart/assert": "^1.0"
     },
     "require-dev": {
+        "ext-PDO": "*",
+        "ext-pdo_sqlite": "*",
         "doctrine/coding-standard": "^6.0",
         "monolog/monolog": "^1.24",
         "phpunit/phpunit": "^7.5",

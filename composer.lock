@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "46926a2669200bf37d30762d3feb2d86",
+    "content-hash": "db33fc7810dc30f575b61a74a3ae54a8",
     "packages": [
         {
             "name": "ocramius/package-versions",
@@ -3681,7 +3681,10 @@
         "ext-sockets": "*",
         "ext-zlib": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*"
+    },
     "platform-overrides": {
         "php": "7.1.0"
     }
