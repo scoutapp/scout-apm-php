@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\IntegrationTests;
 
 use Exception;
+use PDO;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
@@ -13,6 +14,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use function extension_loaded;
 use function file_get_contents;
 use function fopen;
 use function function_exists;
@@ -20,6 +22,7 @@ use function getenv;
 use function gethostname;
 use function meminfo_dump;
 use function memory_get_usage;
+use function microtime;
 use function next;
 use function reset;
 use function sleep;
@@ -253,6 +256,74 @@ final class AgentTest extends TestCase
                 },
             ],
             $batchCommand,
+            null
+        );
+    }
+
+    public function testExtensionInstrumentsAreAddedInsideWrappedSpanAsChildNotSibling() : void
+    {
+        if (! extension_loaded('scoutapm')) {
+            self::markTestSkipped('scoutapm extension must be enabled for this test');
+        }
+
+        $actualStartTime = microtime(true);
+        $testQuery       = 'SELECT 1';
+
+        $pdo = new PDO('sqlite::memory:');
+        $pdo->exec($testQuery);
+
+        $span = $this->agent->startSpan('SQL/Query', $actualStartTime);
+        $span->tag('db.statement', $testQuery);
+        $this->agent->stopSpan();
+
+        self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+
+        $unserialized = $this->connector->sentMessages;
+        next($unserialized);
+
+        TestHelper::assertUnserializedCommandContainsPayload(
+            'BatchCommand',
+            [
+                'commands' => static function (array $commands) use ($testQuery) : bool {
+                    $requestId = TestHelper::assertUnserializedCommandContainsPayload(
+                        'StartRequest',
+                        [],
+                        reset($commands),
+                        'request_id'
+                    );
+
+                    $sqlQuerySpan = TestHelper::assertUnserializedCommandContainsPayload(
+                        'StartSpan',
+                        ['operation' => 'SQL/Query'],
+                        next($commands),
+                        'span_id'
+                    );
+
+                    TestHelper::assertUnserializedCommandContainsPayload(
+                        'TagSpan',
+                        [
+                            'span_id' => $sqlQuerySpan,
+                            'tag' => 'db.statement',
+                            'value' => $testQuery,
+                        ],
+                        next($commands),
+                        null
+                    );
+
+                    TestHelper::assertUnserializedCommandContainsPayload(
+                        'StartSpan',
+                        [
+                            'parent_id' => $sqlQuerySpan,
+                            'operation' => 'PDO->exec',
+                        ],
+                        next($commands),
+                        null
+                    );
+
+                    return true;
+                },
+            ],
+            next($unserialized),
             null
         );
     }
