@@ -19,6 +19,8 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
