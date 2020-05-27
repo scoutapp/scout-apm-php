@@ -168,13 +168,14 @@ final class AgentTest extends TestCase
 
         $this->phpExtension->expects(self::at(0))
             ->method('getCalls')
-            ->willReturn([RecordedCall::fromExtensionLoggedCallArray([
-                'function' => 'file_get_contents',
-                'entered' => $microtime - 1,
-                'exited' => $microtime,
-                'time_taken' => 1,
-                'argv' => ['http://some-url'],
-            ]),
+            ->willReturn([
+                RecordedCall::fromExtensionLoggedCallArray([
+                    'function' => 'file_get_contents',
+                    'entered' => $microtime - 1,
+                    'exited' => $microtime,
+                    'time_taken' => 1,
+                    'argv' => ['http://some-url'],
+                ]),
             ]);
 
         $this->connector->method('connected')->willReturn(true);
