@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 4.4.0 - 2020-05-27
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#178](https://github.com/scoutapp/scout-apm-php/pull/178) Make GitLab Actions work for CI with SCOUT_APM_KEY
+- [#177](https://github.com/scoutapp/scout-apm-php/pull/177) Updated dependencies (and allow ramsey/uuid ^4.0)
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 4.3.0 - 2020-04-01
 
 ### Added
