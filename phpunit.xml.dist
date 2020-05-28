@@ -31,4 +31,7 @@
             <directory>./src/</directory>
         </whitelist>
     </filter>
+    <listeners>
+        <listener class="Scoutapm\IntegrationTests\CheckScoutApmKeyListener"></listener>
+    </listeners>
 </phpunit>

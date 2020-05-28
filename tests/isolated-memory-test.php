@@ -13,7 +13,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $scoutApmKey = getenv('SCOUT_APM_KEY');
 $runCount    = (int) getenv('RUN_COUNT');
 
-if ($scoutApmKey === false || $runCount <= 0) {
+if ($scoutApmKey === false || $scoutApmKey === '' || $runCount <= 0) {
     echo "Try running: \n\n  SCOUT_APM_KEY=abc123 RUN_COUNT=100 php tests/isolated-memory-test.php\n\n";
     throw new RuntimeException('Set the environment variable SCOUT_APM_KEY to enable this test.');
 }
