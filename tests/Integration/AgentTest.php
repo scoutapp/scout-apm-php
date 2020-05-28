@@ -47,7 +47,7 @@ final class AgentTest extends TestCase
         // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
         $this->scoutApmKey = getenv('SCOUT_APM_KEY');
 
-        if ($this->scoutApmKey === false) {
+        if ($this->scoutApmKey === false || $this->scoutApmKey === '') {
             self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
 
             return;
