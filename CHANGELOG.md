@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 4.4.1 - 2020-07-27
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#177](https://github.com/scoutapp/scout-apm-php/pull/181) Fixes libraries in metadata serialisation
+
 ## 4.4.0 - 2020-05-28
 
 ### Added
