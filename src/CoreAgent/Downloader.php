@@ -17,6 +17,7 @@ use function file_exists;
 use function filectime;
 use function fopen;
 use function is_dir;
+use function is_resource;
 use function mkdir;
 use function sprintf;
 use function str_replace;
@@ -49,7 +50,10 @@ class Downloader
     /** @var string */
     private $download_lock_path;
 
-    /** @var resource|null */
+    /**
+     * @var resource|null
+     * @psalm-var resource|closed-resource|null
+     */
     private $download_lock_fd;
 
     /** @var string */
@@ -116,10 +120,10 @@ class Downloader
 
     private function createCoreAgentDir() : void
     {
-        try {
-            $recursive   = true;
-            $destination = $this->coreAgentDir;
+        $recursive   = true;
+        $destination = $this->coreAgentDir;
 
+        try {
             if (! is_dir($destination)
                 && ! mkdir($destination, $this->coreAgentPermissions, $recursive)
                 && ! is_dir($destination)) {
@@ -179,7 +183,7 @@ class Downloader
 
     private function releaseDownloadLock() : void
     {
-        if ($this->download_lock_fd === null) {
+        if ($this->download_lock_fd === null || ! is_resource($this->download_lock_fd)) {
             return;
         }
 

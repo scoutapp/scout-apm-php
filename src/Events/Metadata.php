@@ -16,6 +16,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_values;
 use function dirname;
 use function explode;
 use function file_exists;
@@ -29,6 +30,8 @@ use function realpath;
  * Also called AppServerLoad in other agents
  *
  * @internal
+ *
+ * @psalm-type VersionList = list<array{0: string, 1: string}>
  */
 final class Metadata implements Command
 {
@@ -54,7 +57,7 @@ final class Metadata implements Command
     }
 
     /**
-     * @return array<string, (string|array<int, array<int, string>>|null)>
+     * @return array<string, (string|VersionList|null)>
      */
     private function data() : array
     {
@@ -147,22 +150,27 @@ final class Metadata implements Command
      * Return an array of arrays: [["package name", "package version"], ....]
      *
      * @return array<int, array<int, string>>
+     *
+     * @psalm-return VersionList
      */
     private function getLibraries() : array
     {
         $extensionVersion = $this->phpExtension->version();
 
-        return array_merge(
-            array_map(
-                /** @return string[][]|array<int, string> */
-                static function (string $package, string $version) : array {
-                    return [$package, $version];
-                },
-                array_keys(Versions::VERSIONS),
-                Versions::VERSIONS
-            ),
-            ['ext-scoutapm' => $extensionVersion === null ? 'not installed' : $extensionVersion->toString()]
+        /** @psalm-var VersionList $composerPlatformVersions */
+        $composerPlatformVersions = array_map(
+        /** @return string[][]|array<int, string> */
+            static function (string $package, string $version) : array {
+                return [$package, $version];
+            },
+            array_keys(Versions::VERSIONS),
+            Versions::VERSIONS
         );
+
+        return array_values(array_merge(
+            $composerPlatformVersions,
+            [['ext-scoutapm', $extensionVersion === null ? 'not installed' : $extensionVersion->toString()]]
+        ));
     }
 
     /**

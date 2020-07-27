@@ -27,13 +27,13 @@ class Manifest
     /** @var bool */
     private $valid;
 
-    /** @var string */
+    /** @var string|null */
     private $binVersion;
 
-    /** @var string */
+    /** @var string|null */
     private $binName;
 
-    /** @var string */
+    /** @var string|null */
     private $sha256;
 
     public function __construct(string $manifestPath, LoggerInterface $logger)
@@ -80,16 +80,22 @@ class Manifest
 
     public function hashOfBinary() : string
     {
+        Assert::string($this->sha256);
+
         return $this->sha256;
     }
 
     public function binaryName() : string
     {
+        Assert::string($this->binName);
+
         return $this->binName;
     }
 
     public function binaryVersion() : string
     {
+        Assert::stringNotEmpty($this->binVersion);
+
         return $this->binVersion;
     }
 }

@@ -74,7 +74,7 @@ final class MetadataTest extends TestCase
                                 array_keys(Versions::VERSIONS),
                                 Versions::VERSIONS
                             ),
-                            ['ext-scoutapm' => '1.2.3']
+                            [['ext-scoutapm', '1.2.3']]
                         ),
                         'paas' => '',
                         'application_root' => '/fake/app/root',
@@ -128,7 +128,7 @@ final class MetadataTest extends TestCase
                                 array_keys(Versions::VERSIONS),
                                 Versions::VERSIONS
                             ),
-                            ['ext-scoutapm' => 'not installed']
+                            [['ext-scoutapm', 'not installed']]
                         ),
                         'paas' => '',
                         'application_root' => '/fake/document/root',
