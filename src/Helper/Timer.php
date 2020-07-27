@@ -6,6 +6,7 @@ namespace Scoutapm\Helper;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use Webmozart\Assert\Assert;
 use function microtime;
 use function sprintf;
 
@@ -44,11 +45,15 @@ final class Timer
 
     public static function utcDateTimeFromFloatTimestamp(float $timestamp) : DateTimeImmutable
     {
-        return DateTimeImmutable::createFromFormat(
+        $dateTime = DateTimeImmutable::createFromFormat(
             self::MICROTIME_FLOAT_FORMAT,
             sprintf(self::FORMAT_FLOAT_TO_6_DECIMAL_PLACES, $timestamp),
             new DateTimeZone('UTC')
         );
+
+        Assert::isInstanceOf($dateTime, DateTimeImmutable::class);
+
+        return $dateTime;
     }
 
     /**

@@ -12,13 +12,18 @@ use function array_values;
 use function debug_backtrace;
 use function strpos;
 
-/** @internal */
+/**
+ * @internal
+ *
+ * @psalm-type PhpStackFrame = array{file: string, line: int, function: string, class: string, type: string}
+ * @psalm-type ScoutStackFrame = array{file: string, line: int, function: string}
+ */
 final class Backtrace
 {
     /**
      * @return array<int, array<string, string|int>>
      *
-     * @psalm-return array<int, array{file: string, line: int, function: string}>
+     * @psalm-return list<ScoutStackFrame>
      */
     public static function capture() : array
     {
@@ -30,12 +35,8 @@ final class Backtrace
                 continue;
             }
 
-            /** @psalm-var array{file: string, line: int, function: string, class: string, type: string} $frame */
-            $formattedStack[] = [
-                'file' => $frame['file'],
-                'line' => $frame['line'],
-                'function' => self::formatFunctionNameFromFrame($frame),
-            ];
+            /** @psalm-var PhpStackFrame $frame */
+            $formattedStack[] = self::reformatStackFrame($frame);
         }
 
         return self::filterScoutRelatedFramesFromTopOfStack($formattedStack);
@@ -44,7 +45,24 @@ final class Backtrace
     /**
      * @param array<string, string|int> $frame
      *
-     * @psalm-param array{file: string, line: int, function: string, class: string, type: string} $frame
+     * @return array<string, string|int>
+     *
+     * @psalm-param PhpStackFrame $frame
+     * @psalm-return ScoutStackFrame
+     */
+    private static function reformatStackFrame(array $frame) : array
+    {
+        return [
+            'file' => $frame['file'],
+            'line' => $frame['line'],
+            'function' => self::formatFunctionNameFromFrame($frame),
+        ];
+    }
+
+    /**
+     * @param array<string, string|int> $frame
+     *
+     * @psalm-param PhpStackFrame $frame
      */
     private static function formatFunctionNameFromFrame(array $frame) : string
     {
@@ -58,7 +76,7 @@ final class Backtrace
     /**
      * @param array<string, string|int> $frame
      *
-     * @psalm-param array{file: string, line: int, function: string} $frame
+     * @psalm-param ScoutStackFrame $frame
      */
     private static function isScoutRelated(array $frame) : bool
     {
@@ -70,8 +88,8 @@ final class Backtrace
      *
      * @return array<int, array<string, string|int>>
      *
-     * @psalm-param array<int, array{file: string, line: int, function: string}> $formattedStack
-     * @psalm-return array<int, array{file: string, line: int, function: string}>
+     * @psalm-param list<ScoutStackFrame> $formattedStack
+     * @psalm-return list<ScoutStackFrame>
      */
     private static function filterScoutRelatedFramesFromTopOfStack(array $formattedStack) : array
     {
