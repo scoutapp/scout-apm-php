@@ -43,8 +43,8 @@ final class TimerTest extends TestCase
         $timer = new Timer();
         $timer->stop();
 
-        self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStart());
-        self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStop());
+        self::assertMatchesRegularExpression(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStart());
+        self::assertMatchesRegularExpression(self::DATE_FORMAT_VALIDATION_REGEX, $timer->getStop());
     }
 
     public function testDurationIsNullIfNotStopped() : void

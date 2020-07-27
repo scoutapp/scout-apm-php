@@ -606,7 +606,7 @@ final class AgentTest extends TestCase
             ->with(self::callback(static function (Request $request) use ($requestUri) {
                 $serialisedRequest = json_encode($request);
 
-                self::assertContains(sprintf('"tag":"path","value":"%s"', $requestUri), $serialisedRequest);
+                self::assertStringContainsString(sprintf('"tag":"path","value":"%s"', $requestUri), $serialisedRequest);
 
                 return true;
             }))
