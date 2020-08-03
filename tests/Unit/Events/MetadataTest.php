@@ -8,12 +8,14 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
 use PackageVersions\Versions;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function array_keys;
@@ -29,11 +31,27 @@ use function uniqid;
 /** @covers \Scoutapm\Events\Metadata */
 final class MetadataTest extends TestCase
 {
+    /** @var ExtentionCapabilities&MockObject */
+    private $phpExtension;
+    /** @var LocateFileOrFolder&MockObject */
+    private $locateFileOrFolder;
+    /** @var DateTimeImmutable */
+    private $time;
+
+    public function setUp() : void
+    {
+        parent::setUp();
+
+        $this->phpExtension       = $this->createMock(ExtentionCapabilities::class);
+        $this->locateFileOrFolder = $this->createMock(LocateFileOrFolder::class);
+
+        $this->time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+    }
+
     /** @throws Exception */
     public function testMetadataFromConfigurationSerializesToJson() : void
     {
-        $phpExtension = $this->createMock(ExtentionCapabilities::class);
-        $phpExtension->expects(self::once())
+        $this->phpExtension->expects(self::once())
             ->method('version')
             ->willReturn(Version::fromString('1.2.3'));
 
@@ -47,17 +65,15 @@ final class MetadataTest extends TestCase
             ConfigKey::FRAMEWORK_VERSION => '1.2.3',
         ]);
 
-        $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
-
         self::assertEquals(
             [
                 'ApplicationEvent' => [
-                    'timestamp' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
+                    'timestamp' => $this->time->format(Timer::FORMAT_FOR_CORE_AGENT),
                     'event_value' => [
                         'language' => 'php',
                         'version' => PHP_VERSION,
                         'language_version' => PHP_VERSION,
-                        'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
+                        'server_time' => $this->time->format(Timer::FORMAT_FOR_CORE_AGENT),
                         'framework' => 'Great Framework',
                         'framework_version' => '1.2.3',
                         'environment' => '',
@@ -85,33 +101,30 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($time, $config, $phpExtension)), true)
+            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
         );
     }
 
     /** @throws Exception */
     public function testAutoDetectedMetadataSerializesToJson() : void
     {
-        $phpExtension = $this->createMock(ExtentionCapabilities::class);
-        $phpExtension->expects(self::once())
+        $this->phpExtension->expects(self::once())
             ->method('version')
             ->willReturn(null);
 
         $config = Config::fromArray([]);
-
-        $time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
 
         $_SERVER['DOCUMENT_ROOT'] = '/fake/document/root';
 
         self::assertEquals(
             [
                 'ApplicationEvent' => [
-                    'timestamp' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
+                    'timestamp' => $this->time->format(Timer::FORMAT_FOR_CORE_AGENT),
                     'event_value' => [
                         'language' => 'php',
                         'version' => PHP_VERSION,
                         'language_version' => PHP_VERSION,
-                        'server_time' => $time->format(Timer::FORMAT_FOR_CORE_AGENT),
+                        'server_time' => $this->time->format(Timer::FORMAT_FOR_CORE_AGENT),
                         'framework' => '',
                         'framework_version' => '',
                         'environment' => '',
@@ -139,7 +152,7 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($time, $config, $phpExtension)), true)
+            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
         );
     }
 
@@ -153,9 +166,10 @@ final class MetadataTest extends TestCase
         self::assertSame(
             $testHerokuSlugCommit,
             json_decode(json_encode(new Metadata(
-                new DateTimeImmutable('now', new DateTimeZone('UTC')),
+                $this->time,
                 Config::fromArray([]),
-                $this->createMock(ExtentionCapabilities::class)
+                $this->phpExtension,
+                $this->locateFileOrFolder
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

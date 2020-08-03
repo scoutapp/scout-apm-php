@@ -32,6 +32,7 @@ use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use function count;
@@ -67,19 +68,23 @@ final class Agent implements ScoutApmAgent
     private $registered = false;
     /** @var bool */
     private $spanLimitReached = false;
+    /** @var LocateFileOrFolder */
+    private $locateFileOrFolder;
 
     private function __construct(
         Config $configuration,
         Connector $connector,
         LoggerInterface $logger,
         ExtentionCapabilities $phpExtension,
-        CacheInterface $cache
+        CacheInterface $cache,
+        LocateFileOrFolder $locateFileOrFolder
     ) {
-        $this->config       = $configuration;
-        $this->connector    = $connector;
-        $this->logger       = $logger;
-        $this->phpExtension = $phpExtension;
-        $this->cache        = $cache;
+        $this->config             = $configuration;
+        $this->connector          = $connector;
+        $this->logger             = $logger;
+        $this->phpExtension       = $phpExtension;
+        $this->cache              = $cache;
+        $this->locateFileOrFolder = $locateFileOrFolder;
 
         if (! $this->logger instanceof FilteredLogLevelDecorator) {
             $this->logger = new FilteredLogLevelDecorator(
@@ -122,14 +127,16 @@ final class Agent implements ScoutApmAgent
         LoggerInterface $logger,
         ?CacheInterface $cache = null,
         ?Connector $connector = null,
-        ?ExtentionCapabilities $extentionCapabilities = null
+        ?ExtentionCapabilities $extentionCapabilities = null,
+        ?LocateFileOrFolder $locateFileOrFolder = null
     ) : self {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
             $extentionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
-            $cache ?? new DevNullCache()
+            $cache ?? new DevNullCache(),
+            $locateFileOrFolder ?? new LocateFileOrFolder()
         );
     }
 
@@ -502,7 +509,8 @@ final class Agent implements ScoutApmAgent
             $this->connector->sendCommand(new Metadata(
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config,
-                $this->phpExtension
+                $this->phpExtension,
+                $this->locateFileOrFolder
             ));
 
             $this->markMetadataSent();
