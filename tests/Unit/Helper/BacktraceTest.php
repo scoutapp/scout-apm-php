@@ -13,10 +13,20 @@ final class BacktraceTest extends TestCase
 {
     public function testCapturingBacktrace() : void
     {
-        $stack = Backtrace::capture();
+        $backtrace = Backtrace::capture();
 
-        foreach ($stack as $frame) {
+        // In test environment, the stack frame size will be 9 or 10, depending on how the test runner is run...
+        self::assertGreaterThanOrEqual(9, $backtrace);
+
+        foreach ($backtrace as $frame) {
             self::assertEquals(['file', 'line', 'function'], array_keys($frame));
         }
+    }
+
+    public function testCapturingBacktraceFiltersOutVendor() : void
+    {
+        // Since all Scoutapm stuff is already filtered out AND we're filtering vendor, this stack trace is actually
+        // empty. This wouldn't happen if we're installed as a library, so is just a quirk of running this test
+        self::assertCount(0, Backtrace::captureWithoutVendor(0));
     }
 }
