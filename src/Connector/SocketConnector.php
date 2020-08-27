@@ -8,6 +8,7 @@ use ErrorException;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\NotConnected;
 use Throwable;
+use const AF_INET;
 use const AF_UNIX;
 use const E_NOTICE;
 use const E_STRICT;
@@ -37,14 +38,18 @@ final class SocketConnector implements Connector
     /** @var bool */
     private $connected = false;
 
-    /** @var string */
-    private $socketPath;
+    /** @var ConnectionAddress */
+    private $connectionAddress;
 
-    public function __construct(string $socketPath, bool $preEmptivelyAttemptToConnect)
+    public function __construct(ConnectionAddress $connectionAddress, bool $preEmptivelyAttemptToConnect)
     {
-        $this->socketPath = $socketPath;
+        $this->connectionAddress = $connectionAddress;
 
-        $this->socket = socket_create(AF_UNIX, SOCK_STREAM, 0);
+        $this->socket = socket_create(
+            $this->connectionAddress->isTcpAddress() ? AF_INET : AF_UNIX,
+            SOCK_STREAM,
+            0
+        );
 
         if (! $preEmptivelyAttemptToConnect) {
             return;
@@ -89,13 +94,21 @@ final class SocketConnector implements Connector
             socket_clear_error($this->socket);
 
             $this->connected = $this->convertErrorsToExceptions(function () {
-                return socket_connect($this->socket, $this->socketPath);
+                if ($this->connectionAddress->isTcpAddress()) {
+                    return socket_connect(
+                        $this->socket,
+                        $this->connectionAddress->tcpBindAddress(),
+                        $this->connectionAddress->tcpBindPort()
+                    );
+                }
+
+                return socket_connect($this->socket, $this->connectionAddress->socketPath());
             });
 
             register_shutdown_function([&$this, 'shutdown']);
         } catch (Throwable $e) {
             $this->connected = false;
-            throw FailedToConnect::fromSocketPathAndPrevious($this->socketPath, $e);
+            throw FailedToConnect::fromSocketPathAndPrevious($this->connectionAddress, $e);
         }
     }
 
@@ -107,7 +120,7 @@ final class SocketConnector implements Connector
     public function sendCommand(Command $message) : string
     {
         if (! $this->connected()) {
-            throw NotConnected::fromSocketPath($this->socketPath);
+            throw NotConnected::fromSocketPath($this->connectionAddress);
         }
 
         $serializedJsonString = json_encode($message);
@@ -118,28 +131,28 @@ final class SocketConnector implements Connector
         socket_clear_error($this->socket);
 
         if (@socket_send($this->socket, pack('N', $size), 4, 0) === false) {
-            throw Exception\FailedToSendCommand::writingMessageSizeToSocket($message, $this->socket, $this->socketPath);
+            throw Exception\FailedToSendCommand::writingMessageSizeToSocket($message, $this->socket, $this->connectionAddress);
         }
 
         if (@socket_send($this->socket, $serializedJsonString, $size, 0) === false) {
-            throw Exception\FailedToSendCommand::writingMessageContentToSocket($message, $this->socket, $this->socketPath);
+            throw Exception\FailedToSendCommand::writingMessageContentToSocket($message, $this->socket, $this->connectionAddress);
         }
 
         // Read the response back and drop it. Needed for socket liveness
         $responseLength = @socket_read($this->socket, 4);
 
         if ($responseLength === false) {
-            throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->socketPath);
+            throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->connectionAddress);
         }
 
         if ($responseLength === '') {
-            throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->socketPath);
+            throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->connectionAddress);
         }
 
         $dataRead = @socket_read($this->socket, unpack('N', $responseLength)[1]);
 
         if ($dataRead === false) {
-            throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->socketPath);
+            throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->connectionAddress);
         }
 
         return $dataRead;

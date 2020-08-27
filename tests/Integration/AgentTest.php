@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
-use Scoutapm\Config\ConfigKey;
+use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
@@ -60,7 +60,7 @@ final class AgentTest extends TestCase
         ]);
 
         $this->connector = new MessageCapturingConnectorDelegator(
-            new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH), true)
+            new SocketConnector(ConnectionAddress::fromConfig($config), true)
         );
 
         $_SERVER['REQUEST_URI'] = '/fake-path';

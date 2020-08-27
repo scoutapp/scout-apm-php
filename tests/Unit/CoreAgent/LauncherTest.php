@@ -6,18 +6,28 @@ namespace Scoutapm\UnitTests\CoreAgent;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
+use Scoutapm\Config;
+use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\CoreAgent\Launcher;
 
 /** @covers \Scoutapm\CoreAgent\Launcher */
 final class LauncherTest extends TestCase
 {
+    private function connectionAddressFromString(string $connectionAddress) : ConnectionAddress
+    {
+        $config = new Config();
+        $config->set(Config\ConfigKey::CORE_AGENT_SOCKET_PATH, $connectionAddress);
+
+        return ConnectionAddress::fromConfig($config);
+    }
+
     public function testLaunchingCoreAgentWithInvalidGlibcIsCaught() : void
     {
         $logger = new TestLogger();
 
         $launcher = new Launcher(
             $logger,
-            'socket-path.sock',
+            $this->connectionAddressFromString('socket-path.sock'),
             null,
             null,
             null
@@ -33,7 +43,7 @@ final class LauncherTest extends TestCase
 
         $launcher = new Launcher(
             $logger,
-            'socket-path.sock',
+            $this->connectionAddressFromString('socket-path.sock'),
             null,
             null,
             null
@@ -49,7 +59,7 @@ final class LauncherTest extends TestCase
 
         $launcher = new Launcher(
             $logger,
-            '/tmp/socket-path.sock',
+            $this->connectionAddressFromString('/tmp/socket-path.sock'),
             'TRACE',
             '/tmp/core-agent.log',
             '/tmp/core-agent-config.ini'
