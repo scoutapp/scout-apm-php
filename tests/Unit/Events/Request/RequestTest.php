@@ -6,6 +6,7 @@ namespace Scoutapm\UnitTests\Events\Request;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
@@ -17,6 +18,7 @@ use function reset;
 use function sprintf;
 use function str_repeat;
 use function time;
+use function uniqid;
 
 /** @covers \Scoutapm\Events\Request\Request */
 final class RequestTest extends TestCase
@@ -27,6 +29,19 @@ final class RequestTest extends TestCase
     {
         $request = new Request();
         self::assertNotNull($request);
+    }
+
+    public function testExceptionThrownWhenSpanLimitReached() : void
+    {
+        $request = new Request();
+
+        for ($i = 0; $i < 1500; $i++) {
+            $request->startSpan(uniqid('test', true));
+        }
+
+        $this->expectException(SpanLimitReached::class);
+        $this->expectExceptionMessage('the straw that broke the camel\'s back');
+        $request->startSpan('the straw that broke the camel\'s back');
     }
 
     public function testCanBeStopped() : void
