@@ -159,13 +159,13 @@ class Request implements CommandWithChildren
         }
     }
 
-    public function stopIfRunning() : void
+    public function stopIfRunning(?float $overrideTimestamp = null) : void
     {
         if ($this->timer->getStop() !== null) {
             return;
         }
 
-        $this->stop();
+        $this->stop($overrideTimestamp);
     }
 
     public function stop(?float $overrideTimestamp = null, ?float $currentTime = null) : void
@@ -212,7 +212,7 @@ class Request implements CommandWithChildren
     {
         $command = $this->currentCommand;
         if (! $command instanceof Span) {
-            $this->stop($overrideTimestamp);
+            $this->stopIfRunning($overrideTimestamp);
 
             return;
         }

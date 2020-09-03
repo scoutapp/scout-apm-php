@@ -33,6 +33,7 @@ use function end;
 use function json_encode;
 use function microtime;
 use function next;
+use function random_int;
 use function reset;
 use function sprintf;
 use function uniqid;
@@ -815,5 +816,69 @@ final class AgentTest extends TestCase
 
         self::assertTrue($this->logger->hasDebugThatContains('Sending metrics from 2 collected spans. Payload: {'));
         self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent. Response: {"Request":"Success"}'));
+    }
+
+    /** @throws Exception */
+    public function testNumberOfSpansIsLimitedAndNoticeIsLogged() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        // Even if we randomise the number of spans over the limit, the number of spans actually sent should remain fixed
+        $maxSpansToStart = random_int(1500, 1600);
+
+        for ($i = 0; $i <= $maxSpansToStart; $i++) {
+            $agent->startSpan(sprintf('span %d', $i));
+            $agent->stopSpan();
+        }
+
+        $this->connector->method('connected')->willReturn(true);
+
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::callback(static function (Request $request) : bool {
+                TestHelper::assertUnserializedCommandContainsPayload(
+                    'BatchCommand',
+                    [
+                        'commands' => static function (array $commands) : bool {
+                            // StartRequest
+                            // 1500 * 2 for Start/StopSpans
+                            // TagRequest for limit
+                            // Tag for memory,
+                            self::assertCount(3005, $commands);
+                            TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], $commands[0], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'scout.reached_span_cap', 'value' => true], $commands[3001], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], $commands[3002], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], $commands[3003], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], $commands[3004], null);
+
+                            return true;
+                        },
+                    ],
+                    $request->jsonSerialize(),
+                    null
+                );
+
+                return true;
+            }))
+            ->willReturn('{"Request":"Success"}');
+
+        self::assertTrue($agent->send());
+
+        self::assertTrue($this->logger->hasNoticeThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
     }
 }

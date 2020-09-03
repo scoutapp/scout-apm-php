@@ -25,8 +25,8 @@ use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\CoreAgent\Verifier;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
+use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
@@ -65,6 +65,8 @@ final class Agent implements ScoutApmAgent
     private $cache;
     /** @var bool */
     private $registered = false;
+    /** @var bool */
+    private $spanLimitReached = false;
 
     private function __construct(
         Config $configuration,
@@ -228,18 +230,52 @@ final class Agent implements ScoutApmAgent
         return $this->config->get(ConfigKey::MONITORING_ENABLED);
     }
 
+    /**
+     * @param mixed $defaultReturn
+     *
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param T $defaultReturn
+     * @psalm-param callable(): T $codeToRunIfBelowSpanLimit
+     * @psalm-return T
+     */
+    private function onlyRunIfBelowSpanLimit(callable $codeToRunIfBelowSpanLimit, $defaultReturn)
+    {
+        if ($this->spanLimitReached) {
+            return $defaultReturn;
+        }
+
+        try {
+            return $codeToRunIfBelowSpanLimit();
+        } catch (SpanLimitReached $spanLimitReached) {
+            $this->spanLimitReached = true;
+
+            if ($this->request !== null) {
+                $this->request->tag(Tag::TAG_REACHED_SPAN_CAP, true);
+            }
+
+            $this->logger->notice($spanLimitReached->getMessage(), ['exception' => $spanLimitReached]);
+
+            return $defaultReturn;
+        }
+    }
+
     /** {@inheritDoc} */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
-        if ($this->request === null) {
-            // Must return a Span object to match API. This is a dummy span
-            // that is not ever used for anything.
-            return new Span(new Request(), 'Ignored', RequestId::new());
-        }
-
         $this->addSpansFromExtension();
 
-        return $this->request->startSpan($operation, $overrideTimestamp);
+        return $this->onlyRunIfBelowSpanLimit(
+            function () use ($operation, $overrideTimestamp) : Span {
+                if ($this->request === null) {
+                    return Span::dummy();
+                }
+
+                return $this->request->startSpan($operation, $overrideTimestamp);
+            },
+            Span::dummy()
+        );
     }
 
     public function stopSpan() : void
@@ -255,21 +291,26 @@ final class Agent implements ScoutApmAgent
 
     private function addSpansFromExtension() : void
     {
-        if ($this->request === null) {
-            return;
-        }
+        $this->onlyRunIfBelowSpanLimit(
+            function () : void {
+                if ($this->request === null) {
+                    return;
+                }
 
-        foreach ($this->phpExtension->getCalls() as $recordedCall) {
-            $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
+                foreach ($this->phpExtension->getCalls() as $recordedCall) {
+                    $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
 
-            $arguments = $recordedCall->filteredArguments();
+                    $arguments = $recordedCall->filteredArguments();
 
-            if (count($arguments) > 0) {
-                $callSpan->tag(Tag::TAG_ARGUMENTS, $arguments);
-            }
+                    if (count($arguments) > 0) {
+                        $callSpan->tag(Tag::TAG_ARGUMENTS, $arguments);
+                    }
 
-            $this->request->stopSpan($recordedCall->timeExited());
-        }
+                    $this->request->stopSpan($recordedCall->timeExited());
+                }
+            },
+            null
+        );
     }
 
     /** {@inheritDoc} */
