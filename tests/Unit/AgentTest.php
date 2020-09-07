@@ -22,6 +22,7 @@ use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\RecordedCall;
@@ -249,7 +250,7 @@ final class AgentTest extends TestCase
     {
         $agent = $this->agentFromConfigArray();
 
-        $retval = $agent->instrument('Custom', 'Test', static function (Span $span) {
+        $retval = $agent->instrument('Custom', 'Test', static function (SpanReference $span) {
             $span->tag('OMG', 'Thingy');
 
             self::assertSame($span->getName(), 'Custom/Test');
@@ -272,7 +273,7 @@ final class AgentTest extends TestCase
     public function testWebTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
         self::assertSame(
-            $this->agentFromConfigArray()->webTransaction('Test', static function (Span $span) {
+            $this->agentFromConfigArray()->webTransaction('Test', static function (SpanReference $span) {
                 // Check span name is prefixed with "Controller"
                 self::assertSame($span->getName(), 'Controller/Test');
 
@@ -285,7 +286,7 @@ final class AgentTest extends TestCase
     public function testBackgroundTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
         self::assertSame(
-            $this->agentFromConfigArray()->backgroundTransaction('Test', static function (Span $span) {
+            $this->agentFromConfigArray()->backgroundTransaction('Test', static function (SpanReference $span) {
                 // Check span name is prefixed with "Job"
                 self::assertSame($span->getName(), 'Job/Test');
 

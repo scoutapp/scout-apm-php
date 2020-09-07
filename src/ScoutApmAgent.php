@@ -6,7 +6,7 @@ namespace Scoutapm;
 
 use Exception;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 
 interface ScoutApmAgent
 {
@@ -31,7 +31,7 @@ interface ScoutApmAgent
      *
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?Span;
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?SpanReference;
 
     public function stopSpan() : void;
 
@@ -39,7 +39,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-param callable(SpanReference): T $block
      * @psalm-return T
      */
     public function instrument(string $type, string $name, callable $block);
@@ -48,7 +48,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-param callable(SpanReference): T $block
      * @psalm-return T
      */
     public function webTransaction(string $name, callable $block);
@@ -57,7 +57,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-param callable(SpanReference): T $block
      * @psalm-return T
      */
     public function backgroundTransaction(string $name, callable $block);

@@ -27,6 +27,7 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
@@ -260,11 +261,11 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?Span
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?SpanReference
     {
         $this->addSpansFromExtension();
 
-        return $this->onlyRunIfBelowSpanLimit(
+        $returnValue = $this->onlyRunIfBelowSpanLimit(
             function () use ($operation, $overrideTimestamp) : ?Span {
                 if ($this->request === null) {
                     return null;
@@ -273,6 +274,12 @@ final class Agent implements ScoutApmAgent
                 return $this->request->startSpan($operation, $overrideTimestamp);
             }
         );
+
+        if ($returnValue === null) {
+            return null;
+        }
+
+        return SpanReference::fromSpan($returnValue);
     }
 
     public function stopSpan() : void
