@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.0.0 - TBD
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#187](https://github.com/scoutapp/scout-apm-php/pull/187) **[BC]** Limit number of spans to 1,500
+  - Span information collected is hard-limited to 1,500 spans to avoid collecting too much data. A new `notice` will be
+    emitted into the logger if this happens, and a `TagRequest` applied.
+  - `\Scoutapm\ScoutApmAgent::startSpan` may now return `null`. A not-`null`-check should be performed on the result,
+    for example `if ($span !== null) { ... }`.
+  - `\Scoutapm\ScoutApmAgent::startSpan` now returns a `\Scoutapm\Events\Span\SpanReference` which is a new public API
+    for accessing a `Span` (which is marked `@internal`).
+  - `\Scoutapm\ScoutApmAgent::instrument`, `::webTransaction`, `::backgroundTransaction` all now accept `callable` for
+    their respective `$block` parameters instead of `\Closure`. Additionally, if a parameter type declaration has been
+    applied on the given `callable`, they must be updated to accept a `SpanReference` instead of a `Span`. For example
+    change `static function (Span $span) { ... }` to `static function (SpanReference $span) { ... }`.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 4.4.1 - 2020-07-27
 
 ### Added
