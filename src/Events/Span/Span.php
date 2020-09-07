@@ -8,7 +8,6 @@ use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Connector\CommandWithParent;
-use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagSpan;
@@ -22,8 +21,6 @@ use function strpos;
 /** @internal */
 class Span implements CommandWithParent, CommandWithChildren
 {
-    private const DUMMY_SPAN_NAME = '__dummy_span__';
-
     private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
 
     public const INSTRUMENT_CONTROLLER = 'Controller';
@@ -59,39 +56,6 @@ class Span implements CommandWithParent, CommandWithChildren
         $this->requestId = $requestId;
 
         $this->timer = new Timer($override);
-    }
-
-    /**
-     * Must return a Span object to match API. This is a dummy span that is not ever used for anything.
-     *
-     * @psalm-suppress InternalClass
-     */
-    public static function dummy() : self
-    {
-        return new class (new Request(), self::DUMMY_SPAN_NAME, RequestId::new()) extends Span {
-            public function stop(?float $override = null) : void
-            {
-            }
-
-            public function updateName(string $name) : void
-            {
-            }
-
-            public function appendChild(Command $command) : void
-            {
-            }
-
-            /** @param mixed $value */
-            public function tag(string $tag, $value) : void
-            {
-            }
-
-            /** @inheritDoc */
-            public function jsonSerialize() : array
-            {
-                return [];
-            }
-        };
     }
 
     public function cleanUp() : void

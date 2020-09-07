@@ -236,14 +236,13 @@ final class Agent implements ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param T $defaultReturn
-     * @psalm-param callable(): T $codeToRunIfBelowSpanLimit
-     * @psalm-return T
+     * @psalm-param callable(): ?T $codeToRunIfBelowSpanLimit
+     * @psalm-return ?T
      */
-    private function onlyRunIfBelowSpanLimit(callable $codeToRunIfBelowSpanLimit, $defaultReturn)
+    private function onlyRunIfBelowSpanLimit(callable $codeToRunIfBelowSpanLimit)
     {
         if ($this->spanLimitReached) {
-            return $defaultReturn;
+            return null;
         }
 
         try {
@@ -257,24 +256,23 @@ final class Agent implements ScoutApmAgent
 
             $this->logger->notice($spanLimitReached->getMessage(), ['exception' => $spanLimitReached]);
 
-            return $defaultReturn;
+            return null;
         }
     }
 
     /** {@inheritDoc} */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?Span
     {
         $this->addSpansFromExtension();
 
         return $this->onlyRunIfBelowSpanLimit(
-            function () use ($operation, $overrideTimestamp) : Span {
+            function () use ($operation, $overrideTimestamp) : ?Span {
                 if ($this->request === null) {
-                    return Span::dummy();
+                    return null;
                 }
 
                 return $this->request->startSpan($operation, $overrideTimestamp);
-            },
-            Span::dummy()
+            }
         );
     }
 
@@ -292,9 +290,9 @@ final class Agent implements ScoutApmAgent
     private function addSpansFromExtension() : void
     {
         $this->onlyRunIfBelowSpanLimit(
-            function () : void {
+            function () : ?Span {
                 if ($this->request === null) {
-                    return;
+                    return null;
                 }
 
                 foreach ($this->phpExtension->getCalls() as $recordedCall) {
@@ -308,8 +306,9 @@ final class Agent implements ScoutApmAgent
 
                     $this->request->stopSpan($recordedCall->timeExited());
                 }
-            },
-            null
+
+                return null;
+            }
         );
     }
 

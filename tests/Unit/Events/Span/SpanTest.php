@@ -25,15 +25,6 @@ final class SpanTest extends TestCase
         $this->mockParent = $this->createMock(CommandWithChildren::class);
     }
 
-    public function testDummyCanBeCreatedAndDoesNothing() : void
-    {
-        $dummy = Span::dummy();
-        $dummy->tag('foo', 'bar');
-        $dummy->updateName('something else');
-        $dummy->stop();
-        self::assertEquals([], $dummy->jsonSerialize());
-    }
-
     /** @throws Exception */
     public function testCanBeInitialized() : void
     {

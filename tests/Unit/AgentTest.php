@@ -431,7 +431,9 @@ final class AgentTest extends TestCase
         $agent->changeRequestUri('new request URI');
 
         // Tag the span
-        $span->tag('sql.query', 'select * from foo');
+        if ($span !== null) {
+            $span->tag('sql.query', 'select * from foo');
+        }
 
         // Finish Child Span
         $agent->stopSpan();
