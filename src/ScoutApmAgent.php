@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
-use Closure;
 use Exception;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
@@ -36,14 +35,32 @@ interface ScoutApmAgent
 
     public function stopSpan() : void;
 
-    /** @return mixed */
-    public function instrument(string $type, string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-return T
+     */
+    public function instrument(string $type, string $name, callable $block);
 
-    /** @return mixed */
-    public function webTransaction(string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-return T
+     */
+    public function webTransaction(string $name, callable $block);
 
-    /** @return mixed */
-    public function backgroundTransaction(string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(\Scoutapm\Events\Span\Span): T $block
+     * @psalm-return T
+     */
+    public function backgroundTransaction(string $name, callable $block);
 
     public function addContext(string $tag, string $value) : void;
 

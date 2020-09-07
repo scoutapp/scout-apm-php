@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
-use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -313,9 +312,13 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function instrument(string $type, string $name, Closure $block)
+    public function instrument(string $type, string $name, callable $block)
     {
         $span = $this->startSpan($type . '/' . $name);
+
+        if ($span === null) {
+            return null;
+        }
 
         try {
             return $block($span);
@@ -325,13 +328,13 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function webTransaction(string $name, Closure $block)
+    public function webTransaction(string $name, callable $block)
     {
         return $this->instrument(Span::INSTRUMENT_CONTROLLER, $name, $block);
     }
 
     /** {@inheritDoc} */
-    public function backgroundTransaction(string $name, Closure $block)
+    public function backgroundTransaction(string $name, callable $block)
     {
         return $this->instrument(Span::INSTRUMENT_JOB, $name, $block);
     }
