@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#185](https://github.com/scoutapp/scout-apm-php/pull/185) Added support for TCP communication to core-agent via a
+  `tcp://` formatted URI and set as default strategy.
 
 ### Changed
 
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file, in reverse 
     their respective `$block` parameters instead of `\Closure`. Additionally, if a parameter type declaration has been
     applied on the given `callable`, they must be updated to accept a `null`able `?SpanReference` instead of a `Span`.
     For example change `static function (Span $span) { ... }` to `static function (?SpanReference $span) { ... }`.
+- [#183](https://github.com/scoutapp/scout-apm-php/pull/183) Try to filter out all `vendor/` files from backtraces
 
 ### Deprecated
 
