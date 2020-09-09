@@ -13,6 +13,7 @@ use Psr\SimpleCache\CacheInterface;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\IgnoredEndpoints;
+use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
@@ -109,7 +110,7 @@ final class Agent implements ScoutApmAgent
     private static function createConnectorFromConfig(Config $config) : SocketConnector
     {
         return new SocketConnector(
-            $config->get(ConfigKey::CORE_AGENT_SOCKET_PATH),
+            ConnectionAddress::fromConfig($config),
             $config->get(ConfigKey::MONITORING_ENABLED)
         );
     }
@@ -189,7 +190,7 @@ final class Agent implements ScoutApmAgent
                 ),
                 new Launcher(
                     $this->logger,
-                    $this->config->get(ConfigKey::CORE_AGENT_SOCKET_PATH),
+                    ConnectionAddress::fromConfig($this->config),
                     $this->config->get(ConfigKey::CORE_AGENT_LOG_LEVEL),
                     $this->config->get(ConfigKey::CORE_AGENT_LOG_FILE),
                     $this->config->get(ConfigKey::CORE_AGENT_CONFIG_FILE)

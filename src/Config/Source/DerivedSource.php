@@ -57,10 +57,7 @@ final class DerivedSource implements ConfigSource
 
     private function socketPath() : string
     {
-        $dir      = $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY);
-        $fullName = $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME);
-
-        return $dir . '/' . $fullName . '/scout-agent.sock';
+        return 'tcp://127.0.0.1:6590';
     }
 
     private function coreAgentFullName() : string

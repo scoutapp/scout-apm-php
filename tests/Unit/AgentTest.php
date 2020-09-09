@@ -529,7 +529,7 @@ final class AgentTest extends TestCase
         $agent->connect();
 
         self::assertTrue($this->logger->hasWarningThatContains(
-            'Failed to connect to socket on path "/socket/path/should/not/exist"'
+            'Failed to connect to socket on address "/socket/path/should/not/exist"'
         ));
     }
 

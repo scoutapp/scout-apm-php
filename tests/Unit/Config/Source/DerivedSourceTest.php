@@ -50,10 +50,8 @@ final class DerivedSourceTest extends TestCase
 
     public function testSocketPathIsDerivedCorrectly() : void
     {
-        $this->config->set(ConfigKey::CORE_AGENT_FULL_NAME, '__core_agent_full_name__');
-
         self::assertSame(
-            '/tmp/scout_apm_core/__core_agent_full_name__/scout-agent.sock',
+            'tcp://127.0.0.1:6590',
             $this->derivedSource->get(ConfigKey::CORE_AGENT_SOCKET_PATH)
         );
     }

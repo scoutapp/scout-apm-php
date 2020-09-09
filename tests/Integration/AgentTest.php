@@ -10,6 +10,7 @@ use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
@@ -22,6 +23,7 @@ use function meminfo_dump;
 use function memory_get_usage;
 use function next;
 use function reset;
+use function shell_exec;
 use function sleep;
 use function sprintf;
 use function str_repeat;
@@ -29,6 +31,8 @@ use function str_repeat;
 /** @coversNothing */
 final class AgentTest extends TestCase
 {
+    private const APPLICATION_NAME = 'Agent Integration Test';
+
     /** @var TestLogger */
     private $logger;
     /** @var MessageCapturingConnectorDelegator */
@@ -42,8 +46,6 @@ final class AgentTest extends TestCase
     {
         parent::setUp();
 
-        $this->logger = new TestLogger();
-
         // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
         $this->scoutApmKey = getenv('SCOUT_APM_KEY');
 
@@ -52,15 +54,29 @@ final class AgentTest extends TestCase
 
             return;
         }
+    }
 
-        $config = Config::fromArray([
-            'name' => 'Agent Integration Test',
-            'key' => $this->scoutApmKey,
-            'monitor' => true,
-        ]);
+    public function tearDown() : void
+    {
+        parent::tearDown();
+
+        $this->cleanUpTestAssets();
+    }
+
+    private function cleanUpTestAssets() : void
+    {
+        shell_exec('killall -q core-agent || true');
+        shell_exec('rm -Rf /tmp/scout_apm_core');
+    }
+
+    private function setUpWithConfiguration(Config $config) : void
+    {
+        $config->set(ConfigKey::APPLICATION_KEY, $this->scoutApmKey);
+
+        $this->logger = new TestLogger();
 
         $this->connector = new MessageCapturingConnectorDelegator(
-            new SocketConnector($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH), true)
+            new SocketConnector(ConnectionAddress::fromConfig($config), true)
         );
 
         $_SERVER['REQUEST_URI'] = '/fake-path';
@@ -82,8 +98,14 @@ final class AgentTest extends TestCase
         return $return;
     }
 
+    /** @runInSeparateProcess */
     public function testForMemoryLeaksWhenHandlingJobQueues() : void
     {
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]));
+
         $tagSize = 500000;
 
         $startingMemory = memory_get_usage();
@@ -124,9 +146,40 @@ final class AgentTest extends TestCase
         self::assertLessThan($tagSize * 2, memory_get_usage() - $startingMemory);
     }
 
-    /** @throws Exception */
-    public function testLoggingIsSent() : void
+    /**
+     * @return Config[][]
+     *
+     * @psalm-return array<string,list<Config>>
+     */
+    public function endToEndConfigurationProvider() : array
     {
+        return [
+            'defaultBasicConfiguration' => [
+                Config::fromArray([
+                    ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+                    ConfigKey::MONITORING_ENABLED => true,
+                ]),
+            ],
+            'unixSocketConfiguration' => [
+                Config::fromArray([
+                    ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+                    ConfigKey::MONITORING_ENABLED => true,
+                    ConfigKey::CORE_AGENT_SOCKET_PATH => '/tmp/scout_apm_core/core-agent.sock',
+                ]),
+            ],
+        ];
+    }
+
+    /**
+     * @throws Exception
+     *
+     * @runInSeparateProcess
+     * @dataProvider endToEndConfigurationProvider
+     */
+    public function testLoggingIsSentUsingConfiguration(Config $config) : void
+    {
+        $this->setUpWithConfiguration($config);
+
         $this->agent->webTransaction('Yay', function () : void {
             file_get_contents(__FILE__);
             $this->agent->instrument('Test', 'foo', function () : void {

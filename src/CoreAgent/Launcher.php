@@ -6,6 +6,7 @@ namespace Scoutapm\CoreAgent;
 
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Scoutapm\Connector\ConnectionAddress;
 use Throwable;
 use function array_map;
 use function exec;
@@ -22,8 +23,8 @@ class Launcher
 {
     /** @var LoggerInterface */
     private $logger;
-    /** @var string */
-    private $coreAgentSocketPath;
+    /** @var ConnectionAddress */
+    private $connectionAddress;
     /** @var string|null */
     private $coreAgentLogLevel;
     /** @var string */
@@ -33,13 +34,13 @@ class Launcher
 
     public function __construct(
         LoggerInterface $logger,
-        string $coreAgentSocketPath,
+        ConnectionAddress $connectionAddress,
         ?string $coreAgentLogLevel,
         ?string $coreAgentLogFile,
         ?string $coreAgentConfigFile
     ) {
         $this->logger              = $logger;
-        $this->coreAgentSocketPath = $coreAgentSocketPath;
+        $this->connectionAddress   = $connectionAddress;
         $this->coreAgentLogLevel   = $coreAgentLogLevel;
         $this->coreAgentConfigFile = $coreAgentConfigFile;
         $this->coreAgentLogFile    = $coreAgentLogFile ?? '/dev/null';
@@ -72,8 +73,15 @@ class Launcher
                 $commandParts[] = $this->coreAgentConfigFile;
             }
 
-            $commandParts[] = '--socket';
-            $commandParts[] = $this->coreAgentSocketPath;
+            if ($this->connectionAddress->isTcpAddress()) {
+                $commandParts[] = '--tcp';
+                $commandParts[] = $this->connectionAddress->tcpBindAddressPort();
+            }
+
+            if ($this->connectionAddress->isSocketPath()) {
+                $commandParts[] = '--socket';
+                $commandParts[] = $this->connectionAddress->socketPath();
+            }
 
             $escapedCommand = implode(' ', array_map('escapeshellarg', $commandParts));
 
