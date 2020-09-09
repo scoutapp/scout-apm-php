@@ -10,6 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function array_key_exists;
@@ -17,14 +18,10 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function dirname;
 use function explode;
-use function file_exists;
 use function getenv;
 use function gethostname;
-use function is_readable;
 use function is_string;
-use function realpath;
 
 /**
  * Also called AppServerLoad in other agents
@@ -41,14 +38,21 @@ final class Metadata implements Command
     private $config;
     /** @var ExtentionCapabilities */
     private $phpExtension;
+    /** @var LocateFileOrFolder */
+    private $locateFileOrFolder;
 
-    public function __construct(DateTimeImmutable $now, Config $config, ExtentionCapabilities $phpExtension)
-    {
+    public function __construct(
+        DateTimeImmutable $now,
+        Config $config,
+        ExtentionCapabilities $phpExtension,
+        LocateFileOrFolder $locateFileOrFolder
+    ) {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer        = new Timer((float) $now->format('U.u'));
-        $this->config       = $config;
-        $this->phpExtension = $phpExtension;
+        $this->timer              = new Timer((float) $now->format('U.u'));
+        $this->config             = $config;
+        $this->phpExtension       = $phpExtension;
+        $this->locateFileOrFolder = $locateFileOrFolder;
     }
 
     public function cleanUp() : void
@@ -82,26 +86,6 @@ final class Metadata implements Command
         ];
     }
 
-    /**
-     * Try to locate a file or folder in any parent directory (upwards of this library itself)
-     */
-    private function locateFileOrFolder(string $fileOrFolder) : ?string
-    {
-        // Starting 3 levels up will avoid finding scout-apm-php's own contents
-        $dir        = dirname(__DIR__, 3);
-        $rootOrHome = '/';
-
-        while (dirname($dir) !== $dir && $dir !== $rootOrHome) {
-            $fileOrFolderAttempted = $dir . '/' . $fileOrFolder;
-            if (file_exists($fileOrFolderAttempted) && is_readable($fileOrFolderAttempted)) {
-                return realpath($dir);
-            }
-            $dir = dirname($dir);
-        }
-
-        return null;
-    }
-
     private function applicationRoot() : string
     {
         $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
@@ -109,7 +93,7 @@ final class Metadata implements Command
             return $applicationRootConfiguration;
         }
 
-        $composerJsonLocation = $this->locateFileOrFolder('composer.json');
+        $composerJsonLocation = $this->locateFileOrFolder->__invoke('composer.json');
         if ($composerJsonLocation !== null) {
             return $composerJsonLocation;
         }

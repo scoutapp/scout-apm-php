@@ -10,6 +10,9 @@ use function array_key_exists;
 use function array_slice;
 use function array_values;
 use function debug_backtrace;
+use function file_get_contents;
+use function is_array;
+use function json_decode;
 use function strpos;
 
 /**
@@ -21,6 +24,10 @@ use function strpos;
 final class Backtrace
 {
     /**
+     * Returns a simplified stack trace with just file/line/function keys for each stack frame. We also filter out any
+     * classes that belong in the `Scoutapm` namespace to avoid including our own library's contents which won't be
+     * relevant to customer monitoring.
+     *
      * @return array<int, array<string, string|int>>
      *
      * @psalm-return list<ScoutStackFrame>
@@ -40,6 +47,21 @@ final class Backtrace
         }
 
         return self::filterScoutRelatedFramesFromTopOfStack($formattedStack);
+    }
+
+    /**
+     * Same as `capture()` but we filter out everything under the `vendor/` directory. Note that for this to operate as
+     * we expect, a `composer.json` must exist, and also the `vendor-dir` configuration option must NOT be used. The
+     * stack trace is returned as-is (i.e. `vendor/` stack frames will NOT be filtered out) if either of these
+     * conditions are not met.
+     *
+     * @return array<int, array<string, string|int>>
+     *
+     * @psalm-return list<ScoutStackFrame>
+     */
+    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = 3) : array
+    {
+        return self::filterVendorFramesFromStack(self::capture(), $skipPathLevelsWhenLocatingComposerJson);
     }
 
     /**
@@ -80,6 +102,7 @@ final class Backtrace
      */
     private static function isScoutRelated(array $frame) : bool
     {
+        /** @noinspection StrStartsWithCanBeUsedInspection */
         return strpos($frame['function'], 'Scoutapm') === 0;
     }
 
@@ -109,6 +132,43 @@ final class Backtrace
                 $stillInsideScout = false;
 
                 return true;
+            }
+        ));
+    }
+
+    /**
+     * @param array<int, array<string, string|int>> $formattedStack
+     *
+     * @return array<int, array<string, string|int>>
+     *
+     * @psalm-param list<ScoutStackFrame> $formattedStack
+     * @psalm-return list<ScoutStackFrame>
+     */
+    private static function filterVendorFramesFromStack(array $formattedStack, int $skipPathLevelsWhenLocatingComposerJson) : array
+    {
+        $pathWhereComposerLives = (new LocateFileOrFolder())->__invoke('composer.json', $skipPathLevelsWhenLocatingComposerJson);
+
+        // Probably not using composer, so we don't know how to find `vendor` directory anyway, so return early
+        if ($pathWhereComposerLives === null) {
+            return $formattedStack;
+        }
+
+        // The `vendor-dir` configuration is explicitly NOT supported, typical setups will be fine
+        $composerContent = json_decode(file_get_contents($pathWhereComposerLives . '/composer.json'), true);
+        if (is_array($composerContent)
+            && array_key_exists('config', $composerContent)
+            && array_key_exists('vendor-dir', $composerContent['config'])
+        ) {
+            return $formattedStack;
+        }
+
+        $vendorPath = $pathWhereComposerLives . '/vendor';
+
+        return array_values(array_filter(
+            $formattedStack,
+            static function (array $frame) use ($vendorPath) : bool {
+                /** @noinspection StrStartsWithCanBeUsedInspection */
+                return strpos($frame['file'], $vendorPath) !== 0;
             }
         ));
     }

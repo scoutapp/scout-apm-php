@@ -90,7 +90,7 @@ class Span implements CommandWithParent, CommandWithChildren
 
         // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
         if ($this->duration() >= self::STACK_TRACE_THRESHOLD_SECONDS && ! $this->isControllerJobOrMiddleware()) {
-            $this->tag(Tag::TAG_STACK_TRACE, Backtrace::capture());
+            $this->tag(Tag::TAG_STACK_TRACE, Backtrace::captureWithoutVendor());
         }
         // phpcs:enable
     }
