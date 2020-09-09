@@ -7,7 +7,9 @@ namespace Scoutapm\Connector;
 use LogicException;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use function array_key_exists;
 use function explode;
+use function sprintf;
 use function strlen;
 use function strpos;
 use function substr;
@@ -16,6 +18,9 @@ use function substr;
 final class ConnectionAddress
 {
     private const TCP_ADDRESS_MARKER = 'tcp://';
+
+    private const DEFAULT_TCP_PORT    = 6590;
+    private const DEFAULT_TCP_ADDRESS = '127.0.0.1';
 
     /** @var string */
     private $path;
@@ -32,7 +37,6 @@ final class ConnectionAddress
 
     public function isTcpAddress() : bool
     {
-        /** @noinspection StrStartsWithCanBeUsedInspection */
         return strpos($this->path, self::TCP_ADDRESS_MARKER) === 0;
     }
 
@@ -50,23 +54,45 @@ final class ConnectionAddress
         return $this->path;
     }
 
-    public function tcpBindAddressPort() : string
+    /**
+     * @return string[]
+     *
+     * @psalm-return list<string>
+     */
+    private function explodeTcpAddress() : array
     {
         if (! $this->isTcpAddress()) {
             throw new LogicException('Cannot extract TCP address from a non-TCP address');
         }
 
-        return substr($this->path, strlen(self::TCP_ADDRESS_MARKER));
+        return explode(':', substr($this->path, strlen(self::TCP_ADDRESS_MARKER)));
+    }
+
+    public function tcpBindAddressPort() : string
+    {
+        return sprintf('%s:%d', $this->tcpBindAddress(), $this->tcpBindPort());
     }
 
     public function tcpBindAddress() : string
     {
-        return explode(':', $this->tcpBindAddressPort(), 2)[0];
+        $parts = $this->explodeTcpAddress();
+
+        if (! array_key_exists(0, $parts) || $parts[0] === '') {
+            return self::DEFAULT_TCP_ADDRESS;
+        }
+
+        return $parts[0];
     }
 
     public function tcpBindPort() : int
     {
-        return (int) explode(':', $this->tcpBindAddressPort(), 2)[1];
+        $parts = $this->explodeTcpAddress();
+
+        if (! array_key_exists(1, $parts) || $parts[1] === '') {
+            return self::DEFAULT_TCP_PORT;
+        }
+
+        return (int) $parts[1];
     }
 
     public function toString() : string

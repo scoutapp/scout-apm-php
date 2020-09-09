@@ -30,11 +30,81 @@ final class ConnectionAddressTest extends TestCase
         }
     }
 
-    public function testConnectionAddressWithTcpAddress() : void
+    /**
+     * @return string[][]|int[][]
+     *
+     * @psalm-return list<array{configuration:string,address:string,port:int,both:string}>
+     */
+    public function tcpAddressProvider() : array
     {
-        $connectionAddress = $this->connectionAddressFromString('tcp://192.168.1.250:1234');
+        return [
+            [
+                'configuration' => 'tcp://192.168.1.250:1234',
+                'address' => '192.168.1.250',
+                'port' => 1234,
+                'both' => '192.168.1.250:1234',
+            ],
+            [
+                'configuration' => 'tcp://my-hostname:1234',
+                'address' => 'my-hostname',
+                'port' => 1234,
+                'both' => 'my-hostname:1234',
+            ],
+            [
+                'configuration' => 'tcp://192.168.1.250',
+                'address' => '192.168.1.250',
+                'port' => 6590,
+                'both' => '192.168.1.250:6590',
+            ],
+            [
+                'configuration' => 'tcp://my-hostname',
+                'address' => 'my-hostname',
+                'port' => 6590,
+                'both' => 'my-hostname:6590',
+            ],
+            [
+                'configuration' => 'tcp://192.168.1.250:',
+                'address' => '192.168.1.250',
+                'port' => 6590,
+                'both' => '192.168.1.250:6590',
+            ],
+            [
+                'configuration' => 'tcp://my-hostname:',
+                'address' => 'my-hostname',
+                'port' => 6590,
+                'both' => 'my-hostname:6590',
+            ],
+            [
+                'configuration' => 'tcp://:1234',
+                'address' => '127.0.0.1',
+                'port' => 1234,
+                'both' => '127.0.0.1:1234',
+            ],
+            [
+                'configuration' => 'tcp://:',
+                'address' => '127.0.0.1',
+                'port' => 6590,
+                'both' => '127.0.0.1:6590',
+            ],
+            [
+                'configuration' => 'tcp://',
+                'address' => '127.0.0.1',
+                'port' => 6590,
+                'both' => '127.0.0.1:6590',
+            ],
+        ];
+    }
 
-        self::assertSame('tcp://192.168.1.250:1234', $connectionAddress->toString());
+    /** @dataProvider tcpAddressProvider */
+    public function testConnectionAddressWithTcpAddress(
+        string $configuration,
+        string $address,
+        int $port,
+        string $both
+    ) : void {
+        $connectionAddress = $this->connectionAddressFromString($configuration);
+
+        self::assertSame($configuration, $connectionAddress->toString());
 
         self::assertFalse($connectionAddress->isSocketPath());
         $this->expectExceptionInCall(
@@ -46,9 +116,9 @@ final class ConnectionAddressTest extends TestCase
 
         self::assertTrue($connectionAddress->isTcpAddress());
 
-        self::assertSame('192.168.1.250:1234', $connectionAddress->tcpBindAddressPort());
-        self::assertSame('192.168.1.250', $connectionAddress->tcpBindAddress());
-        self::assertSame(1234, $connectionAddress->tcpBindPort());
+        self::assertSame($address, $connectionAddress->tcpBindAddress());
+        self::assertSame($port, $connectionAddress->tcpBindPort());
+        self::assertSame($both, $connectionAddress->tcpBindAddressPort());
     }
 
     public function testConnectionAddressWithSocketPath() : void
