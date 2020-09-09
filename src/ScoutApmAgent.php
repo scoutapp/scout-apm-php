@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
-use Closure;
 use Exception;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 
 interface ScoutApmAgent
 {
@@ -24,23 +23,44 @@ interface ScoutApmAgent
      * NOTE: Do not call stop on the span itself, use the stopSpan() function
      * here to ensure the whole system knows its stopped
      *
+     * If the span limit has been reached, or is there no active request, this will return `null`. Consumers *MUST*
+     * check for `null` if using the Span returned.
+     *
      * @param string $operation         The "name" of the span, something like "Controller/User" or "SQL/Query"
      * @param ?float $overrideTimestamp If you need to set the start time to something specific
      *
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span;
+    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?SpanReference;
 
     public function stopSpan() : void;
 
-    /** @return mixed */
-    public function instrument(string $type, string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(?SpanReference): T $block
+     * @psalm-return T
+     */
+    public function instrument(string $type, string $name, callable $block);
 
-    /** @return mixed */
-    public function webTransaction(string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(?SpanReference): T $block
+     * @psalm-return T
+     */
+    public function webTransaction(string $name, callable $block);
 
-    /** @return mixed */
-    public function backgroundTransaction(string $name, Closure $block);
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable(?SpanReference): T $block
+     * @psalm-return T
+     */
+    public function backgroundTransaction(string $name, callable $block);
 
     public function addContext(string $tag, string $value) : void;
 

@@ -8,6 +8,7 @@ use DateInterval;
 use Exception;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
+use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
@@ -25,6 +26,8 @@ use function substr;
 /** @internal */
 class Request implements CommandWithChildren
 {
+    private const MAX_COMPLETE_SPANS = 1500;
+
     /** @var Timer */
     private $timer;
     /** @var Command[]|array<int, Command> */
@@ -37,6 +40,8 @@ class Request implements CommandWithChildren
     private $startMemory;
     /** @var string|null */
     private $requestUriOverride;
+    /** @var int */
+    private $spanCount = 0;
 
     /** @throws Exception */
     public function __construct(?float $override = null)
@@ -57,7 +62,15 @@ class Request implements CommandWithChildren
             },
             $this->children
         );
-        unset($this->timer, $this->children, $this->currentCommand, $this->id, $this->startMemory, $this->requestUriOverride);
+        unset(
+            $this->timer,
+            $this->children,
+            $this->currentCommand,
+            $this->id,
+            $this->startMemory,
+            $this->requestUriOverride,
+            $this->spanCount
+        );
     }
 
     public function overrideRequestUri(string $newRequestUri) : void
@@ -146,13 +159,13 @@ class Request implements CommandWithChildren
         }
     }
 
-    public function stopIfRunning() : void
+    public function stopIfRunning(?float $overrideTimestamp = null) : void
     {
         if ($this->timer->getStop() !== null) {
             return;
         }
 
-        $this->stop();
+        $this->stop($overrideTimestamp);
     }
 
     public function stop(?float $overrideTimestamp = null, ?float $currentTime = null) : void
@@ -165,9 +178,18 @@ class Request implements CommandWithChildren
         $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
     }
 
-    /** @throws Exception */
+    /**
+     * @throws SpanLimitReached
+     * @throws Exception
+     */
     public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
     {
+        if ($this->spanCount >= self::MAX_COMPLETE_SPANS) {
+            throw SpanLimitReached::forOperation($operation, self::MAX_COMPLETE_SPANS);
+        }
+
+        $this->spanCount++;
+
         $span = new Span($this->currentCommand, $operation, $this->id, $overrideTimestamp);
 
         $this->currentCommand->appendChild($span);
@@ -190,7 +212,7 @@ class Request implements CommandWithChildren
     {
         $command = $this->currentCommand;
         if (! $command instanceof Span) {
-            $this->stop($overrideTimestamp);
+            $this->stopIfRunning($overrideTimestamp);
 
             return;
         }
