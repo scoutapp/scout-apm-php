@@ -447,6 +447,24 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, request has been ignored'));
     }
 
+    public function testInstrumentedConsumerCodeBlockIsStillExecutedWithIgnoredRequest() : void
+    {
+        $agent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => true]);
+        $agent->ignore();
+
+        $hasRun = false;
+
+        $agent->instrument(
+            'Type',
+            'Name',
+            static function () use (&$hasRun) : void {
+                $hasRun = true;
+            }
+        );
+
+        self::assertTrue($hasRun, 'Callable passed to $agent->instrument was not executed');
+    }
+
     /** @throws Exception */
     public function testRequestIsResetAfterCallingSend() : void
     {

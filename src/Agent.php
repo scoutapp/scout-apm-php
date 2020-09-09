@@ -323,14 +323,12 @@ final class Agent implements ScoutApmAgent
     {
         $span = $this->startSpan($type . '/' . $name);
 
-        if ($span === null) {
-            return null;
-        }
-
         try {
             return $block($span);
         } finally {
-            $this->stopSpan();
+            if ($span !== null) {
+                $this->stopSpan();
+            }
         }
     }
 

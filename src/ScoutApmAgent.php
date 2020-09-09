@@ -39,7 +39,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(SpanReference): T $block
+     * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
      */
     public function instrument(string $type, string $name, callable $block);
@@ -48,7 +48,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(SpanReference): T $block
+     * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
      */
     public function webTransaction(string $name, callable $block);
@@ -57,7 +57,7 @@ interface ScoutApmAgent
      * @return mixed
      *
      * @psalm-template T
-     * @psalm-param callable(SpanReference): T $block
+     * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
      */
     public function backgroundTransaction(string $name, callable $block);

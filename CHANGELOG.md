@@ -19,8 +19,8 @@ All notable changes to this project will be documented in this file, in reverse 
     for accessing a `Span` (which is marked `@internal`).
   - `\Scoutapm\ScoutApmAgent::instrument`, `::webTransaction`, `::backgroundTransaction` all now accept `callable` for
     their respective `$block` parameters instead of `\Closure`. Additionally, if a parameter type declaration has been
-    applied on the given `callable`, they must be updated to accept a `SpanReference` instead of a `Span`. For example
-    change `static function (Span $span) { ... }` to `static function (SpanReference $span) { ... }`.
+    applied on the given `callable`, they must be updated to accept a `null`able `?SpanReference` instead of a `Span`.
+    For example change `static function (Span $span) { ... }` to `static function (?SpanReference $span) { ... }`.
 
 ### Deprecated
 
