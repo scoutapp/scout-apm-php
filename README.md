@@ -16,11 +16,12 @@ PHP Versions: 7.1+
 
 This package is the base library for the various framework-specific packages.
 
-### Laravel
+### Laravel, Symfony support
 
 To install the ScoutAPM Agent for a specific framework, use the specific package instead.
 
  * [Laravel](https://github.com/scoutapp/scout-apm-laravel)
+ * [Symfony](https://github.com/scoutapp/scout-apm-symfony-bundle/)
 
 ### Using the base library directly
 
