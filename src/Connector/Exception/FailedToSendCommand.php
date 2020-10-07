@@ -65,6 +65,30 @@ final class FailedToSendCommand extends RuntimeException
         ));
     }
 
+    public static function fromFailedResponseUnpack(Command $attemptedCommand, ConnectionAddress $connectionAddress) : self
+    {
+        return new self(sprintf(
+            'Response length could not be unpacked for %s (maybe invalid format?). Address was: %s',
+            get_class($attemptedCommand),
+            $connectionAddress->toString()
+        ));
+    }
+
+    public static function fromTooLargeResponseLength(
+        int $responseLengthReturned,
+        int $responseLengthLimit,
+        Command $attemptedCommand,
+        ConnectionAddress $connectionAddress
+    ) : self {
+        return new self(sprintf(
+            'Response length returned (%d) exceeded our limit for reading (%d) for %s. Address was: %s',
+            $responseLengthReturned,
+            $responseLengthLimit,
+            get_class($attemptedCommand),
+            $connectionAddress->toString()
+        ));
+    }
+
     /** @param resource $socketResource */
     public static function readingResponseContentFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
     {

@@ -14,6 +14,8 @@ use const E_NOTICE;
 use const E_STRICT;
 use const E_WARNING;
 use const SOCK_STREAM;
+use function array_key_exists;
+use function is_array;
 use function json_encode;
 use function pack;
 use function register_shutdown_function;
@@ -32,6 +34,8 @@ use function unpack;
 /** @internal */
 final class SocketConnector implements Connector
 {
+    private const MAXIMUM_RESPONSE_LENGTH_TO_READ = 10000000;
+
     /** @var resource */
     private $socket;
 
@@ -139,17 +143,34 @@ final class SocketConnector implements Connector
         }
 
         // Read the response back and drop it. Needed for socket liveness
-        $responseLength = @socket_read($this->socket, 4);
+        $responseLengthPacked = @socket_read($this->socket, 4);
 
-        if ($responseLength === false) {
+        if ($responseLengthPacked === false) {
             throw Exception\FailedToSendCommand::readingResponseSizeFromSocket($message, $this->socket, $this->connectionAddress);
         }
 
-        if ($responseLength === '') {
+        if ($responseLengthPacked === '') {
             throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->connectionAddress);
         }
 
-        $dataRead = @socket_read($this->socket, unpack('N', $responseLength)[1]);
+        $responseLengthUnpacked = unpack('Nlen', $responseLengthPacked);
+
+        if (! is_array($responseLengthUnpacked) || ! array_key_exists('len', $responseLengthUnpacked)) {
+            throw Exception\FailedToSendCommand::fromFailedResponseUnpack($message, $this->connectionAddress);
+        }
+
+        $responseLength = (int) $responseLengthUnpacked['len'];
+
+        if ($responseLength > self::MAXIMUM_RESPONSE_LENGTH_TO_READ) {
+            throw Exception\FailedToSendCommand::fromTooLargeResponseLength(
+                $responseLength,
+                self::MAXIMUM_RESPONSE_LENGTH_TO_READ,
+                $message,
+                $this->connectionAddress
+            );
+        }
+
+        $dataRead = @socket_read($this->socket, $responseLength);
 
         if ($dataRead === false) {
             throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->connectionAddress);
