@@ -11,4 +11,11 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <issueHandlers>
+        <DeprecatedClass>
+            <errorLevel type="info">
+                <referencedClass name="PackageVersions\Versions" />
+            </errorLevel>
+        </DeprecatedClass>
+    </issueHandlers>
 </psalm>

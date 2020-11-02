@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
-use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -38,7 +38,7 @@ for ($i = 1; $i <= $runCount; $i++) {
     $agent->startNewRequest();
     $span = $agent->startSpan(sprintf(
         '%s/%s%d',
-        Span::INSTRUMENT_JOB,
+        SpanReference::INSTRUMENT_JOB,
         'Test Job #',
         $i
     ));

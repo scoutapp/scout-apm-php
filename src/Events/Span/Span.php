@@ -23,9 +23,12 @@ class Span implements CommandWithParent, CommandWithChildren
 {
     private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
 
-    public const INSTRUMENT_CONTROLLER = 'Controller';
-    public const INSTRUMENT_JOB        = 'Job';
-    public const INSTRUMENT_MIDDLEWARE = 'Middleware';
+    /** @deprecated use SpanReference::INSTRUMENT_CONTROLLER instead, will be removed in 6.0.0 */
+    public const INSTRUMENT_CONTROLLER = SpanReference::INSTRUMENT_CONTROLLER;
+    /** @deprecated use SpanReference::INSTRUMENT_JOB instead, will be removed in 6.0.0 */
+    public const INSTRUMENT_JOB = SpanReference::INSTRUMENT_JOB;
+    /** @deprecated use SpanReference::INSTRUMENT_MIDDLEWARE instead, will be removed in 6.0.0 */
+    public const INSTRUMENT_MIDDLEWARE = SpanReference::INSTRUMENT_MIDDLEWARE;
 
     /** @var SpanId */
     private $id;
@@ -97,9 +100,9 @@ class Span implements CommandWithParent, CommandWithChildren
 
     private function isControllerJobOrMiddleware() : bool
     {
-        return strpos($this->name, self::INSTRUMENT_CONTROLLER) === 0
-            || strpos($this->name, self::INSTRUMENT_MIDDLEWARE) === 0
-            || strpos($this->name, self::INSTRUMENT_JOB) === 0;
+        return strpos($this->name, SpanReference::INSTRUMENT_CONTROLLER) === 0
+            || strpos($this->name, SpanReference::INSTRUMENT_MIDDLEWARE) === 0
+            || strpos($this->name, SpanReference::INSTRUMENT_JOB) === 0;
     }
 
     /**
