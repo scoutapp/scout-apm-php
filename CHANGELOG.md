@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.1.0 - 2020-11-02
+
+### Added
+
+- [#190](https://github.com/scoutapp/scout-apm-php/pull/190) Added check to ensure response length is not larger than a
+  reasonable limit (10mb currently) to avoid allocating too much memory on reading responses.
+- [#195](https://github.com/scoutapp/scout-apm-php/pull/195) Added a TTL to metadata cache status of 10 minutes. This
+  means metadata will be sent more often (every ~10 minutes) than just once per cache clear.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- [#194](https://github.com/scoutapp/scout-apm-php/pull/194) Deprecated `Span::INSTRUMENT_*` constants. Use the
+  `SpanReference::INSTRUMENT_*` constants instead. `Span::INSTRUMENT_*` constants will be removed in `6.0.0`.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 5.0.0 - 2020-09-10
 
 ### Added
