@@ -342,13 +342,13 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function webTransaction(string $name, callable $block)
     {
-        return $this->instrument(Span::INSTRUMENT_CONTROLLER, $name, $block);
+        return $this->instrument(SpanReference::INSTRUMENT_CONTROLLER, $name, $block);
     }
 
     /** {@inheritDoc} */
     public function backgroundTransaction(string $name, callable $block)
     {
-        return $this->instrument(Span::INSTRUMENT_JOB, $name, $block);
+        return $this->instrument(SpanReference::INSTRUMENT_JOB, $name, $block);
     }
 
     public function addContext(string $tag, string $value) : void

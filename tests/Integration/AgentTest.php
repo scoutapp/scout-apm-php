@@ -12,7 +12,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
-use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use function file_get_contents;
 use function fopen;
@@ -113,7 +113,7 @@ final class AgentTest extends TestCase
             $this->agent->startNewRequest();
             $span = $this->agent->startSpan(sprintf(
                 '%s/%s%d',
-                Span::INSTRUMENT_JOB,
+                SpanReference::INSTRUMENT_JOB,
                 'Test Job #',
                 $i
             ));

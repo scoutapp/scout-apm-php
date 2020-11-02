@@ -10,6 +10,10 @@ namespace Scoutapm\Events\Span;
  */
 final class SpanReference
 {
+    public const INSTRUMENT_CONTROLLER = 'Controller';
+    public const INSTRUMENT_JOB        = 'Job';
+    public const INSTRUMENT_MIDDLEWARE = 'Middleware';
+
     /** @var Span */
     private $realSpan;
 
