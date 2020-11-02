@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
+use Doctrine\Common\Cache\ArrayCache;
 use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\Test\TestLogger;
+use Roave\DoctrineSimpleCache\SimpleCacheAdapter;
 use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
@@ -901,5 +903,58 @@ final class AgentTest extends TestCase
         self::assertTrue($agent->send());
 
         self::assertTrue($this->logger->hasNoticeThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
+    }
+
+    public function testMetadataIsNotSentIfCached() : void
+    {
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => 'My test app',
+                ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+                ConfigKey::MONITORING_ENABLED => true,
+            ]),
+            $this->logger,
+            new SimpleCacheAdapter(new ArrayCache()),
+            $this->connector,
+            $this->phpExtension
+        );
+
+        $this->connector->expects(self::at(0))
+            ->method('connected')
+            ->willReturn(true);
+
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(1))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(RegisterMessage::class))
+            ->willReturn('{"Register":"Success"}');
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(2))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Metadata::class))
+            ->willReturn('{"Metadata":"Success"}');
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(3))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"Success"}');
+        $this->connector->expects(self::at(4))
+            ->method('connected')
+            ->willReturn(true);
+        /** @noinspection PhpParamsInspection */
+        $this->connector->expects(self::at(5))
+            ->method('sendCommand')
+            ->with(self::isInstanceOf(Request::class))
+            ->willReturn('{"Request":"Success"}');
+
+        $agent->startSpan('a');
+        $agent->stopSpan();
+
+        $agent->send();
+
+        $agent->startSpan('b');
+        $agent->stopSpan();
+
+        $agent->send();
     }
 }

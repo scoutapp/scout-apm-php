@@ -46,6 +46,8 @@ final class Agent implements ScoutApmAgent
 {
     private const CACHE_KEY_METADATA_SENT = 'scout_metadata_sent';
 
+    private const METADATA_CACHE_TTL_SECONDS = 600;
+
     private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.0.2';
 
     /** @var Config */
@@ -533,7 +535,7 @@ final class Agent implements ScoutApmAgent
             return;
         }
 
-        $this->cache->set(self::CACHE_KEY_METADATA_SENT, true);
+        $this->cache->set(self::CACHE_KEY_METADATA_SENT, true, self::METADATA_CACHE_TTL_SECONDS);
     }
 
     /**
