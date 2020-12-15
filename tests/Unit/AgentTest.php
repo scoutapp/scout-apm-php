@@ -752,11 +752,32 @@ final class AgentTest extends TestCase
 
         $this->connector->expects(self::once())
             ->method('sendCommand')
-            ->willThrowException(new FailedToSendCommand('Splines did not reticulate to send the message'));
+            ->willThrowException(new FailedToSendCommand(LogLevel::ERROR, 'Splines did not reticulate to send the message'));
 
         self::assertFalse($agent->send());
 
         self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
+    }
+
+    public function testFailureToSendCommandExceptionIsCaughtWhilstSendingWithNoticeLogLevel() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(true);
+
+        $this->connector->expects(self::once())
+            ->method('sendCommand')
+            ->willThrowException(new FailedToSendCommand(LogLevel::NOTICE, 'Splines did not reticulate to send the message'));
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasNoticeThatContains('Splines did not reticulate to send the message'));
     }
 
     public function testOlderVersionsOfExtensionIsNotedInLogs() : void

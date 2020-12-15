@@ -465,7 +465,7 @@ final class Agent implements ScoutApmAgent
 
             return false;
         } catch (FailedToSendCommand $failedToSendCommand) {
-            $this->logger->error($failedToSendCommand->getMessage());
+            $this->logger->log($failedToSendCommand->logLevel(), $failedToSendCommand->getMessage());
 
             return false;
         }
