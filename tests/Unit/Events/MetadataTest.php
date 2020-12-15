@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Events;
 
+use Composer\InstalledVersions;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
-use PackageVersions\Versions;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
@@ -18,17 +18,17 @@ use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
-use function array_keys;
-use function array_map;
-use function array_merge;
-use function explode;
 use function gethostname;
 use function json_decode;
 use function json_encode;
 use function putenv;
+use function sprintf;
 use function uniqid;
 
-/** @covers \Scoutapm\Events\Metadata */
+/**
+ * @covers \Scoutapm\Events\Metadata
+ * @psalm-import-type VersionList from Metadata
+ */
 final class MetadataTest extends TestCase
 {
     /** @var ExtentionCapabilities&MockObject */
@@ -46,6 +46,32 @@ final class MetadataTest extends TestCase
         $this->locateFileOrFolder = $this->createMock(LocateFileOrFolder::class);
 
         $this->time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
+    }
+
+    /**
+     * @return string[][]
+     *
+     * @psalm-return VersionList
+     */
+    private function installedVersions(string $withScoutExtensionVersion) : array
+    {
+        $composerPlatformVersions = [];
+
+        foreach (InstalledVersions::getInstalledPackages() as $packageName) {
+            $composerPlatformVersions[] = [
+                $packageName === 'root' ? InstalledVersions::getRootPackage()['name'] : $packageName,
+                sprintf(
+                    '%s@%s',
+                    InstalledVersions::getPrettyVersion($packageName),
+                    InstalledVersions::getReference($packageName)
+                ),
+            ];
+        }
+
+        $composerPlatformVersions[] = ['ext-scoutapm', $withScoutExtensionVersion];
+
+        /** @psalm-var VersionList $composerPlatformVersions */
+        return $composerPlatformVersions;
     }
 
     /** @throws Exception */
@@ -82,16 +108,7 @@ final class MetadataTest extends TestCase
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => 'My amazing application',
-                        'libraries' => array_merge(
-                            array_map(
-                                static function ($package, $version) {
-                                    return [$package, $version];
-                                },
-                                array_keys(Versions::VERSIONS),
-                                Versions::VERSIONS
-                            ),
-                            [['ext-scoutapm', '1.2.3']]
-                        ),
+                        'libraries' => $this->installedVersions('1.2.3'),
                         'paas' => '',
                         'application_root' => '/fake/app/root',
                         'scm_subdirectory' => '/fake/scm/subdirectory',
@@ -133,20 +150,11 @@ final class MetadataTest extends TestCase
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => '',
-                        'libraries' => array_merge(
-                            array_map(
-                                static function ($package, $version) {
-                                    return [$package, $version];
-                                },
-                                array_keys(Versions::VERSIONS),
-                                Versions::VERSIONS
-                            ),
-                            [['ext-scoutapm', 'not installed']]
-                        ),
+                        'libraries' => $this->installedVersions('not installed'),
                         'paas' => '',
                         'application_root' => '/fake/document/root',
                         'scm_subdirectory' => '',
-                        'git_sha' => explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1],
+                        'git_sha' => InstalledVersions::getRootPackage()['reference'],
                     ],
                     'event_type' => 'scout.metadata',
                     'source' => 'php',

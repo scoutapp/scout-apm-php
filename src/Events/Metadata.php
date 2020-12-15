@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Scoutapm\Events;
 
+use Composer\InstalledVersions;
 use DateTimeImmutable;
-use PackageVersions\Versions;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
@@ -14,14 +14,14 @@ use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
 use const PHP_VERSION;
 use function array_key_exists;
-use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function explode;
+use function class_exists;
 use function getenv;
 use function gethostname;
 use function is_string;
+use function sprintf;
 
 /**
  * Also called AppServerLoad in other agents
@@ -127,7 +127,11 @@ final class Metadata implements Command
             return $herokuSlugCommit;
         }
 
-        return explode('@', Versions::getVersion(Versions::ROOT_PACKAGE_NAME))[1];
+        if (class_exists(InstalledVersions::class)) {
+            return InstalledVersions::getRootPackage()['reference'];
+        }
+
+        return '';
     }
 
     /**
@@ -142,14 +146,22 @@ final class Metadata implements Command
         $extensionVersion = $this->phpExtension->version();
 
         /** @psalm-var VersionList $composerPlatformVersions */
-        $composerPlatformVersions = array_map(
-        /** @return string[][]|array<int, string> */
-            static function (string $package, string $version) : array {
-                return [$package, $version];
-            },
-            array_keys(Versions::VERSIONS),
-            Versions::VERSIONS
-        );
+        $composerPlatformVersions = [];
+        if (class_exists(InstalledVersions::class)) {
+            $composerPlatformVersions = array_map(
+                static function (string $packageName) : array {
+                    return [
+                        $packageName === 'root' ? (string) InstalledVersions::getRootPackage()['name'] : $packageName,
+                        sprintf(
+                            '%s@%s',
+                            InstalledVersions::getPrettyVersion($packageName),
+                            InstalledVersions::getReference($packageName)
+                        ),
+                    ];
+                },
+                InstalledVersions::getInstalledPackages()
+            );
+        }
 
         return array_values(array_merge(
             $composerPlatformVersions,

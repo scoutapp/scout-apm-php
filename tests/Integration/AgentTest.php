@@ -145,6 +145,7 @@ final class AgentTest extends TestCase
          * allocated, then use `bin/analyzer summary /tmp/my_dump_file.json` to show table.
          */
         if (function_exists('meminfo_dump')) {
+            /** @psalm-suppress TooManyArguments */
             meminfo_dump(fopen('/tmp/my_dump_file.json', 'w'));
         }
 
