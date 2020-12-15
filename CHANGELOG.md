@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.2.0 - 2020-12-15
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#198](https://github.com/scoutapp/scout-apm-php/pull/198) Adjust log level for `Response length returned (%d)
+  exceeded our limit for reading (%d)` message
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 5.1.0 - 2020-11-02
 
 ### Added

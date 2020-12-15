@@ -236,6 +236,26 @@ class Request implements CommandWithChildren
      * turn this object into a list of commands to send to the CoreAgent
      *
      * @return array<string, array<string, array<int, array<string, (string|array|bool|null)>>>>
+     *
+     * @todo document more of the command structures better:
+     * @psalm-suppress InvalidReturnType
+     * @psalm-return array{
+     *      BatchCommand: array{
+     *          commands: list<
+     *              array{
+     *                  StartRequest: array{
+     *                      request_id: string,
+     *                      timestamp: string|null,
+     *                  }
+     *              }|array{
+     *                  FinishRequest: array{
+     *                      request_id: string,
+     *                      timestamp: string|null,
+     *                  }
+     *              }
+     *          >
+     *      }
+     * }
      */
     public function jsonSerialize() : array
     {
@@ -260,6 +280,7 @@ class Request implements CommandWithChildren
             ],
         ];
 
+        /** @psalm-suppress InvalidReturnStatement */
         return [
             'BatchCommand' => ['commands' => $commands],
         ];

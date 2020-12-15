@@ -38,7 +38,9 @@ final class RecordedCallTest extends TestCase
     }
 
     /**
-     * @return string[][]|string[][][]|array<string, array<string, (string|array<string, string>)>>
+     * @return string[][]|string[][][]
+     *
+     * @psalm-return array<string, array{recordedFunctionName: string, expectedFilteredArguments: array<string, string>}>
      */
     public function filteredArgumentsDataProvider() : array
     {
@@ -55,7 +57,7 @@ final class RecordedCallTest extends TestCase
     }
 
     /**
-     * @param mixed[] $expectedFilteredArguments
+     * @param array<string, string> $expectedFilteredArguments
      *
      * @throws Exception
      *

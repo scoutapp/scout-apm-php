@@ -43,6 +43,8 @@ for ($i = 1; $i <= $runCount; $i++) {
         $i
     ));
 
+    assert($span !== null);
+
     $span->tag('something', str_repeat('a', $tagSize));
 
     $agent->stopSpan();

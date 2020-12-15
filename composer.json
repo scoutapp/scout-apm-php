@@ -22,9 +22,10 @@
         "doctrine/coding-standard": "^6.0",
         "monolog/monolog": "^1.25",
         "phpunit/phpunit": "^7.5.20",
+        "psalm/plugin-phpunit": "^0.15.0",
         "psr/log": "^1.1",
         "roave/doctrine-simplecache": "^2.2",
-        "vimeo/psalm": "^3.12.2"
+        "vimeo/psalm": "^4.3.1"
     },
     "suggest": {
         "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions"

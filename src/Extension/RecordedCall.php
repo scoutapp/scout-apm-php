@@ -54,10 +54,10 @@ final class RecordedCall
         Assert::keyExists($extensionCall, 'argv');
 
         return new self(
-            (string) $extensionCall['function'],
-            (float) $extensionCall['time_taken'],
-            (float) $extensionCall['entered'],
-            (float) $extensionCall['exited'],
+            $extensionCall['function'],
+            $extensionCall['time_taken'],
+            $extensionCall['entered'],
+            $extensionCall['exited'],
             $extensionCall['argv']
         );
     }

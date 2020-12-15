@@ -153,6 +153,7 @@ final class SocketConnector implements Connector
             throw Exception\FailedToSendCommand::fromEmptyResponseSize($message, $this->connectionAddress);
         }
 
+        /** @var mixed[]|false $responseLengthUnpacked */
         $responseLengthUnpacked = unpack('Nlen', $responseLengthPacked);
 
         if (! is_array($responseLengthUnpacked) || ! array_key_exists('len', $responseLengthUnpacked)) {

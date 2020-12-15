@@ -11,7 +11,7 @@ use function json_encode;
 
 final class MessageCapturingConnectorDelegator implements Connector
 {
-    /** @var Command[] */
+    /** @var array<array-key, mixed> */
     public $sentMessages = [];
 
     /** @var Connector */

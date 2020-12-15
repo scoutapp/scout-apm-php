@@ -13,7 +13,11 @@ use function scoutapm_get_calls;
 
 final class PotentiallyAvailableExtensionCapabilities implements ExtentionCapabilities
 {
-    /** @return RecordedCall[]|array<int, RecordedCall> */
+    /**
+     * @return RecordedCall[]
+     *
+     * @psalm-return list<RecordedCall>
+     */
     public function getCalls() : array
     {
         if (! $this->extensionIsAvailable()) {

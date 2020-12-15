@@ -13,7 +13,7 @@ abstract class RecursivelyCountSpans
     /** @param Command[] $commands */
     public static function forCommands(array $commands) : int
     {
-        return (int) array_reduce(
+        return array_reduce(
             $commands,
             static function (int $carry, Command $item) : int {
                 if (! $item instanceof Span) {

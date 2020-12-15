@@ -6,7 +6,6 @@ namespace Scoutapm\UnitTests\Extension;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
-use Scoutapm\Extension\RecordedCall;
 use function extension_loaded;
 use function file_get_contents;
 use function phpversion;
@@ -51,7 +50,6 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         $calls = $this->capabilities->getCalls();
 
         self::assertCount(1, $calls);
-        self::assertContainsOnlyInstancesOf(RecordedCall::class, $calls);
 
         $recordedCall = reset($calls);
 

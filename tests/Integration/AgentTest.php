@@ -14,6 +14,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use function assert;
 use function file_get_contents;
 use function fopen;
 use function function_exists;
@@ -47,13 +48,15 @@ final class AgentTest extends TestCase
         parent::setUp();
 
         // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
-        $this->scoutApmKey = getenv('SCOUT_APM_KEY');
+        $scoutApmKey = getenv('SCOUT_APM_KEY');
 
-        if ($this->scoutApmKey === false || $this->scoutApmKey === '') {
+        if ($scoutApmKey === false || $scoutApmKey === '') {
             self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
 
             return;
         }
+
+        $this->scoutApmKey = $scoutApmKey;
     }
 
     public function tearDown() : void
@@ -65,7 +68,9 @@ final class AgentTest extends TestCase
 
     private function cleanUpTestAssets() : void
     {
+        /** @psalm-suppress ForbiddenCode */
         shell_exec('killall -q core-agent || true');
+        /** @psalm-suppress ForbiddenCode */
         shell_exec('rm -Rf /tmp/scout_apm_core');
     }
 
@@ -117,6 +122,8 @@ final class AgentTest extends TestCase
                 'Test Job #',
                 $i
             ));
+
+            assert($span !== null);
 
             $span->tag('something', str_repeat('a', $tagSize));
 

@@ -24,8 +24,8 @@ abstract class TestHelper
     }
 
     /**
-     * @param string[]|callable[]|array<string, (string|callable)>        $keysAndValuesToExpect
-     * @param mixed[][]|array<string, array<string, (string|null|array)>> $actualCommand
+     * @param string[]|callable[]|array<string, mixed>      $keysAndValuesToExpect
+     * @param mixed[][]|array<string, array<string, mixed>> $actualCommand
      */
     public static function assertUnserializedCommandContainsPayload(
         string $expectedCommand,
