@@ -33,7 +33,6 @@ final class TagSpanTest extends TestCase
 
         $serialized = (new TagSpan('t', 'v', $requestId, $spanId))->jsonSerialize();
 
-        self::assertIsArray($serialized);
         self::assertArrayHasKey('TagSpan', $serialized[0]);
 
         $data = $serialized[0]['TagSpan'];

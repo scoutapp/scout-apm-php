@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <psalm
-    totallyTyped="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
 >
     <projectFiles>
         <directory name="src" />
+        <directory name="tests" />
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
@@ -14,8 +14,24 @@
     <issueHandlers>
         <DeprecatedClass>
             <errorLevel type="info">
+                <!-- Handles usage of composer/package-versions-deprecated -->
                 <referencedClass name="PackageVersions\Versions" />
             </errorLevel>
         </DeprecatedClass>
+        <MissingConstructor>
+            <errorLevel type="info">
+                <!-- Mostly caused by PHPUnit -->
+                <directory name="tests"/>
+            </errorLevel>
+        </MissingConstructor>
+        <InvalidThrow>
+            <errorLevel type="info">
+                <!-- Does not extend any \Throwable for some reason -->
+                <referencedClass name="Psr\SimpleCache\InvalidArgumentException" />
+            </errorLevel>
+        </InvalidThrow>
     </issueHandlers>
+    <plugins>
+        <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
+    </plugins>
 </psalm>

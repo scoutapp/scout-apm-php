@@ -16,6 +16,7 @@ use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Connector\Command;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
@@ -25,6 +26,7 @@ use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
+use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\RecordedCall;
@@ -32,6 +34,7 @@ use Scoutapm\Extension\Version;
 use Scoutapm\IntegrationTests\TestHelper;
 use Scoutapm\ScoutApmAgent;
 use function array_map;
+use function assert;
 use function end;
 use function json_encode;
 use function microtime;
@@ -60,6 +63,22 @@ final class AgentTest extends TestCase
         $this->logger       = new TestLogger();
         $this->connector    = $this->createMock(Connector::class);
         $this->phpExtension = $this->createMock(ExtentionCapabilities::class);
+    }
+
+    private function requestFromAgent(ScoutApmAgent $agent) : ?Request
+    {
+        /** @psalm-suppress DeprecatedMethod */
+        return $agent->getRequest();
+    }
+
+    /** @return array<int, Command> */
+    private function eventsFromAgent(ScoutApmAgent $agent) : array
+    {
+        $request = $this->requestFromAgent($agent);
+        assert($request !== null);
+
+        /** @psalm-suppress DeprecatedMethod */
+        return $request->getEvents();
     }
 
     /** @param mixed[]|array<string, mixed> $config */
@@ -234,6 +253,8 @@ final class AgentTest extends TestCase
         // Start a Child Span
         $span = $agent->startSpan('SQL/Query');
 
+        self::assertNotNull($span);
+
         // Tag the span
         $span->tag('sql.query', 'select * from foo');
 
@@ -252,7 +273,9 @@ final class AgentTest extends TestCase
     {
         $agent = $this->agentFromConfigArray();
 
-        $retval = $agent->instrument('Custom', 'Test', static function (SpanReference $span) {
+        $retval = $agent->instrument('Custom', 'Test', static function (?SpanReference $span) {
+            self::assertNotNull($span);
+
             $span->tag('OMG', 'Thingy');
 
             self::assertSame($span->getName(), 'Custom/Test');
@@ -264,18 +287,28 @@ final class AgentTest extends TestCase
         self::assertSame($retval, 'arbitrary return value');
 
         // Check that the span was stopped and tagged
-        $events    = $agent->getRequest()->getEvents();
+        $events    = $this->eventsFromAgent($agent);
         $foundSpan = end($events);
         self::assertInstanceOf(Span::class, $foundSpan);
         self::assertNotNull($foundSpan->getStopTime());
-        self::assertSame($foundSpan->getTags()[0]->getTag(), 'OMG');
-        self::assertSame($foundSpan->getTags()[0]->getValue(), 'Thingy');
+
+        $firstTag = static function (Span $span) : Tag {
+            /** @psalm-suppress DeprecatedMethod */
+            $tags = $span->getTags();
+
+            return reset($tags);
+        };
+        $tag      = $firstTag($foundSpan);
+        self::assertSame($tag->getTag(), 'OMG');
+        self::assertSame($tag->getValue(), 'Thingy');
     }
 
     public function testWebTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
         self::assertSame(
-            $this->agentFromConfigArray()->webTransaction('Test', static function (SpanReference $span) {
+            $this->agentFromConfigArray()->webTransaction('Test', static function (?SpanReference $span) {
+                self::assertNotNull($span);
+
                 // Check span name is prefixed with "Controller"
                 self::assertSame($span->getName(), 'Controller/Test');
 
@@ -288,7 +321,9 @@ final class AgentTest extends TestCase
     public function testBackgroundTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
     {
         self::assertSame(
-            $this->agentFromConfigArray()->backgroundTransaction('Test', static function (SpanReference $span) {
+            $this->agentFromConfigArray()->backgroundTransaction('Test', static function (?SpanReference $span) {
+                self::assertNotNull($span);
+
                 // Check span name is prefixed with "Job"
                 self::assertSame($span->getName(), 'Job/Test');
 
@@ -301,6 +336,7 @@ final class AgentTest extends TestCase
     public function testStartSpan() : void
     {
         $span = $this->agentFromConfigArray()->startSpan('foo/bar');
+        self::assertNotNull($span);
         self::assertSame('foo/bar', $span->getName());
     }
 
@@ -308,6 +344,7 @@ final class AgentTest extends TestCase
     {
         $agent = $this->agentFromConfigArray();
         $span  = $agent->startSpan('foo/bar');
+        self::assertNotNull($span);
         self::assertNull($span->getStopTime());
 
         $agent->stopSpan();
@@ -320,7 +357,7 @@ final class AgentTest extends TestCase
         $agent = $this->agentFromConfigArray();
         $agent->tagRequest('foo', 'bar');
 
-        $events = $agent->getRequest()->getEvents();
+        $events = $this->eventsFromAgent($agent);
 
         $tag = end($events);
 
@@ -478,14 +515,14 @@ final class AgentTest extends TestCase
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
         ]);
 
-        $requestBeforeSend = $agent->getRequest();
+        $requestBeforeSend = $this->requestFromAgent($agent);
 
         $this->connector->method('connected')->willReturn(true);
         $this->connector->expects(self::exactly(3))->method('sendCommand');
 
         self::assertTrue($agent->send());
 
-        self::assertNotSame($requestBeforeSend, $agent->getRequest());
+        self::assertNotSame($requestBeforeSend, $this->requestFromAgent($agent));
     }
 
     public function testRegisterEventIsOnlySentOnceWhenSendingTwoRequestsWithSameAgent() : void
@@ -529,11 +566,11 @@ final class AgentTest extends TestCase
             ConfigKey::MONITORING_ENABLED => true,
         ]);
 
-        $requestBeforeReset = $agent->getRequest();
+        $requestBeforeReset = $this->requestFromAgent($agent);
 
         $agent->startNewRequest();
 
-        self::assertNotSame($requestBeforeReset, $agent->getRequest());
+        self::assertNotSame($requestBeforeReset, $this->requestFromAgent($agent));
     }
 
     public function testAgentLogsWarningWhenFailingToConnectToSocket() : void
@@ -752,11 +789,32 @@ final class AgentTest extends TestCase
 
         $this->connector->expects(self::once())
             ->method('sendCommand')
-            ->willThrowException(new FailedToSendCommand('Splines did not reticulate to send the message'));
+            ->willThrowException(new FailedToSendCommand(LogLevel::ERROR, 'Splines did not reticulate to send the message'));
 
         self::assertFalse($agent->send());
 
         self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
+    }
+
+    public function testFailureToSendCommandExceptionIsCaughtWhilstSendingWithNoticeLogLevel() : void
+    {
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::APPLICATION_NAME => 'My test app',
+            ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+
+        $this->connector->expects(self::once())
+            ->method('connected')
+            ->willReturn(true);
+
+        $this->connector->expects(self::once())
+            ->method('sendCommand')
+            ->willThrowException(new FailedToSendCommand(LogLevel::NOTICE, 'Splines did not reticulate to send the message'));
+
+        self::assertFalse($agent->send());
+
+        self::assertTrue($this->logger->hasNoticeThatContains('Splines did not reticulate to send the message'));
     }
 
     public function testOlderVersionsOfExtensionIsNotedInLogs() : void

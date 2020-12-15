@@ -25,12 +25,6 @@ final class RequestTest extends TestCase
 {
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
-    public function testCanBeInitialized() : void
-    {
-        $request = new Request();
-        self::assertNotNull($request);
-    }
-
     public function testExceptionThrownWhenSpanLimitReached() : void
     {
         $request = new Request();
@@ -144,7 +138,6 @@ final class RequestTest extends TestCase
         $request->stop();
 
         $serialized = $request->jsonSerialize();
-        self::assertIsArray($serialized);
 
         self::assertArrayHasKey('BatchCommand', $serialized);
         self::assertArrayHasKey('commands', $serialized['BatchCommand']);

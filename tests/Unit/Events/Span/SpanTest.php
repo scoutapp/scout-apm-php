@@ -29,7 +29,7 @@ final class SpanTest extends TestCase
     public function testCanBeInitialized() : void
     {
         $span = new Span($this->mockParent, 'name', RequestId::new());
-        self::assertNotNull($span);
+        self::assertNull($span->getStopTime());
     }
 
     /** @throws Exception */
@@ -37,7 +37,7 @@ final class SpanTest extends TestCase
     {
         $span = new Span($this->mockParent, '', RequestId::new());
         $span->stop();
-        self::assertNotNull($span);
+        self::assertNotNull($span->getStopTime());
     }
 
     /** @throws Exception */
@@ -49,7 +49,6 @@ final class SpanTest extends TestCase
 
         $serialized = $span->jsonSerialize();
 
-        self::assertIsArray($serialized);
         self::assertArrayHasKey('StartSpan', $serialized[0]);
         self::assertArrayHasKey('TagSpan', $serialized[1]);
         self::assertArrayHasKey('StopSpan', $serialized[2]);
@@ -76,38 +75,42 @@ final class SpanTest extends TestCase
         self::assertSame('fromRequest', $span->getName());
     }
 
-    /** @return int[][]|string[][] */
+    /**
+     * @return int[][]|string[][]
+     *
+     * @psalm-return list<array{spanName: string, startTime: float, endTime: float, expectedTagCount: int}>
+     */
     public function spansForStackTraceProvider() : array
     {
         return [
             [
                 'spanName' => 'Foo/Bar',
-                'startTime' => 1,
-                'endTime' => 1,
+                'startTime' => 1.0,
+                'endTime' => 1.0,
                 'expectedTagCount' => 0,
             ],
             [
                 'spanName' => 'Foo/Bar',
-                'startTime' => 1,
-                'endTime' => 2,
+                'startTime' => 1.0,
+                'endTime' => 2.0,
                 'expectedTagCount' => 1,
             ],
             [
                 'spanName' => 'Controller/Foo',
-                'startTime' => 1,
-                'endTime' => 2,
+                'startTime' => 1.0,
+                'endTime' => 2.0,
                 'expectedTagCount' => 0,
             ],
             [
                 'spanName' => 'Middleware/Foo',
-                'startTime' => 1,
-                'endTime' => 2,
+                'startTime' => 1.0,
+                'endTime' => 2.0,
                 'expectedTagCount' => 0,
             ],
             [
                 'spanName' => 'Job/Foo',
-                'startTime' => 1,
-                'endTime' => 2,
+                'startTime' => 1.0,
+                'endTime' => 2.0,
                 'expectedTagCount' => 0,
             ],
         ];
@@ -125,6 +128,7 @@ final class SpanTest extends TestCase
         $span = new Span($request, $spanName, RequestId::new(), $startTime);
         $span->stop($endTime);
 
+        /** @psalm-suppress DeprecatedMethod */
         self::assertCount($expectedTagCount, $span->getTags());
     }
 }

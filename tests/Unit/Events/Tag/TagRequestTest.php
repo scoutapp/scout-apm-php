@@ -30,7 +30,6 @@ final class TagRequestTest extends TestCase
         $requestId  = RequestId::new();
         $serialized = (new TagRequest('t', 'v', $requestId))->jsonSerialize();
 
-        self::assertIsArray($serialized);
         self::assertArrayHasKey('TagRequest', $serialized[0]);
 
         $data = $serialized[0]['TagRequest'];

@@ -4,28 +4,58 @@ declare(strict_types=1);
 
 namespace Scoutapm\Connector\Exception;
 
+use Psr\Log\LogLevel;
 use RuntimeException;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
+use Throwable;
 use function get_class;
 use function socket_last_error;
 use function socket_strerror;
 use function sprintf;
 
+/**
+ * @psalm-type ValidLogLevel = LogLevel::*
+ */
 final class FailedToSendCommand extends RuntimeException
 {
+    /**
+     * @var string
+     * @psalm-var ValidLogLevel
+     */
+    private $logLevel;
+
+    /**
+     * @psalm-param ValidLogLevel $logLevel
+     */
+    public function __construct(string $logLevel, string $message, int $code = 0, ?Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+
+        $this->logLevel = $logLevel;
+    }
+
+    /** @psalm-return ValidLogLevel */
+    public function logLevel() : string
+    {
+        return $this->logLevel;
+    }
+
     /** @param resource $socketResource */
     public static function writingMessageSizeToSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
-        return new self(sprintf(
-            'Failed to write message size for %s - error %d (%s). Address was: %s',
-            get_class($attemptedCommand),
-            $socketErrorNumber,
-            socket_strerror($socketErrorNumber),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Failed to write message size for %s - error %d (%s). Address was: %s',
+                get_class($attemptedCommand),
+                $socketErrorNumber,
+                socket_strerror($socketErrorNumber),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     /** @param resource $socketResource */
@@ -33,13 +63,16 @@ final class FailedToSendCommand extends RuntimeException
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
-        return new self(sprintf(
-            'Failed to write message content for %s - error %d (%s). Address was: %s',
-            get_class($attemptedCommand),
-            $socketErrorNumber,
-            socket_strerror($socketErrorNumber),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Failed to write message content for %s - error %d (%s). Address was: %s',
+                get_class($attemptedCommand),
+                $socketErrorNumber,
+                socket_strerror($socketErrorNumber),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     /** @param resource $socketResource */
@@ -47,31 +80,40 @@ final class FailedToSendCommand extends RuntimeException
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
-        return new self(sprintf(
-            'Failed to read response size for %s - error %d (%s). Address was: %s',
-            get_class($attemptedCommand),
-            $socketErrorNumber,
-            socket_strerror($socketErrorNumber),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Failed to read response size for %s - error %d (%s). Address was: %s',
+                get_class($attemptedCommand),
+                $socketErrorNumber,
+                socket_strerror($socketErrorNumber),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     public static function fromEmptyResponseSize(Command $attemptedCommand, ConnectionAddress $connectionAddress) : self
     {
-        return new self(sprintf(
-            'Response size was not returned for %s (empty string). Address was: %s',
-            get_class($attemptedCommand),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Response size was not returned for %s (empty string). Address was: %s',
+                get_class($attemptedCommand),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     public static function fromFailedResponseUnpack(Command $attemptedCommand, ConnectionAddress $connectionAddress) : self
     {
-        return new self(sprintf(
-            'Response length could not be unpacked for %s (maybe invalid format?). Address was: %s',
-            get_class($attemptedCommand),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Response length could not be unpacked for %s (maybe invalid format?). Address was: %s',
+                get_class($attemptedCommand),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     public static function fromTooLargeResponseLength(
@@ -80,13 +122,16 @@ final class FailedToSendCommand extends RuntimeException
         Command $attemptedCommand,
         ConnectionAddress $connectionAddress
     ) : self {
-        return new self(sprintf(
-            'Response length returned (%d) exceeded our limit for reading (%d) for %s. Address was: %s',
-            $responseLengthReturned,
-            $responseLengthLimit,
-            get_class($attemptedCommand),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::NOTICE,
+            sprintf(
+                'Response length returned (%d) exceeded our limit for reading (%d) for %s. Address was: %s',
+                $responseLengthReturned,
+                $responseLengthLimit,
+                get_class($attemptedCommand),
+                $connectionAddress->toString()
+            )
+        );
     }
 
     /** @param resource $socketResource */
@@ -94,12 +139,15 @@ final class FailedToSendCommand extends RuntimeException
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
-        return new self(sprintf(
-            'Failed to read response content for %s - error %d (%s). Address was: %s',
-            get_class($attemptedCommand),
-            $socketErrorNumber,
-            socket_strerror($socketErrorNumber),
-            $connectionAddress->toString()
-        ));
+        return new self(
+            LogLevel::ERROR,
+            sprintf(
+                'Failed to read response content for %s - error %d (%s). Address was: %s',
+                get_class($attemptedCommand),
+                $socketErrorNumber,
+                socket_strerror($socketErrorNumber),
+                $connectionAddress->toString()
+            )
+        );
     }
 }

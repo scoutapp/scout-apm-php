@@ -30,7 +30,19 @@ class TagSpan extends Tag
     }
 
     /**
-     * @return array<int, array<string, (string|array|bool|null)>>
+     * @return string[][][]|array[][][]|bool[][][]|null[][][]
+     *
+     * @psalm-return list<
+     *      array{
+     *          TagSpan: array{
+     *              request_id: string,
+     *              span_id: string,
+     *              tag: string,
+     *              value: mixed,
+     *              timestamp: string
+     *          }
+     *      }
+     * >
      */
     public function jsonSerialize() : array
     {
