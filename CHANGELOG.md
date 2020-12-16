@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 5.3.0 - 2020-12-16
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#200](https://github.com/scoutapp/scout-apm-php/pull/200) Replace usage of `ocramius/package-versions` with
+  `composer-plugin-api:^2.0` if available.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 5.2.0 - 2020-12-15
 
 ### Added
