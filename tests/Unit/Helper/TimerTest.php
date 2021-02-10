@@ -22,7 +22,6 @@ final class TimerTest extends TestCase
     {
         $timer = new Timer();
         self::assertNotNull($timer->getStart());
-        self::assertIsFloat($timer->getStartAsMicrotime());
     }
 
     public function testStoppingSetsStopTime() : void

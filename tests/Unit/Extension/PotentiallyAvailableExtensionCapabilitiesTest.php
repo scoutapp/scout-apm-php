@@ -84,7 +84,10 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
             self::markTestSkipped('Test can only be run when extension is loaded');
         }
 
-        self::assertSame(phpversion('scoutapm'), $this->capabilities->version()->toString());
+        $version = $this->capabilities->version();
+
+        self::assertNotNull($version);
+        self::assertSame(phpversion('scoutapm'), $version->toString());
     }
 
     public function testVersionReturnsNullWhenExtensionNotLoaded() : void
