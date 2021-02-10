@@ -11,7 +11,6 @@ use Scoutapm\Config;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
-use Webmozart\Assert\Assert;
 use const AF_INET;
 use const SOCK_STREAM;
 use function socket_create;
@@ -37,7 +36,7 @@ final class FailedToSendCommandTest extends TestCase
         $this->connectionAddress = ConnectionAddress::fromConfig($config);
 
         $socketResource = socket_create(AF_INET, SOCK_STREAM, 0);
-        Assert::notFalse($socketResource);
+        self::assertNotFalse($socketResource);
         $this->socketResource = $socketResource;
     }
 
