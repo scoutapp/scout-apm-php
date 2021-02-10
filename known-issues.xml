@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="4.4.1@9fd7a7d885b3a216cff8dec9d8c21a132f275224">
+  <file src="tests/Integration/CheckScoutApmKeyListener.php">
+    <DeprecatedInterface occurrences="1">
+      <code>CheckScoutApmKeyListener</code>
+    </DeprecatedInterface>
+    <DeprecatedTrait occurrences="1">
+      <code>TestListenerDefaultImplementation</code>
+    </DeprecatedTrait>
+  </file>
+  <file src="tests/Unit/AgentTest.php">
+    <DeprecatedClass occurrences="30">
+      <code>self::at(0)</code>
+      <code>self::at(0)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(5)</code>
+      <code>self::at(5)</code>
+      <code>self::at(6)</code>
+    </DeprecatedClass>
+    <DeprecatedMethod occurrences="30">
+      <code>self::at(0)</code>
+      <code>self::at(0)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(5)</code>
+      <code>self::at(5)</code>
+      <code>self::at(6)</code>
+    </DeprecatedMethod>
+  </file>
+  <file src="tests/Unit/Helper/TimerTest.php">
+    <DeprecatedMethod occurrences="2">
+      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
+      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStop())</code>
+    </DeprecatedMethod>
+  </file>
+</files>
