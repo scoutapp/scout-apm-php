@@ -9,7 +9,7 @@ unit: ## run unit tests
 	vendor/bin/phpunit
 
 cs: ## verify code style rules
-	php7.1 vendor/bin/phpcs
+	vendor/bin/phpcs
 
 static-analysis: ## verify that no new static analysis issues were introduced
 	vendor/bin/psalm
