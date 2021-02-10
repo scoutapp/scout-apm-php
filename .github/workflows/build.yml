@@ -33,10 +33,10 @@ jobs:
           extensions: ${{ matrix.extensions }}
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
-        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
       - name: "Install highest dependencies"
         if: ${{ matrix.dependencies == 'highest' }}
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHPUnit test suite"
         run: "vendor/bin/phpunit"
       - name: "Check for memory leaks"
@@ -53,7 +53,7 @@ jobs:
           coverage: "none"
           php-version: "7.1"
       - name: "Install dependencies"
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHP_CodeSniffer"
         run: "vendor/bin/phpcs"
 
