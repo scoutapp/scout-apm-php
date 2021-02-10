@@ -5,3 +5,4 @@ composer.phar
 .idea
 .phpcs-cache
 build
+.phpunit.result.cache

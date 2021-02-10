@@ -37,7 +37,7 @@ final class FailedToSendCommandTest extends TestCase
         $this->connectionAddress = ConnectionAddress::fromConfig($config);
 
         $socketResource = socket_create(AF_INET, SOCK_STREAM, 0);
-        Assert::resource($socketResource);
+        Assert::notFalse($socketResource);
         $this->socketResource = $socketResource;
     }
 
