@@ -71,3 +71,20 @@ jobs:
         run: "composer install"
       - name: "Run Psalm"
         run: "vendor/bin/psalm"
+
+  roave-backwards-compatibility-check:
+    name: "Check for Backward Compatibility breaks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "7.4" # https://github.com/Roave/BackwardCompatibilityCheck/issues/283
+      - name: "Require Roave/BackwardCompatibilityCheck"
+        run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Check for BC breaks"
+        run: "vendor/bin/roave-backward-compatibility-check --format=markdown"
