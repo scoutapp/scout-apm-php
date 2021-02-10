@@ -10,6 +10,7 @@ use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+
 use function array_key_exists;
 use function json_decode;
 use function json_encode;
@@ -25,7 +26,7 @@ final class RequestTest extends TestCase
 {
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
-    public function testExceptionThrownWhenSpanLimitReached() : void
+    public function testExceptionThrownWhenSpanLimitReached(): void
     {
         $request = new Request();
 
@@ -38,7 +39,7 @@ final class RequestTest extends TestCase
         $request->startSpan('the straw that broke the camel\'s back');
     }
 
-    public function testCanBeStopped() : void
+    public function testCanBeStopped(): void
     {
         $request = new Request();
 
@@ -49,7 +50,7 @@ final class RequestTest extends TestCase
         self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][3]['FinishRequest']['timestamp']);
     }
 
-    public function testRequestIsStoppedIfRunning() : void
+    public function testRequestIsStoppedIfRunning(): void
     {
         $request = new Request();
 
@@ -60,7 +61,7 @@ final class RequestTest extends TestCase
         self::assertIsString(json_decode(json_encode($request), true)['BatchCommand']['commands'][3]['FinishRequest']['timestamp']);
     }
 
-    public function testRequestFinishTimestampIsNotChangedWhenStopIfRunningIsCalledOnAStoppedRequest() : void
+    public function testRequestFinishTimestampIsNotChangedWhenStopIfRunningIsCalledOnAStoppedRequest(): void
     {
         $request = new Request();
         $request->stop(time() - 100.0);
@@ -71,7 +72,7 @@ final class RequestTest extends TestCase
         self::assertSame($originalStopTime, json_decode(json_encode($request), true)['BatchCommand']['commands'][3]['FinishRequest']['timestamp']);
     }
 
-    public function testMemoryUsageIsTaggedWhenRequestStopped() : void
+    public function testMemoryUsageIsTaggedWhenRequestStopped(): void
     {
         $request = new Request();
 
@@ -86,7 +87,7 @@ final class RequestTest extends TestCase
         self::assertGreaterThan(0, $tagRequest['value']);
     }
 
-    public function testRequestUriFromServerGlobalIsTaggedWhenRequestStopped() : void
+    public function testRequestUriFromServerGlobalIsTaggedWhenRequestStopped(): void
     {
         $_SERVER['REQUEST_URI'] = '/request-uri-from-server';
 
@@ -99,7 +100,7 @@ final class RequestTest extends TestCase
         self::assertSame('/request-uri-from-server', $tagRequest['value']);
     }
 
-    public function testOrigPathInfoFromServerGlobalIsTaggedWhenRequestStopped() : void
+    public function testOrigPathInfoFromServerGlobalIsTaggedWhenRequestStopped(): void
     {
         $_SERVER['REQUEST_URI']    = null;
         $_SERVER['ORIG_PATH_INFO'] = '/orig-path-info-from-server';
@@ -113,7 +114,7 @@ final class RequestTest extends TestCase
         self::assertSame('/orig-path-info-from-server', $tagRequest['value']);
     }
 
-    public function testRequestUriFromOverrideIsTaggedWhenRequestStopped() : void
+    public function testRequestUriFromOverrideIsTaggedWhenRequestStopped(): void
     {
         $_SERVER['REQUEST_URI'] = '/request-uri-from-server';
 
@@ -127,7 +128,7 @@ final class RequestTest extends TestCase
         self::assertSame('/overridden-request-uri', $tagRequest['value']);
     }
 
-    public function testJsonSerializes() : void
+    public function testJsonSerializes(): void
     {
         // Make a request with some interesting content.
         $request = new Request();
@@ -157,7 +158,7 @@ final class RequestTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testSpansCanBeCounted() : void
+    public function testSpansCanBeCounted(): void
     {
         $request = new Request();
         $request->tag('t', 'v');
@@ -171,7 +172,7 @@ final class RequestTest extends TestCase
     }
 
     /** @return string[][] */
-    public function queueTimeRequestHeadersProvider() : array
+    public function queueTimeRequestHeadersProvider(): array
     {
         return [
             'requestStartMilliseconds' => [
@@ -210,7 +211,7 @@ final class RequestTest extends TestCase
      *
      * @dataProvider queueTimeRequestHeadersProvider
      */
-    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue) : void
+    public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue): void
     {
         // 2 = 2ms after epoch
         $_SERVER[$headerName] = $headerValue;

@@ -17,13 +17,15 @@ use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
-use const PHP_VERSION;
+
 use function gethostname;
 use function json_decode;
 use function json_encode;
 use function putenv;
 use function sprintf;
 use function uniqid;
+
+use const PHP_VERSION;
 
 /**
  * @covers \Scoutapm\Events\Metadata
@@ -38,7 +40,7 @@ final class MetadataTest extends TestCase
     /** @var DateTimeImmutable */
     private $time;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -53,7 +55,7 @@ final class MetadataTest extends TestCase
      *
      * @psalm-return VersionList
      */
-    private function installedVersions(string $withScoutExtensionVersion) : array
+    private function installedVersions(string $withScoutExtensionVersion): array
     {
         $composerPlatformVersions = [];
 
@@ -75,7 +77,7 @@ final class MetadataTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testMetadataFromConfigurationSerializesToJson() : void
+    public function testMetadataFromConfigurationSerializesToJson(): void
     {
         $this->phpExtension->expects(self::once())
             ->method('version')
@@ -123,7 +125,7 @@ final class MetadataTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testAutoDetectedMetadataSerializesToJson() : void
+    public function testAutoDetectedMetadataSerializesToJson(): void
     {
         $this->phpExtension->expects(self::once())
             ->method('version')
@@ -165,7 +167,7 @@ final class MetadataTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testHerokuSlugCommitOverridesTheGitSha() : void
+    public function testHerokuSlugCommitOverridesTheGitSha(): void
     {
         $testHerokuSlugCommit = uniqid('testHerokuSlugCommit', true);
 

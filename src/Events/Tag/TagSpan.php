@@ -8,6 +8,7 @@ use DateTime;
 use DateTimeZone;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanId;
+
 use function sprintf;
 
 /**
@@ -44,7 +45,7 @@ class TagSpan extends Tag
      *      }
      * >
      */
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         // Format the timestamp
         $timestamp = DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));

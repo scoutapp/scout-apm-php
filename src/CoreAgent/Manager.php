@@ -6,5 +6,5 @@ namespace Scoutapm\CoreAgent;
 
 interface Manager
 {
-    public function launch() : bool;
+    public function launch(): bool;
 }

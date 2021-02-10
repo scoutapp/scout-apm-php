@@ -18,7 +18,7 @@ final class SpanReferenceTest extends TestCase
     /** @var SpanReference */
     private $spanReference;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -30,9 +30,9 @@ final class SpanReferenceTest extends TestCase
     /**
      * @return string[][]|string[][][]|null[][]|float[][]
      *
-     * @psalm-return array<string,array{methodName: string, params: list<string>, expectedReturn: null|string|float}>
+     * @psalm-return array<string, array{methodName: string, params: list<string>, expectedReturn: (string|float|null)}>
      */
-    public function proxiedMethodsProvider() : array
+    public function proxiedMethodsProvider(): array
     {
         return [
             'updateName' => [
@@ -89,7 +89,7 @@ final class SpanReferenceTest extends TestCase
      *
      * @dataProvider proxiedMethodsProvider
      */
-    public function testMethodsAreProxiedToMockSpan(string $methodName, array $params, $expectedReturn) : void
+    public function testMethodsAreProxiedToMockSpan(string $methodName, array $params, $expectedReturn): void
     {
         $mock = $this->mockSpan->expects(self::once())
             ->method($methodName)

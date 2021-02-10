@@ -13,8 +13,7 @@ namespace Scoutapm\Config\Source;
 /** @internal */
 final class NullSource implements ConfigSource
 {
-    /** @inheritDoc */
-    public function hasKey(string $key) : bool
+    public function hasKey(string $key): bool
     {
         return true;
     }

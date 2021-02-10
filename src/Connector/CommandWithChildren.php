@@ -6,5 +6,5 @@ namespace Scoutapm\Connector;
 
 interface CommandWithChildren extends Command
 {
-    public function appendChild(Command $command) : void;
+    public function appendChild(Command $command): void;
 }

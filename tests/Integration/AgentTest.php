@@ -14,6 +14,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+
 use function assert;
 use function file_get_contents;
 use function fopen;
@@ -43,7 +44,7 @@ final class AgentTest extends TestCase
     /** @var string */
     private $scoutApmKey;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -59,14 +60,14 @@ final class AgentTest extends TestCase
         $this->scoutApmKey = $scoutApmKey;
     }
 
-    public function tearDown() : void
+    public function tearDown(): void
     {
         parent::tearDown();
 
         $this->cleanUpTestAssets();
     }
 
-    private function cleanUpTestAssets() : void
+    private function cleanUpTestAssets(): void
     {
         /** @psalm-suppress ForbiddenCode */
         shell_exec('killall -q core-agent || true');
@@ -74,7 +75,7 @@ final class AgentTest extends TestCase
         shell_exec('rm -Rf /tmp/scout_apm_core');
     }
 
-    private function setUpWithConfiguration(Config $config) : void
+    private function setUpWithConfiguration(Config $config): void
     {
         $config->set(ConfigKey::APPLICATION_KEY, $this->scoutApmKey);
 
@@ -92,7 +93,7 @@ final class AgentTest extends TestCase
         (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
     }
 
-    private function formatCapturedLogMessages() : string
+    private function formatCapturedLogMessages(): string
     {
         $return = "Log messages:\n";
 
@@ -104,7 +105,7 @@ final class AgentTest extends TestCase
     }
 
     /** @runInSeparateProcess */
-    public function testForMemoryLeaksWhenHandlingJobQueues() : void
+    public function testForMemoryLeaksWhenHandlingJobQueues(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([
             ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
@@ -159,7 +160,7 @@ final class AgentTest extends TestCase
      *
      * @psalm-return array<string,list<Config>>
      */
-    public function endToEndConfigurationProvider() : array
+    public function endToEndConfigurationProvider(): array
     {
         return [
             'defaultBasicConfiguration' => [
@@ -184,26 +185,26 @@ final class AgentTest extends TestCase
      * @runInSeparateProcess
      * @dataProvider endToEndConfigurationProvider
      */
-    public function testLoggingIsSentUsingConfiguration(Config $config) : void
+    public function testLoggingIsSentUsingConfiguration(Config $config): void
     {
         $this->setUpWithConfiguration($config);
 
-        $this->agent->webTransaction('Yay', function () : void {
+        $this->agent->webTransaction('Yay', function (): void {
             file_get_contents(__FILE__);
-            $this->agent->instrument('Test', 'foo', function () : void {
+            $this->agent->instrument('Test', 'foo', function (): void {
                 file_get_contents(__FILE__);
                 sleep(1);
-                $this->agent->instrument('Test', 'bar', static function () : void {
+                $this->agent->instrument('Test', 'bar', static function (): void {
                     file_get_contents(__FILE__);
                     sleep(1);
                 });
             });
             file_get_contents(__FILE__);
             $this->agent->tagRequest('testtag', '1.23');
-            $this->agent->instrument('DB', 'test', static function () : void {
+            $this->agent->instrument('DB', 'test', static function (): void {
             });
         });
-        $this->agent->instrument('Test', 'qux', static function () : void {
+        $this->agent->instrument('Test', 'qux', static function (): void {
         });
 
         self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
@@ -226,7 +227,7 @@ final class AgentTest extends TestCase
             [
                 'event_type' => 'scout.metadata',
                 'source' => 'php',
-                'event_value' => static function (array $data) : bool {
+                'event_value' => static function (array $data): bool {
                     self::assertSame('php', $data['language']);
                     self::assertSame(gethostname(), $data['hostname']);
 
@@ -241,7 +242,7 @@ final class AgentTest extends TestCase
         TestHelper::assertUnserializedCommandContainsPayload(
             'BatchCommand',
             [
-                'commands' => static function (array $commands) : bool {
+                'commands' => static function (array $commands): bool {
                     $requestId = TestHelper::assertUnserializedCommandContainsPayload(
                         'StartRequest',
                         [

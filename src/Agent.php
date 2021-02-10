@@ -35,6 +35,7 @@ use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
+
 use function count;
 use function in_array;
 use function is_array;
@@ -105,7 +106,7 @@ final class Agent implements ScoutApmAgent
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
-    private function warnIfConfigValueIsNotSet(string $configKey) : void
+    private function warnIfConfigValueIsNotSet(string $configKey): void
     {
         $configValue = $this->config->get($configKey);
 
@@ -116,7 +117,7 @@ final class Agent implements ScoutApmAgent
         $this->logger->warning(sprintf('Config key "%s" should be set, but it was empty', $configKey));
     }
 
-    private static function createConnectorFromConfig(Config $config) : SocketConnector
+    private static function createConnectorFromConfig(Config $config): SocketConnector
     {
         return new SocketConnector(
             ConnectionAddress::fromConfig($config),
@@ -131,7 +132,7 @@ final class Agent implements ScoutApmAgent
         ?Connector $connector = null,
         ?ExtentionCapabilities $extentionCapabilities = null,
         ?LocateFileOrFolder $locateFileOrFolder = null
-    ) : self {
+    ): self {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
@@ -142,14 +143,14 @@ final class Agent implements ScoutApmAgent
         );
     }
 
-    private function extensionVersion() : string
+    private function extensionVersion(): string
     {
         $extensionVersion = $this->phpExtension->version();
 
         return $extensionVersion === null ? 'n/a' : $extensionVersion->toString();
     }
 
-    private function checkExtensionVersion() : void
+    private function checkExtensionVersion(): void
     {
         $extensionVersion = $this->phpExtension->version();
 
@@ -170,7 +171,7 @@ final class Agent implements ScoutApmAgent
         ));
     }
 
-    public function connect() : void
+    public function connect(): void
     {
         $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
 
@@ -234,7 +235,7 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function enabled() : bool
+    public function enabled(): bool
     {
         return $this->config->get(ConfigKey::MONITORING_ENABLED);
     }
@@ -270,12 +271,12 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?SpanReference
+    public function startSpan(string $operation, ?float $overrideTimestamp = null): ?SpanReference
     {
         $this->addSpansFromExtension();
 
         $returnValue = $this->onlyRunIfBelowSpanLimit(
-            function () use ($operation, $overrideTimestamp) : ?Span {
+            function () use ($operation, $overrideTimestamp): ?Span {
                 if ($this->request === null) {
                     return null;
                 }
@@ -291,7 +292,7 @@ final class Agent implements ScoutApmAgent
         return SpanReference::fromSpan($returnValue);
     }
 
-    public function stopSpan() : void
+    public function stopSpan(): void
     {
         if ($this->request === null) {
             return;
@@ -302,10 +303,10 @@ final class Agent implements ScoutApmAgent
         $this->request->stopSpan();
     }
 
-    private function addSpansFromExtension() : void
+    private function addSpansFromExtension(): void
     {
         $this->onlyRunIfBelowSpanLimit(
-            function () : ?Span {
+            function (): ?Span {
                 if ($this->request === null) {
                     return null;
                 }
@@ -353,12 +354,12 @@ final class Agent implements ScoutApmAgent
         return $this->instrument(SpanReference::INSTRUMENT_JOB, $name, $block);
     }
 
-    public function addContext(string $tag, string $value) : void
+    public function addContext(string $tag, string $value): void
     {
         $this->tagRequest($tag, $value);
     }
 
-    public function tagRequest(string $tag, string $value) : void
+    public function tagRequest(string $tag, string $value): void
     {
         if ($this->request === null) {
             return;
@@ -368,20 +369,20 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function ignored(string $path) : bool
+    public function ignored(string $path): bool
     {
         return $this->ignoredEndpoints->ignored($path);
     }
 
     /** {@inheritDoc} */
-    public function ignore() : void
+    public function ignore(): void
     {
         $this->request   = null;
         $this->isIgnored = true;
     }
 
     /** {@inheritDoc} */
-    public function shouldInstrument(string $functionality) : bool
+    public function shouldInstrument(string $functionality): bool
     {
         $disabledInstruments = $this->config->get(ConfigKey::DISABLED_INSTRUMENTS);
 
@@ -391,16 +392,17 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function changeRequestUri(string $newRequestUri) : void
+    public function changeRequestUri(string $newRequestUri): void
     {
         if ($this->request === null) {
             return;
         }
+
         $this->request->overrideRequestUri($newRequestUri);
     }
 
     /** {@inheritDoc} */
-    public function send() : bool
+    public function send(): bool
     {
         // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
@@ -472,7 +474,7 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function startNewRequest() : void
+    public function startNewRequest(): void
     {
         if ($this->request !== null) {
             $this->request->cleanUp();
@@ -481,7 +483,7 @@ final class Agent implements ScoutApmAgent
         $this->request = new Request();
     }
 
-    private function registerIfRequired() : void
+    private function registerIfRequired(): void
     {
         if ($this->registered) {
             return;
@@ -499,7 +501,7 @@ final class Agent implements ScoutApmAgent
     /**
      * @throws Exception
      */
-    private function sendMetadataIfRequired() : void
+    private function sendMetadataIfRequired(): void
     {
         if ($this->metadataWasSent()) {
             $this->logger->debug('Skipping metadata send, already sent');
@@ -524,12 +526,12 @@ final class Agent implements ScoutApmAgent
         }
     }
 
-    private function metadataWasSent() : bool
+    private function metadataWasSent(): bool
     {
         return (bool) $this->cache->get(self::CACHE_KEY_METADATA_SENT, false);
     }
 
-    private function markMetadataSent() : void
+    private function markMetadataSent(): void
     {
         if ($this->metadataWasSent()) {
             return;
@@ -544,7 +546,7 @@ final class Agent implements ScoutApmAgent
      * @internal
      * @deprecated
      */
-    public function getRequest() : ?Request
+    public function getRequest(): ?Request
     {
         return $this->request;
     }

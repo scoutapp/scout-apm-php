@@ -21,7 +21,7 @@ class LibcDetection
     }
 
     /** @internal */
-    public function detect() : string
+    public function detect(): string
     {
         if (file_exists($this->etcAlpineReleasePath)) {
             return 'musl';

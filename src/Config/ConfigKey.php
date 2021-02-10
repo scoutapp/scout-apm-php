@@ -41,7 +41,7 @@ abstract class ConfigKey
     private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
 
     /** @return string[] */
-    public static function allConfigurationKeys() : array
+    public static function allConfigurationKeys(): array
     {
         return [
             self::MONITORING_ENABLED,
@@ -79,7 +79,7 @@ abstract class ConfigKey
      * @psalm-param array<string, mixed> $configArray
      * @psalm-return array<string, mixed>
      */
-    public static function filterSecretsFromConfigArray(array $configArray) : array
+    public static function filterSecretsFromConfigArray(array $configArray): array
     {
         return array_combine(
             array_keys($configArray),

@@ -6,6 +6,7 @@ namespace Scoutapm\Extension;
 
 use RuntimeException;
 use Webmozart\Assert\Assert;
+
 use function preg_match;
 use function sprintf;
 
@@ -41,7 +42,7 @@ final class Version
         $this->patch = $patch;
     }
 
-    public static function fromString(string $versionString) : self
+    public static function fromString(string $versionString): self
     {
         if (! preg_match(self::REGEX, $versionString, $parts)) {
             throw new RuntimeException(sprintf('Unable to parse version %s', $versionString));
@@ -50,7 +51,7 @@ final class Version
         return new self((int) $parts['major'], (int) $parts['minor'], (int) $parts['patch']);
     }
 
-    public function isOlderThan(self $otherVersion) : bool
+    public function isOlderThan(self $otherVersion): bool
     {
         if ($this->major > $otherVersion->major) {
             return false;
@@ -69,7 +70,7 @@ final class Version
             || $otherVersion->patch > $this->patch;
     }
 
-    public function toString() : string
+    public function toString(): string
     {
         return sprintf('%d.%d.%d', $this->major, $this->minor, $this->patch);
     }

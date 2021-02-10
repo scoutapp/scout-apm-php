@@ -7,12 +7,13 @@ namespace Scoutapm\UnitTests;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+
 use function putenv;
 
 /** @covers \Scoutapm\Config*/
 final class ConfigTest extends TestCase
 {
-    public function testGetFallsBackToDefaults() : void
+    public function testGetFallsBackToDefaults(): void
     {
         $config = new Config();
 
@@ -20,7 +21,7 @@ final class ConfigTest extends TestCase
         self::assertSame('1.0', $config->get(ConfigKey::API_VERSION));
     }
 
-    public function testUserSettingsOverridesDefaults() : void
+    public function testUserSettingsOverridesDefaults(): void
     {
         $config = new Config();
         $config->set(ConfigKey::API_VERSION, 'viauserconf');
@@ -28,7 +29,7 @@ final class ConfigTest extends TestCase
         self::assertSame('viauserconf', $config->get(ConfigKey::API_VERSION));
     }
 
-    public function testEnvOverridesAll() : void
+    public function testEnvOverridesAll(): void
     {
         $config = new Config();
 
@@ -43,7 +44,7 @@ final class ConfigTest extends TestCase
         putenv('SCOUT_API_VERSION');
     }
 
-    public function testBooleanCoercionOfMonitor() : void
+    public function testBooleanCoercionOfMonitor(): void
     {
         $config = new Config();
 
@@ -52,7 +53,7 @@ final class ConfigTest extends TestCase
         self::assertTrue($config->get(ConfigKey::MONITORING_ENABLED));
     }
 
-    public function testJSONCoercionOfIgnore() : void
+    public function testJSONCoercionOfIgnore(): void
     {
         $config = new Config();
 
@@ -61,12 +62,12 @@ final class ConfigTest extends TestCase
         self::assertSame(['/foo', '/bar'], $config->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
-    public function testIgnoreDefaultsToEmptyArray() : void
+    public function testIgnoreDefaultsToEmptyArray(): void
     {
         self::assertSame([], (new Config())->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
-    public function testAsArray() : void
+    public function testAsArray(): void
     {
         $configArray = Config::fromArray([
             ConfigKey::APPLICATION_NAME => 'My App',

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
-use const DEBUG_BACKTRACE_IGNORE_ARGS;
 use function array_filter;
 use function array_key_exists;
 use function array_slice;
@@ -14,6 +13,8 @@ use function file_get_contents;
 use function is_array;
 use function json_decode;
 use function strpos;
+
+use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
 /**
  * @internal
@@ -32,7 +33,7 @@ final class Backtrace
      *
      * @psalm-return list<ScoutStackFrame>
      */
-    public static function capture() : array
+    public static function capture(): array
     {
         $capturedStack = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 1);
 
@@ -59,7 +60,7 @@ final class Backtrace
      *
      * @psalm-return list<ScoutStackFrame>
      */
-    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = 3) : array
+    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = 3): array
     {
         return self::filterVendorFramesFromStack(self::capture(), $skipPathLevelsWhenLocatingComposerJson);
     }
@@ -72,7 +73,7 @@ final class Backtrace
      * @psalm-param PhpStackFrame $frame
      * @psalm-return ScoutStackFrame
      */
-    private static function reformatStackFrame(array $frame) : array
+    private static function reformatStackFrame(array $frame): array
     {
         return [
             'file' => $frame['file'],
@@ -86,7 +87,7 @@ final class Backtrace
      *
      * @psalm-param PhpStackFrame $frame
      */
-    private static function formatFunctionNameFromFrame(array $frame) : string
+    private static function formatFunctionNameFromFrame(array $frame): string
     {
         if (! array_key_exists('class', $frame) || ! array_key_exists('type', $frame)) {
             return $frame['function'];
@@ -100,7 +101,7 @@ final class Backtrace
      *
      * @psalm-param ScoutStackFrame $frame
      */
-    private static function isScoutRelated(array $frame) : bool
+    private static function isScoutRelated(array $frame): bool
     {
         /** @noinspection StrStartsWithCanBeUsedInspection */
         return strpos($frame['function'], 'Scoutapm') === 0;
@@ -114,13 +115,13 @@ final class Backtrace
      * @psalm-param list<ScoutStackFrame> $formattedStack
      * @psalm-return list<ScoutStackFrame>
      */
-    private static function filterScoutRelatedFramesFromTopOfStack(array $formattedStack) : array
+    private static function filterScoutRelatedFramesFromTopOfStack(array $formattedStack): array
     {
         $stillInsideScout = true;
 
         return array_values(array_filter(
             $formattedStack,
-            static function (array $frame) use (&$stillInsideScout) : bool {
+            static function (array $frame) use (&$stillInsideScout): bool {
                 if (! $stillInsideScout) {
                     return true;
                 }
@@ -144,7 +145,7 @@ final class Backtrace
      * @psalm-param list<ScoutStackFrame> $formattedStack
      * @psalm-return list<ScoutStackFrame>
      */
-    private static function filterVendorFramesFromStack(array $formattedStack, int $skipPathLevelsWhenLocatingComposerJson) : array
+    private static function filterVendorFramesFromStack(array $formattedStack, int $skipPathLevelsWhenLocatingComposerJson): array
     {
         $pathWhereComposerLives = (new LocateFileOrFolder())->__invoke('composer.json', $skipPathLevelsWhenLocatingComposerJson);
 
@@ -155,7 +156,8 @@ final class Backtrace
 
         // The `vendor-dir` configuration is explicitly NOT supported, typical setups will be fine
         $composerContent = json_decode(file_get_contents($pathWhereComposerLives . '/composer.json'), true);
-        if (is_array($composerContent)
+        if (
+            is_array($composerContent)
             && array_key_exists('config', $composerContent)
             && array_key_exists('vendor-dir', $composerContent['config'])
         ) {
@@ -166,7 +168,7 @@ final class Backtrace
 
         return array_values(array_filter(
             $formattedStack,
-            static function (array $frame) use ($vendorPath) : bool {
+            static function (array $frame) use ($vendorPath): bool {
                 /** @noinspection StrStartsWithCanBeUsedInspection */
                 return strpos($frame['file'], $vendorPath) !== 0;
             }

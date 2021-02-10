@@ -18,7 +18,7 @@ final class IgnoredEndpoints
         $this->ignoredPaths = $ignoredPaths;
     }
 
-    public function ignored(string $url) : bool
+    public function ignored(string $url): bool
     {
         foreach ($this->ignoredPaths as $ignore) {
             if (strpos($url, $ignore) === 0) {

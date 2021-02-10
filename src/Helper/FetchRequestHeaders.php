@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
-use const ARRAY_FILTER_USE_BOTH;
 use function array_combine;
 use function array_filter;
 use function array_keys;
@@ -16,10 +15,12 @@ use function strtolower;
 use function substr;
 use function ucwords;
 
+use const ARRAY_FILTER_USE_BOTH;
+
 abstract class FetchRequestHeaders
 {
     /** @return array<string, string> */
-    public static function fromServerGlobal() : array
+    public static function fromServerGlobal(): array
     {
         return self::fromArray($_SERVER);
     }
@@ -29,13 +30,13 @@ abstract class FetchRequestHeaders
      *
      * @return array<string, string>
      */
-    private static function fromArray(array $server) : array
+    private static function fromArray(array $server): array
     {
         $qualifyingServerKeys = self::onlyQualifyingServerItems($server);
 
         return array_combine(
             array_map(
-                static function (string $key) : string {
+                static function (string $key): string {
                     return ucwords(str_replace('_', '-', strtolower(substr($key, 5))), '-');
                 },
                 array_keys($qualifyingServerKeys)
@@ -51,7 +52,7 @@ abstract class FetchRequestHeaders
      *
      * @psalm-suppress InvalidReturnType
      */
-    private static function onlyQualifyingServerItems(array $server) : array
+    private static function onlyQualifyingServerItems(array $server): array
     {
         /** @psalm-suppress InvalidReturnStatement */
         return array_filter(
@@ -60,7 +61,7 @@ abstract class FetchRequestHeaders
              * @param mixed $value
              * @param mixed $key
              */
-            static function ($value, $key) : bool {
+            static function ($value, $key): bool {
                 return is_string($key)
                     && $value !== ''
                     && strpos($key, 'HTTP_') === 0;

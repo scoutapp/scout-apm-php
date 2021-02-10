@@ -14,6 +14,7 @@ use Scoutapm\Events\Span\SpanId;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\RecursivelyCountSpans;
+
 use function uniqid;
 
 /** @covers \Scoutapm\Helper\RecursivelyCountSpans */
@@ -26,7 +27,7 @@ final class RecursivelyCountSpansTest extends TestCase
      *
      * @psalm-return array<int, array{commands: array<int, Command>, expectedSpans: int}>
      */
-    public function commandAndExpectedSpansCountProvider() : array
+    public function commandAndExpectedSpansCountProvider(): array
     {
         $spanWithChildren = new Span(new Request(), uniqid('span', true), RequestId::new());
         $spanWithChildren->appendChild(new Span(new Request(), uniqid('span', true), RequestId::new()));
@@ -70,7 +71,7 @@ final class RecursivelyCountSpansTest extends TestCase
      *
      * @dataProvider commandAndExpectedSpansCountProvider
      */
-    public function testForCommands(array $commands, int $expectedSpans) : void
+    public function testForCommands(array $commands, int $expectedSpans): void
     {
         self::assertSame($expectedSpans, RecursivelyCountSpans::forCommands($commands));
     }

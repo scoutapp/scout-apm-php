@@ -45,7 +45,7 @@ final class RecordedCall
      *
      * @psalm-param array{function:string, entered:float, exited: float, time_taken: float, argv: mixed[]} $extensionCall
      */
-    public static function fromExtensionLoggedCallArray(array $extensionCall) : self
+    public static function fromExtensionLoggedCallArray(array $extensionCall): self
     {
         Assert::keyExists($extensionCall, 'function');
         Assert::keyExists($extensionCall, 'entered');
@@ -62,22 +62,22 @@ final class RecordedCall
         );
     }
 
-    public function functionName() : string
+    public function functionName(): string
     {
         return $this->function;
     }
 
-    public function timeTakenInSeconds() : float
+    public function timeTakenInSeconds(): float
     {
         return $this->timeTakenInSeconds;
     }
 
-    public function timeEntered() : float
+    public function timeEntered(): float
     {
         return $this->timeEntered;
     }
 
-    public function timeExited() : float
+    public function timeExited(): float
     {
         return $this->timeExited;
     }
@@ -89,7 +89,7 @@ final class RecordedCall
      *
      * @return mixed[]
      */
-    public function filteredArguments() : array
+    public function filteredArguments(): array
     {
         if ($this->function === 'file_get_contents') {
             return [

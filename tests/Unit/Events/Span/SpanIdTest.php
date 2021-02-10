@@ -13,7 +13,7 @@ use Scoutapm\Events\Span\SpanId;
 final class SpanIdTest extends TestCase
 {
     /** @throws Exception */
-    public function testSpanIdCanBeGeneratedAndConvertedToString() : void
+    public function testSpanIdCanBeGeneratedAndConvertedToString(): void
     {
         self::assertTrue(Uuid::isValid(SpanId::new()->toString()));
     }

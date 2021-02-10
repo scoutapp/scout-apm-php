@@ -13,7 +13,7 @@ use Scoutapm\CoreAgent\Launcher;
 /** @covers \Scoutapm\CoreAgent\Launcher */
 final class LauncherTest extends TestCase
 {
-    private function connectionAddressFromString(string $connectionAddress) : ConnectionAddress
+    private function connectionAddressFromString(string $connectionAddress): ConnectionAddress
     {
         $config = new Config();
         $config->set(Config\ConfigKey::CORE_AGENT_SOCKET_PATH, $connectionAddress);
@@ -21,7 +21,7 @@ final class LauncherTest extends TestCase
         return ConnectionAddress::fromConfig($config);
     }
 
-    public function testLaunchingCoreAgentWithInvalidGlibcIsCaught() : void
+    public function testLaunchingCoreAgentWithInvalidGlibcIsCaught(): void
     {
         $logger = new TestLogger();
 
@@ -37,7 +37,7 @@ final class LauncherTest extends TestCase
         $logger->hasDebugThatContains('core-agent currently needs at least glibc 2.18');
     }
 
-    public function testLaunchCoreAgentWithNonZeroExitCodeIsCaught() : void
+    public function testLaunchCoreAgentWithNonZeroExitCodeIsCaught(): void
     {
         $logger = new TestLogger();
 
@@ -53,7 +53,7 @@ final class LauncherTest extends TestCase
         $logger->hasDebugThatContains('core-agent exited with non-zero status. Output: Something bad went wrong');
     }
 
-    public function testCoreAgentCanBeLaunched() : void
+    public function testCoreAgentCanBeLaunched(): void
     {
         $logger = new TestLogger();
 

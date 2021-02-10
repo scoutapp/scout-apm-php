@@ -7,6 +7,7 @@ namespace Scoutapm\Helper;
 use DateTimeImmutable;
 use DateTimeZone;
 use Webmozart\Assert\Assert;
+
 use function microtime;
 use function sprintf;
 
@@ -33,17 +34,17 @@ final class Timer
         $this->start($override);
     }
 
-    public function start(?float $override = null) : void
+    public function start(?float $override = null): void
     {
         $this->start = $override ?? microtime(true);
     }
 
-    public function stop(?float $override = null) : void
+    public function stop(?float $override = null): void
     {
         $this->stop = $override ?? microtime(true);
     }
 
-    public static function utcDateTimeFromFloatTimestamp(float $timestamp) : DateTimeImmutable
+    public static function utcDateTimeFromFloatTimestamp(float $timestamp): DateTimeImmutable
     {
         $dateTime = DateTimeImmutable::createFromFormat(
             self::MICROTIME_FLOAT_FORMAT,
@@ -59,7 +60,7 @@ final class Timer
     /**
      * Formats the stop time as a timestamp suitable for sending to CoreAgent
      */
-    public function getStop() : ?string
+    public function getStop(): ?string
     {
         if ($this->stop === null) {
             return null;
@@ -72,13 +73,13 @@ final class Timer
     /**
      * Formats the stop time as a timestamp suitable for sending to CoreAgent
      */
-    public function getStart() : ?string
+    public function getStart(): ?string
     {
         return self::utcDateTimeFromFloatTimestamp($this->start)
             ->format(self::FORMAT_FOR_CORE_AGENT);
     }
 
-    public function getStartAsMicrotime() : float
+    public function getStartAsMicrotime(): float
     {
         return $this->start;
     }
@@ -86,7 +87,7 @@ final class Timer
     /**
      * Returns the duration in microseconds. If the timer has not yet been stopped yet, `null` is returned.
      */
-    public function duration() : ?float
+    public function duration(): ?float
     {
         if ($this->stop === null) {
             return null;

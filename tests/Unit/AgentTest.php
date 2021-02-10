@@ -33,6 +33,7 @@ use Scoutapm\Extension\RecordedCall;
 use Scoutapm\Extension\Version;
 use Scoutapm\IntegrationTests\TestHelper;
 use Scoutapm\ScoutApmAgent;
+
 use function array_map;
 use function assert;
 use function end;
@@ -56,7 +57,7 @@ final class AgentTest extends TestCase
     /** @var ExtentionCapabilities&MockObject */
     private $phpExtension;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -65,14 +66,14 @@ final class AgentTest extends TestCase
         $this->phpExtension = $this->createMock(ExtentionCapabilities::class);
     }
 
-    private function requestFromAgent(ScoutApmAgent $agent) : ?Request
+    private function requestFromAgent(ScoutApmAgent $agent): ?Request
     {
         /** @psalm-suppress DeprecatedMethod */
         return $agent->getRequest();
     }
 
     /** @return array<int, Command> */
-    private function eventsFromAgent(ScoutApmAgent $agent) : array
+    private function eventsFromAgent(ScoutApmAgent $agent): array
     {
         $request = $this->requestFromAgent($agent);
         assert($request !== null);
@@ -82,7 +83,7 @@ final class AgentTest extends TestCase
     }
 
     /** @param mixed[]|array<string, mixed> $config */
-    private function agentFromConfigArray(array $config = []) : ScoutApmAgent
+    private function agentFromConfigArray(array $config = []): ScoutApmAgent
     {
         return Agent::fromConfig(
             Config::fromArray($config),
@@ -98,7 +99,7 @@ final class AgentTest extends TestCase
      *
      * @psalm-return array<string, array{config: array<string, mixed>, missingKeys: array<int, string>}>
      */
-    public function invalidConfigurationProvider() : array
+    public function invalidConfigurationProvider(): array
     {
         return [
             'withoutName' => [
@@ -135,12 +136,12 @@ final class AgentTest extends TestCase
      *
      * @dataProvider invalidConfigurationProvider
      */
-    public function testCreatingAgentWithoutRequiredConfigKeysLogsWarning(array $config, array $missingKeys) : void
+    public function testCreatingAgentWithoutRequiredConfigKeysLogsWarning(array $config, array $missingKeys): void
     {
         $this->agentFromConfigArray($config);
 
         array_map(
-            function (string $missingKey) : void {
+            function (string $missingKey): void {
                 self::assertTrue($this->logger->hasWarningThatContains(sprintf(
                     'Config key "%s" should be set, but it was empty',
                     $missingKey
@@ -150,7 +151,7 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages() : void
+    public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My Application',
@@ -164,7 +165,7 @@ final class AgentTest extends TestCase
         self::assertFalse($this->logger->hasDebugRecords());
     }
 
-    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration() : void
+    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My Application',
@@ -179,7 +180,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testFullAgentSequence() : void
+    public function testFullAgentSequence(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -213,11 +214,11 @@ final class AgentTest extends TestCase
             ->willReturn('{"Metadata":"Success"}');
         $this->connector->expects(self::at(3))
             ->method('sendCommand')
-            ->with(self::callback(static function (Request $request) : bool {
+            ->with(self::callback(static function (Request $request): bool {
                 TestHelper::assertUnserializedCommandContainsPayload(
                     'BatchCommand',
                     [
-                        'commands' => static function (array $commands) : bool {
+                        'commands' => static function (array $commands): bool {
                             TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
@@ -269,7 +270,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent'));
     }
 
-    public function testInstrumentNamesSpanAndReturnsValueFromClosureAndStopsSpan() : void
+    public function testInstrumentNamesSpanAndReturnsValueFromClosureAndStopsSpan(): void
     {
         $agent = $this->agentFromConfigArray();
 
@@ -292,7 +293,7 @@ final class AgentTest extends TestCase
         self::assertInstanceOf(Span::class, $foundSpan);
         self::assertNotNull($foundSpan->getStopTime());
 
-        $firstTag = static function (Span $span) : Tag {
+        $firstTag = static function (Span $span): Tag {
             /** @psalm-suppress DeprecatedMethod */
             $tags = $span->getTags();
 
@@ -303,7 +304,7 @@ final class AgentTest extends TestCase
         self::assertSame($tag->getValue(), 'Thingy');
     }
 
-    public function testWebTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
+    public function testWebTransactionNamesSpanCorrectlyAndReturnsValueFromClosure(): void
     {
         self::assertSame(
             $this->agentFromConfigArray()->webTransaction('Test', static function (?SpanReference $span) {
@@ -318,7 +319,7 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testBackgroundTransactionNamesSpanCorrectlyAndReturnsValueFromClosure() : void
+    public function testBackgroundTransactionNamesSpanCorrectlyAndReturnsValueFromClosure(): void
     {
         self::assertSame(
             $this->agentFromConfigArray()->backgroundTransaction('Test', static function (?SpanReference $span) {
@@ -333,14 +334,14 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testStartSpan() : void
+    public function testStartSpan(): void
     {
         $span = $this->agentFromConfigArray()->startSpan('foo/bar');
         self::assertNotNull($span);
         self::assertSame('foo/bar', $span->getName());
     }
 
-    public function testStopSpan() : void
+    public function testStopSpan(): void
     {
         $agent = $this->agentFromConfigArray();
         $span  = $agent->startSpan('foo/bar');
@@ -352,7 +353,7 @@ final class AgentTest extends TestCase
         self::assertNotNull($span->getStopTime());
     }
 
-    public function testTagRequest() : void
+    public function testTagRequest(): void
     {
         $agent = $this->agentFromConfigArray();
         $agent->tagRequest('foo', 'bar');
@@ -366,7 +367,7 @@ final class AgentTest extends TestCase
         self::assertSame('bar', $tag->getValue());
     }
 
-    public function testEnabled() : void
+    public function testEnabled(): void
     {
         // without affirmatively enabling, it's not enabled.
         $agentWithoutEnabling = $this->agentFromConfigArray();
@@ -377,7 +378,7 @@ final class AgentTest extends TestCase
         self::assertTrue($enabledAgent->enabled());
     }
 
-    public function testIgnoredEndpoints() : void
+    public function testIgnoredEndpoints(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::IGNORED_ENDPOINTS => ['/foo'],
@@ -387,7 +388,7 @@ final class AgentTest extends TestCase
         self::assertFalse($agent->ignored('/bar'));
     }
 
-    public function testInstrumentationIsNotDisabledWhenNoDisabledInstrumentsConfigured() : void
+    public function testInstrumentationIsNotDisabledWhenNoDisabledInstrumentsConfigured(): void
     {
         self::assertTrue(
             $this->agentFromConfigArray([])
@@ -395,7 +396,7 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsConfigurationIsWrong() : void
+    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsConfigurationIsWrong(): void
     {
         self::assertTrue(
             $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => 'disabled functionality'])
@@ -403,7 +404,7 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsAreConfigured() : void
+    public function testInstrumentationIsNotDisabledWhenDisabledInstrumentsAreConfigured(): void
     {
         self::assertTrue(
             $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => '["disabled functionality"]'])
@@ -411,7 +412,7 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testInstrumentationIsDisabledWhenDisabledInstrumentsAreConfigured() : void
+    public function testInstrumentationIsDisabledWhenDisabledInstrumentsAreConfigured(): void
     {
         self::assertFalse(
             $this->agentFromConfigArray([ConfigKey::DISABLED_INSTRUMENTS => '["disabled functionality"]'])
@@ -420,7 +421,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testMetadataExceptionsAreLogged() : void
+    public function testMetadataExceptionsAreLogged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -454,7 +455,7 @@ final class AgentTest extends TestCase
      *
      * @throws Exception
      */
-    public function testIgnoredAgentSequence() : void
+    public function testIgnoredAgentSequence(): void
     {
         $agent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => true]);
         $agent->ignore();
@@ -486,7 +487,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, request has been ignored'));
     }
 
-    public function testInstrumentedConsumerCodeBlockIsStillExecutedWithIgnoredRequest() : void
+    public function testInstrumentedConsumerCodeBlockIsStillExecutedWithIgnoredRequest(): void
     {
         $agent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => true]);
         $agent->ignore();
@@ -496,7 +497,7 @@ final class AgentTest extends TestCase
         $agent->instrument(
             'Type',
             'Name',
-            static function () use (&$hasRun) : void {
+            static function () use (&$hasRun): void {
                 $hasRun = true;
             }
         );
@@ -505,7 +506,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testRequestIsResetAfterCallingSend() : void
+    public function testRequestIsResetAfterCallingSend(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -525,7 +526,7 @@ final class AgentTest extends TestCase
         self::assertNotSame($requestBeforeSend, $this->requestFromAgent($agent));
     }
 
-    public function testRegisterEventIsOnlySentOnceWhenSendingTwoRequestsWithSameAgent() : void
+    public function testRegisterEventIsOnlySentOnceWhenSendingTwoRequestsWithSameAgent(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -558,7 +559,7 @@ final class AgentTest extends TestCase
         $agent->send();
     }
 
-    public function testRequestIsResetAfterStartingANewRequest() : void
+    public function testRequestIsResetAfterStartingANewRequest(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -573,7 +574,7 @@ final class AgentTest extends TestCase
         self::assertNotSame($requestBeforeReset, $this->requestFromAgent($agent));
     }
 
-    public function testAgentLogsWarningWhenFailingToConnectToSocket() : void
+    public function testAgentLogsWarningWhenFailingToConnectToSocket(): void
     {
         $agent = Agent::fromConfig(
             Config::fromArray([
@@ -594,7 +595,7 @@ final class AgentTest extends TestCase
         ));
     }
 
-    public function testAgentLogsDebugWhenConnectedToSocket() : void
+    public function testAgentLogsDebugWhenConnectedToSocket(): void
     {
         $this->connector
             ->expects(self::once())
@@ -618,7 +619,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Connected to connector.'));
     }
 
-    public function testAgentLogsDebugWhenAlreadyConnectedToSocket() : void
+    public function testAgentLogsDebugWhenAlreadyConnectedToSocket(): void
     {
         $this->connector
             ->expects(self::once())
@@ -641,7 +642,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Scout Core Agent Connected'));
     }
 
-    public function testRequestUriCanBeChanged() : void
+    public function testRequestUriCanBeChanged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -678,7 +679,7 @@ final class AgentTest extends TestCase
         self::assertTrue($agent->send());
     }
 
-    public function testDisablingMonitoringDoesNotSendPayload() : void
+    public function testDisablingMonitoringDoesNotSendPayload(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -696,7 +697,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Not sending payload, monitoring is not enabled'));
     }
 
-    public function testSendingRequestAttemptsToConnectIfNotAlreadyConnected() : void
+    public function testSendingRequestAttemptsToConnectIfNotAlreadyConnected(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -729,7 +730,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasDebugThatContains('Connected to connector whilst sending'));
     }
 
-    public function testFailureToConnectWhilstSendingIsLoggedAsAnError() : void
+    public function testFailureToConnectWhilstSendingIsLoggedAsAnError(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -753,7 +754,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasErrorThatContains('Uh oh, failed to reticulate the splines'));
     }
 
-    public function testNotConnectedExceptionIsCaughtWhilstSending() : void
+    public function testNotConnectedExceptionIsCaughtWhilstSending(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -775,7 +776,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasErrorThatContains('Lost connectivity whilst reticulating splines'));
     }
 
-    public function testFailureToSendCommandExceptionIsCaughtWhilstSending() : void
+    public function testFailureToSendCommandExceptionIsCaughtWhilstSending(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -796,7 +797,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasErrorThatContains('Splines did not reticulate to send the message'));
     }
 
-    public function testFailureToSendCommandExceptionIsCaughtWhilstSendingWithNoticeLogLevel() : void
+    public function testFailureToSendCommandExceptionIsCaughtWhilstSendingWithNoticeLogLevel(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -817,7 +818,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasNoticeThatContains('Splines did not reticulate to send the message'));
     }
 
-    public function testOlderVersionsOfExtensionIsNotedInLogs() : void
+    public function testOlderVersionsOfExtensionIsNotedInLogs(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -838,7 +839,7 @@ final class AgentTest extends TestCase
         ));
     }
 
-    public function testNewerVersionsOfExtensionIsNotLogged() : void
+    public function testNewerVersionsOfExtensionIsNotLogged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -857,7 +858,7 @@ final class AgentTest extends TestCase
         self::assertFalse($this->logger->hasInfoThatContains('scoutapm PHP extension is currently'));
     }
 
-    public function testCoreAgentPayloadAndResponseAreLoggedWhenEnabled() : void
+    public function testCoreAgentPayloadAndResponseAreLoggedWhenEnabled(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -884,13 +885,13 @@ final class AgentTest extends TestCase
         $agent->instrument(
             'Test',
             'Foo',
-            static function () : void {
+            static function (): void {
             }
         );
         $agent->instrument(
             'Test',
             'Bar',
-            static function () : void {
+            static function (): void {
             }
         );
         $agent->send();
@@ -900,7 +901,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testNumberOfSpansIsLimitedAndNoticeIsLogged() : void
+    public function testNumberOfSpansIsLimitedAndNoticeIsLogged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -931,11 +932,11 @@ final class AgentTest extends TestCase
         /** @noinspection PhpParamsInspection */
         $this->connector->expects(self::at(3))
             ->method('sendCommand')
-            ->with(self::callback(static function (Request $request) : bool {
+            ->with(self::callback(static function (Request $request): bool {
                 TestHelper::assertUnserializedCommandContainsPayload(
                     'BatchCommand',
                     [
-                        'commands' => static function (array $commands) : bool {
+                        'commands' => static function (array $commands): bool {
                             // StartRequest
                             // 1500 * 2 for Start/StopSpans
                             // TagRequest for limit
@@ -963,7 +964,7 @@ final class AgentTest extends TestCase
         self::assertTrue($this->logger->hasNoticeThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
     }
 
-    public function testMetadataIsNotSentIfCached() : void
+    public function testMetadataIsNotSentIfCached(): void
     {
         $agent = Agent::fromConfig(
             Config::fromArray([

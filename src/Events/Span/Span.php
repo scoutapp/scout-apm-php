@@ -14,6 +14,7 @@ use Scoutapm\Events\Tag\TagSpan;
 use Scoutapm\Helper\Backtrace;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
+
 use function array_filter;
 use function array_map;
 use function strpos;
@@ -61,10 +62,10 @@ class Span implements CommandWithParent, CommandWithChildren
         $this->timer = new Timer($override);
     }
 
-    public function cleanUp() : void
+    public function cleanUp(): void
     {
         array_map(
-            static function (Command $command) : void {
+            static function (Command $command): void {
                 $command->cleanUp();
             },
             $this->children
@@ -72,12 +73,12 @@ class Span implements CommandWithParent, CommandWithChildren
         unset($this->id, $this->requestId, $this->parent, $this->children, $this->name, $this->timer);
     }
 
-    public function id() : SpanId
+    public function id(): SpanId
     {
         return $this->id;
     }
 
-    public function parent() : CommandWithChildren
+    public function parent(): CommandWithChildren
     {
         return $this->parent;
     }
@@ -87,7 +88,7 @@ class Span implements CommandWithParent, CommandWithChildren
      *
      * @internal
      */
-    public function stop(?float $override = null) : void
+    public function stop(?float $override = null): void
     {
         $this->timer->stop($override);
 
@@ -98,7 +99,7 @@ class Span implements CommandWithParent, CommandWithChildren
         // phpcs:enable
     }
 
-    private function isControllerJobOrMiddleware() : bool
+    private function isControllerJobOrMiddleware(): bool
     {
         return strpos($this->name, SpanReference::INSTRUMENT_CONTROLLER) === 0
             || strpos($this->name, SpanReference::INSTRUMENT_MIDDLEWARE) === 0
@@ -109,43 +110,43 @@ class Span implements CommandWithParent, CommandWithChildren
      * Used if you need to start a span, but don't get a good name for it until later in its execution (or even after
      * it's complete).
      */
-    public function updateName(string $name) : void
+    public function updateName(string $name): void
     {
         $this->name = $name;
     }
 
-    public function appendChild(Command $command) : void
+    public function appendChild(Command $command): void
     {
         $this->children[] = $command;
     }
 
     /** @param mixed $value */
-    public function tag(string $tag, $value) : void
+    public function tag(string $tag, $value): void
     {
         $this->appendChild(new TagSpan($tag, $value, $this->requestId, $this->id));
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function getStartTime() : ?string
+    public function getStartTime(): ?string
     {
         return $this->timer->getStart();
     }
 
-    public function getStopTime() : ?string
+    public function getStopTime(): ?string
     {
         return $this->timer->getStop();
     }
 
-    public function duration() : ?float
+    public function duration(): ?float
     {
         return $this->timer->duration();
     }
 
-    public function collectedSpans() : int
+    public function collectedSpans(): int
     {
         return RecursivelyCountSpans::forCommands($this->children);
     }
@@ -158,7 +159,7 @@ class Span implements CommandWithParent, CommandWithChildren
      *
      * @todo remove - only used in tests
      */
-    public function getTags() : array
+    public function getTags(): array
     {
         return array_filter(
             $this->children,
@@ -169,7 +170,7 @@ class Span implements CommandWithParent, CommandWithChildren
     }
 
     /** @return array<int, array<string, (string|array|bool|null)>> */
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         $commands   = [];
         $commands[] = [

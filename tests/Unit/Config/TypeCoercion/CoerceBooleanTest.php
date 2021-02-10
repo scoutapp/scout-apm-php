@@ -10,7 +10,7 @@ use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 /** @covers \Scoutapm\Config\TypeCoercion\CoerceBoolean */
 final class CoerceBooleanTest extends TestCase
 {
-    public function testParsesStrings() : void
+    public function testParsesStrings(): void
     {
         $c = new CoerceBoolean();
 
@@ -30,7 +30,7 @@ final class CoerceBooleanTest extends TestCase
         self::assertFalse($c->coerce('0'));
     }
 
-    public function testIgnoresBooleans() : void
+    public function testIgnoresBooleans(): void
     {
         $c = new CoerceBoolean();
 
@@ -38,14 +38,14 @@ final class CoerceBooleanTest extends TestCase
         self::assertFalse($c->coerce(false));
     }
 
-    public function testNullIsFalse() : void
+    public function testNullIsFalse(): void
     {
         $c = new CoerceBoolean();
 
         self::assertFalse($c->coerce(null));
     }
 
-    public function testAnythingElseIsFalse() : void
+    public function testAnythingElseIsFalse(): void
     {
         $c = new CoerceBoolean();
 

@@ -10,12 +10,12 @@ use Scoutapm\Connector\Exception\NotConnected;
 interface Connector
 {
     /** @throws FailedToConnect */
-    public function connect() : void;
+    public function connect(): void;
 
-    public function connected() : bool;
+    public function connected(): bool;
 
     /** @throws NotConnected */
-    public function sendCommand(Command $message) : string;
+    public function sendCommand(Command $message): string;
 
-    public function shutdown() : void;
+    public function shutdown(): void;
 }

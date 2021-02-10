@@ -18,12 +18,12 @@ final class MemoryUsage
         $this->bytesUsed = memory_get_usage(false);
     }
 
-    public static function record() : self
+    public static function record(): self
     {
         return new self();
     }
 
-    public function usedDifferenceInMegabytes(MemoryUsage $comparedTo) : float
+    public function usedDifferenceInMegabytes(MemoryUsage $comparedTo): float
     {
         return ($this->bytesUsed - $comparedTo->bytesUsed) / self::BYTES_IN_A_MB;
     }

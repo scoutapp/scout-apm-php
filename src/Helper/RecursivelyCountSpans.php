@@ -6,16 +6,17 @@ namespace Scoutapm\Helper;
 
 use Scoutapm\Connector\Command;
 use Scoutapm\Events\Span\Span;
+
 use function array_reduce;
 
 abstract class RecursivelyCountSpans
 {
     /** @param Command[] $commands */
-    public static function forCommands(array $commands) : int
+    public static function forCommands(array $commands): int
     {
         return array_reduce(
             $commands,
-            static function (int $carry, Command $item) : int {
+            static function (int $carry, Command $item): int {
                 if (! $item instanceof Span) {
                     return $carry;
                 }

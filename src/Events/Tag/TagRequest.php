@@ -6,6 +6,7 @@ namespace Scoutapm\Events\Tag;
 
 use DateTime;
 use DateTimeZone;
+
 use function sprintf;
 
 /**
@@ -31,7 +32,7 @@ class TagRequest extends Tag
      *      }
      * >
      */
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         // Format the timestamp
         $timestamp = DateTime::createFromFormat('U.u', sprintf('%.6F', $this->timestamp));

@@ -7,6 +7,7 @@ namespace Scoutapm\IntegrationTests;
 use PHPUnit\Framework\TestListener;
 use PHPUnit\Framework\TestListenerDefaultImplementation;
 use PHPUnit\Framework\TestSuite;
+
 use function getenv;
 use function sprintf;
 use function str_repeat;
@@ -21,7 +22,7 @@ final class CheckScoutApmKeyListener implements TestListener
     private const SHOW_CHARACTERS_OF_KEY = 2;
     use TestListenerDefaultImplementation;
 
-    public function startTestSuite(TestSuite $suite) : void
+    public function startTestSuite(TestSuite $suite): void
     {
         if ($this->hasOutput) {
             return;

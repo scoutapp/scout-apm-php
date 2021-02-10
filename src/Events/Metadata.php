@@ -12,7 +12,7 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
-use const PHP_VERSION;
+
 use function array_key_exists;
 use function array_map;
 use function array_merge;
@@ -22,6 +22,8 @@ use function getenv;
 use function gethostname;
 use function is_string;
 use function sprintf;
+
+use const PHP_VERSION;
 
 /**
  * Also called AppServerLoad in other agents
@@ -55,7 +57,7 @@ final class Metadata implements Command
         $this->locateFileOrFolder = $locateFileOrFolder;
     }
 
-    public function cleanUp() : void
+    public function cleanUp(): void
     {
         unset($this->timer);
     }
@@ -63,7 +65,7 @@ final class Metadata implements Command
     /**
      * @return array<string, (string|VersionList|null)>
      */
-    private function data() : array
+    private function data(): array
     {
         return [
             'language' => 'php',
@@ -86,7 +88,7 @@ final class Metadata implements Command
         ];
     }
 
-    private function applicationRoot() : string
+    private function applicationRoot(): string
     {
         $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
         if (is_string($applicationRootConfiguration) && $applicationRootConfiguration !== '') {
@@ -105,7 +107,7 @@ final class Metadata implements Command
         return $_SERVER['DOCUMENT_ROOT'];
     }
 
-    private function scmSubdirectory() : string
+    private function scmSubdirectory(): string
     {
         $scmSubdirectoryConfiguration = $this->config->get(ConfigKey::SCM_SUBDIRECTORY);
         if (is_string($scmSubdirectoryConfiguration) && $scmSubdirectoryConfiguration !== '') {
@@ -115,7 +117,7 @@ final class Metadata implements Command
         return '';
     }
 
-    private function rootPackageGitSha() : string
+    private function rootPackageGitSha(): string
     {
         $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
         if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
@@ -141,7 +143,7 @@ final class Metadata implements Command
      *
      * @psalm-return VersionList
      */
-    private function getLibraries() : array
+    private function getLibraries(): array
     {
         $extensionVersion = $this->phpExtension->version();
 
@@ -149,7 +151,7 @@ final class Metadata implements Command
         $composerPlatformVersions = [];
         if (class_exists(InstalledVersions::class)) {
             $composerPlatformVersions = array_map(
-                static function (string $packageName) : array {
+                static function (string $packageName): array {
                     return [
                         $packageName === 'root' ? (string) InstalledVersions::getRootPackage()['name'] : $packageName,
                         sprintf(
@@ -174,7 +176,7 @@ final class Metadata implements Command
      *
      * @return array<string, array<string, (string|array|null)>>
      */
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         return [
             'ApplicationEvent' => [
