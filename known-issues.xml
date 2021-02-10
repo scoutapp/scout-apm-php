@@ -386,6 +386,19 @@
       <code>$actualReturn</code>
     </MixedAssignment>
   </file>
+  <file src="tests/Unit/Extension/PotentiallyAvailableExtensionCapabilitiesTest.php">
+    <MixedArgument occurrences="4">
+      <code>$calls</code>
+      <code>$calls</code>
+      <code>$this-&gt;capabilities-&gt;getCalls()</code>
+      <code>$this-&gt;capabilities-&gt;getCalls()</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="3">
+      <code>$calls</code>
+      <code>$recordedCall</code>
+      <code>$version</code>
+    </MixedAssignment>
+  </file>
   <file src="tests/Unit/Helper/TimerTest.php">
     <DeprecatedMethod occurrences="2">
       <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
