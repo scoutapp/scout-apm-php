@@ -24,8 +24,7 @@ final class UserSettingsSource implements ConfigSource
         $this->config = [];
     }
 
-    /** @inheritDoc */
-    public function hasKey(string $key) : bool
+    public function hasKey(string $key): bool
     {
         return array_key_exists($key, $this->config);
     }
@@ -37,7 +36,7 @@ final class UserSettingsSource implements ConfigSource
     }
 
     /** @param mixed $value */
-    public function set(string $key, $value) : void
+    public function set(string $key, $value): void
     {
         $this->config[$key] = $value;
     }

@@ -7,13 +7,14 @@ namespace Scoutapm\UnitTests\Cache;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\InvalidArgumentException;
 use Scoutapm\Cache\DevNullCache;
+
 use function uniqid;
 
 /** @covers \Scoutapm\Cache\DevNullCache */
 final class DevNullCacheTest extends TestCase
 {
     /** @throws InvalidArgumentException */
-    public function testCacheGetReturnsDefaultValueAfterSet() : void
+    public function testCacheGetReturnsDefaultValueAfterSet(): void
     {
         $cache        = new DevNullCache();
         $someKey      = uniqid('someKey', true);
@@ -26,7 +27,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetReturnsNullAfterSetWhenNoDefaultGiven() : void
+    public function testCacheGetReturnsNullAfterSetWhenNoDefaultGiven(): void
     {
         $cache   = new DevNullCache();
         $someKey = uniqid('someKey', true);
@@ -38,7 +39,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetReturnsDefaultValueAfterDelete() : void
+    public function testCacheGetReturnsDefaultValueAfterDelete(): void
     {
         $cache        = new DevNullCache();
         $someKey      = uniqid('someKey', true);
@@ -52,7 +53,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetReturnsDefaultValueAfterClear() : void
+    public function testCacheGetReturnsDefaultValueAfterClear(): void
     {
         $cache        = new DevNullCache();
         $someKey      = uniqid('someKey', true);
@@ -66,7 +67,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetMultipleReturnsDefaultValueAfterSetMultiple() : void
+    public function testCacheGetMultipleReturnsDefaultValueAfterSetMultiple(): void
     {
         $cache        = new DevNullCache();
         $someKey      = uniqid('someKey', true);
@@ -79,7 +80,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetMultipleReturnsNullAfterSetMultipleWithNoDefaultValue() : void
+    public function testCacheGetMultipleReturnsNullAfterSetMultipleWithNoDefaultValue(): void
     {
         $cache   = new DevNullCache();
         $someKey = uniqid('someKey', true);
@@ -91,7 +92,7 @@ final class DevNullCacheTest extends TestCase
     }
 
     /** @throws InvalidArgumentException */
-    public function testCacheGetMultipleReturnsDefaultValueAfterDeleteMultiple() : void
+    public function testCacheGetMultipleReturnsDefaultValueAfterDeleteMultiple(): void
     {
         $cache        = new DevNullCache();
         $someKey      = uniqid('someKey', true);

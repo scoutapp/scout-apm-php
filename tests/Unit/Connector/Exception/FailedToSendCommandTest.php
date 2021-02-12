@@ -11,10 +11,11 @@ use Scoutapm\Config;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
-use Webmozart\Assert\Assert;
+
+use function socket_create;
+
 use const AF_INET;
 use const SOCK_STREAM;
-use function socket_create;
 
 /** @covers \Scoutapm\Connector\Exception\FailedToSendCommand */
 final class FailedToSendCommandTest extends TestCase
@@ -28,7 +29,7 @@ final class FailedToSendCommandTest extends TestCase
     /** @var resource */
     private $socketResource;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         $this->command = $this->createMock(Command::class);
 
@@ -37,11 +38,11 @@ final class FailedToSendCommandTest extends TestCase
         $this->connectionAddress = ConnectionAddress::fromConfig($config);
 
         $socketResource = socket_create(AF_INET, SOCK_STREAM, 0);
-        Assert::resource($socketResource);
+        self::assertNotFalse($socketResource);
         $this->socketResource = $socketResource;
     }
 
-    public function testWritingMessageSizeToSocket() : void
+    public function testWritingMessageSizeToSocket(): void
     {
         $exception = FailedToSendCommand::writingMessageSizeToSocket($this->command, $this->socketResource, $this->connectionAddress);
 
@@ -49,7 +50,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 
-    public function testWritingMessageContentToSocket() : void
+    public function testWritingMessageContentToSocket(): void
     {
         $exception = FailedToSendCommand::writingMessageContentToSocket($this->command, $this->socketResource, $this->connectionAddress);
 
@@ -57,7 +58,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 
-    public function testReadingResponseSizeFromSocket() : void
+    public function testReadingResponseSizeFromSocket(): void
     {
         $exception = FailedToSendCommand::readingResponseSizeFromSocket($this->command, $this->socketResource, $this->connectionAddress);
 
@@ -65,7 +66,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 
-    public function testFromEmptyResponseSize() : void
+    public function testFromEmptyResponseSize(): void
     {
         $exception = FailedToSendCommand::fromEmptyResponseSize($this->command, $this->connectionAddress);
 
@@ -73,7 +74,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 
-    public function testFromFailedResponseUnpack() : void
+    public function testFromFailedResponseUnpack(): void
     {
         $exception = FailedToSendCommand::fromFailedResponseUnpack($this->command, $this->connectionAddress);
 
@@ -81,7 +82,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 
-    public function testFromTooLargeResponseLength() : void
+    public function testFromTooLargeResponseLength(): void
     {
         $exception = FailedToSendCommand::fromTooLargeResponseLength(2000, 1000, $this->command, $this->connectionAddress);
 
@@ -89,7 +90,7 @@ final class FailedToSendCommandTest extends TestCase
         self::assertSame(LogLevel::NOTICE, $exception->logLevel());
     }
 
-    public function testReadingResponseContentFromSocket() : void
+    public function testReadingResponseContentFromSocket(): void
     {
         $exception = FailedToSendCommand::readingResponseContentFromSocket($this->command, $this->socketResource, $this->connectionAddress);
 

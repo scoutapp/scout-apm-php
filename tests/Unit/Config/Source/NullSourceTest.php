@@ -10,14 +10,14 @@ use Scoutapm\Config\Source\NullSource;
 /** @covers \Scoutapm\Config\Source\NullSource */
 final class NullSourceTest extends TestCase
 {
-    public function testHasKey() : void
+    public function testHasKey(): void
     {
         $defaults = new NullSource();
         self::assertTrue($defaults->hasKey('apiVersion'));
         self::assertTrue($defaults->hasKey('notAValue'));
     }
 
-    public function testGet() : void
+    public function testGet(): void
     {
         $defaults = new NullSource();
         self::assertNull($defaults->get('apiVersion'));

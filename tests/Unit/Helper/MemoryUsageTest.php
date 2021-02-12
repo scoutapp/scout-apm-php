@@ -6,12 +6,13 @@ namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Helper\MemoryUsage;
+
 use function str_repeat;
 
 /** @covers \Scoutapm\Helper\MemoryUsage */
 final class MemoryUsageTest extends TestCase
 {
-    public function testMemoryUsageCanBeRecorded() : void
+    public function testMemoryUsageCanBeRecorded(): void
     {
         $usageBefore = MemoryUsage::record();
 

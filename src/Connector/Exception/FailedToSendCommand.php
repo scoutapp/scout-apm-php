@@ -9,6 +9,7 @@ use RuntimeException;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
 use Throwable;
+
 use function get_class;
 use function socket_last_error;
 use function socket_strerror;
@@ -36,13 +37,13 @@ final class FailedToSendCommand extends RuntimeException
     }
 
     /** @psalm-return ValidLogLevel */
-    public function logLevel() : string
+    public function logLevel(): string
     {
         return $this->logLevel;
     }
 
     /** @param resource $socketResource */
-    public static function writingMessageSizeToSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
+    public static function writingMessageSizeToSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress): self
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
@@ -59,7 +60,7 @@ final class FailedToSendCommand extends RuntimeException
     }
 
     /** @param resource $socketResource */
-    public static function writingMessageContentToSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
+    public static function writingMessageContentToSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress): self
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
@@ -76,7 +77,7 @@ final class FailedToSendCommand extends RuntimeException
     }
 
     /** @param resource $socketResource */
-    public static function readingResponseSizeFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
+    public static function readingResponseSizeFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress): self
     {
         $socketErrorNumber = socket_last_error($socketResource);
 
@@ -92,7 +93,7 @@ final class FailedToSendCommand extends RuntimeException
         );
     }
 
-    public static function fromEmptyResponseSize(Command $attemptedCommand, ConnectionAddress $connectionAddress) : self
+    public static function fromEmptyResponseSize(Command $attemptedCommand, ConnectionAddress $connectionAddress): self
     {
         return new self(
             LogLevel::ERROR,
@@ -104,7 +105,7 @@ final class FailedToSendCommand extends RuntimeException
         );
     }
 
-    public static function fromFailedResponseUnpack(Command $attemptedCommand, ConnectionAddress $connectionAddress) : self
+    public static function fromFailedResponseUnpack(Command $attemptedCommand, ConnectionAddress $connectionAddress): self
     {
         return new self(
             LogLevel::ERROR,
@@ -121,7 +122,7 @@ final class FailedToSendCommand extends RuntimeException
         int $responseLengthLimit,
         Command $attemptedCommand,
         ConnectionAddress $connectionAddress
-    ) : self {
+    ): self {
         return new self(
             LogLevel::NOTICE,
             sprintf(
@@ -135,7 +136,7 @@ final class FailedToSendCommand extends RuntimeException
     }
 
     /** @param resource $socketResource */
-    public static function readingResponseContentFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress) : self
+    public static function readingResponseContentFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress): self
     {
         $socketErrorNumber = socket_last_error($socketResource);
 

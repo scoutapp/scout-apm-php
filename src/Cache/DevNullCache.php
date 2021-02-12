@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Cache;
 
 use Psr\SimpleCache\CacheInterface;
-use Traversable;
+
 use function array_combine;
 use function array_map;
 use function is_array;
@@ -21,19 +21,18 @@ final class DevNullCache implements CacheInterface
     }
 
     /** @inheritDoc */
-    public function set($key, $value, $ttl = null) : bool
+    public function set($key, $value, $ttl = null): bool
     {
         return true;
     }
 
     /** @inheritDoc */
-    public function delete($key) : bool
+    public function delete($key): bool
     {
         return true;
     }
 
-    /** @inheritDoc */
-    public function clear() : bool
+    public function clear(): bool
     {
         return true;
     }
@@ -41,7 +40,6 @@ final class DevNullCache implements CacheInterface
     /** @inheritDoc */
     public function getMultiple($keys, $default = null)
     {
-        /** @var array|Traversable $keys */
         if (is_array($keys)) {
             $keysAsArray = $keys;
         } else {
@@ -61,19 +59,19 @@ final class DevNullCache implements CacheInterface
     }
 
     /** @inheritDoc */
-    public function setMultiple($values, $ttl = null) : bool
+    public function setMultiple($values, $ttl = null): bool
     {
         return true;
     }
 
     /** @inheritDoc */
-    public function deleteMultiple($keys) : bool
+    public function deleteMultiple($keys): bool
     {
         return true;
     }
 
     /** @inheritDoc */
-    public function has($key) : bool
+    public function has($key): bool
     {
         return false;
     }

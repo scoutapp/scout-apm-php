@@ -7,6 +7,7 @@ namespace Scoutapm\UnitTests\Extension;
 use Exception;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Extension\RecordedCall;
+
 use function microtime;
 use function random_int;
 use function uniqid;
@@ -15,7 +16,7 @@ use function uniqid;
 final class RecordedCallTest extends TestCase
 {
     /** @throws Exception */
-    public function testFromExtensionLoggedCallArray() : void
+    public function testFromExtensionLoggedCallArray(): void
     {
         $function  = uniqid('MyClass\Foo::method', true);
         $entered   = microtime(true) + random_int(1, 5);
@@ -42,7 +43,7 @@ final class RecordedCallTest extends TestCase
      *
      * @psalm-return array<string, array{recordedFunctionName: string, expectedFilteredArguments: array<string, string>}>
      */
-    public function filteredArgumentsDataProvider() : array
+    public function filteredArgumentsDataProvider(): array
     {
         return [
             'file_get_contents' => [
@@ -66,7 +67,7 @@ final class RecordedCallTest extends TestCase
     public function testOnlyFilteredArgumentsAreReturned(
         string $recordedFunctionName,
         array $expectedFilteredArguments
-    ) : void {
+    ): void {
         $entered = microtime(true) + random_int(1, 5);
         $exited  = microtime(true) + random_int(6, 10);
 

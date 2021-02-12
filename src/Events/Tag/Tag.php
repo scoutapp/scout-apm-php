@@ -6,6 +6,7 @@ namespace Scoutapm\Events\Tag;
 
 use Scoutapm\Connector\Command;
 use Scoutapm\Events\Request\RequestId;
+
 use function microtime;
 
 /** @internal */
@@ -47,7 +48,7 @@ abstract class Tag implements Command
         $this->timestamp = $timestamp;
     }
 
-    public function cleanUp() : void
+    public function cleanUp(): void
     {
         unset($this->tag, $this->value, $this->requestId, $this->timestamp);
     }
@@ -55,7 +56,7 @@ abstract class Tag implements Command
     /**
      * Get the 'key' portion of this Tag
      */
-    public function getTag() : string
+    public function getTag(): string
     {
         return $this->tag;
     }
@@ -63,7 +64,7 @@ abstract class Tag implements Command
     /**
      * Get the 'value' portion of this Tag
      */
-    public function getValue() : string
+    public function getValue(): string
     {
         return $this->value;
     }

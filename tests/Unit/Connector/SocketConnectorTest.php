@@ -13,7 +13,7 @@ use Scoutapm\Connector\SocketConnector;
 /** @covers \Scoutapm\Connector\SocketConnector */
 final class SocketConnectorTest extends TestCase
 {
-    public function testExceptionIsRaisedWhenConnectingToNonExistentSocket() : void
+    public function testExceptionIsRaisedWhenConnectingToNonExistentSocket(): void
     {
         $config = new Config();
         $config->set(Config\ConfigKey::CORE_AGENT_SOCKET_PATH, '/path/does/not/exist');

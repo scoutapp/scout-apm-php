@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config\ConfigKey;
+
 use function array_key_exists;
 
 /** @internal */
@@ -24,8 +25,7 @@ final class DefaultSource implements ConfigSource
         $this->defaults = $this->getDefaultConfig();
     }
 
-    /** @inheritDoc */
-    public function hasKey(string $key) : bool
+    public function hasKey(string $key): bool
     {
         return array_key_exists($key, $this->defaults);
     }
@@ -43,7 +43,7 @@ final class DefaultSource implements ConfigSource
      *
      * @return array<string, (string|bool|array<int, string>|int)>
      */
-    private function getDefaultConfig() : array
+    private function getDefaultConfig(): array
     {
         return [
             ConfigKey::API_VERSION => '1.0',

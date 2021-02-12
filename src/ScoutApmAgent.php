@@ -10,12 +10,12 @@ use Scoutapm\Events\Span\SpanReference;
 
 interface ScoutApmAgent
 {
-    public function connect() : void;
+    public function connect(): void;
 
     /**
      * Returns true/false on if the agent should attempt to start and collect data.
      */
-    public function enabled() : bool;
+    public function enabled(): bool;
 
     /**
      * Starts a fromRequest span on the current request.
@@ -31,9 +31,9 @@ interface ScoutApmAgent
      *
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : ?SpanReference;
+    public function startSpan(string $operation, ?float $overrideTimestamp = null): ?SpanReference;
 
-    public function stopSpan() : void;
+    public function stopSpan(): void;
 
     /**
      * @return mixed
@@ -62,22 +62,22 @@ interface ScoutApmAgent
      */
     public function backgroundTransaction(string $name, callable $block);
 
-    public function addContext(string $tag, string $value) : void;
+    public function addContext(string $tag, string $value): void;
 
-    public function tagRequest(string $tag, string $value) : void;
+    public function tagRequest(string $tag, string $value): void;
 
     /**
      * Check if a given URL was configured as ignored.
      * Does not alter the running request. If you wish to abort tracing of this
      * request, use ignore()
      */
-    public function ignored(string $path) : bool;
+    public function ignored(string $path): bool;
 
     /**
      * Mark the running request as ignored. Triggers optimizations in various
      * tracing and tagging methods to turn them into NOOPs
      */
-    public function ignore() : void;
+    public function ignore(): void;
 
     /**
      * Should the instrumentation be enabled for a particular functionality. This checks the `disabled_instruments`
@@ -85,7 +85,7 @@ interface ScoutApmAgent
      *
      * The list of functionality that can be disabled depends on the library binding being used.
      */
-    public function shouldInstrument(string $functionality) : bool;
+    public function shouldInstrument(string $functionality): bool;
 
     /**
      * If the automatically determined request URI is incorrect, please report an issue so we can investigate. You may
@@ -93,19 +93,19 @@ interface ScoutApmAgent
      *
      * @link https://github.com/scoutapp/scout-apm-php
      */
-    public function changeRequestUri(string $newRequestUri) : void;
+    public function changeRequestUri(string $newRequestUri): void;
 
     /**
      * Returns true only if the request was sent onward to the core agent. False otherwise.
      *
      * @throws Exception
      */
-    public function send() : bool;
+    public function send(): bool;
 
     /**
      * Clears any currently recorded request data/spans, and start a new request.
      */
-    public function startNewRequest() : void;
+    public function startNewRequest(): void;
 
     /**
      * You probably don't need this, it's useful in testing
@@ -113,5 +113,5 @@ interface ScoutApmAgent
      * @internal
      * @deprecated
      */
-    public function getRequest() : ?Request;
+    public function getRequest(): ?Request;
 }

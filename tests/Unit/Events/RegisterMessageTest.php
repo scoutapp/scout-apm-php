@@ -10,7 +10,7 @@ use Scoutapm\Events\RegisterMessage;
 /** @covers \Scoutapm\Events\RegisterMessage */
 final class RegisterMessageTest extends TestCase
 {
-    public function testRegisterMessageSerializes() : void
+    public function testRegisterMessageSerializes(): void
     {
         self::assertEquals(
             [

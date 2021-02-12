@@ -16,3 +16,18 @@ static-analysis: ## verify that no new static analysis issues were introduced
 
 coverage: ## generate code coverage reports
 	vendor/bin/phpunit --testsuite unit --coverage-html build/coverage-html --coverage-text
+
+unit-php71: ## run unit tests with php 7.1
+	php7.1 vendor/bin/phpunit
+
+deps-php71-lowest: ## Update deps to lowest
+	php7.1 /usr/local/bin/composer update --prefer-lowest --prefer-dist --no-interaction
+
+deps-php8-lowest: ## Update deps to lowest
+	php8.0 /usr/local/bin/composer update --prefer-lowest --prefer-dist --no-interaction
+
+deps-php71-highest: ## Update deps to highest
+	php7.1 /usr/local/bin/composer update --prefer-dist --no-interaction
+
+deps-php8-highest: ## Update deps to highest
+	php8.0 /usr/local/bin/composer update --prefer-dist --no-interaction

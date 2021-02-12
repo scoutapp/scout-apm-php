@@ -17,6 +17,7 @@ use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
 use Scoutapm\Config\TypeCoercion\CoerceType;
+
 use function array_combine;
 use function array_key_exists;
 use function array_map;
@@ -54,7 +55,7 @@ class Config
     }
 
     /** @param mixed[]|array<string, mixed> $config */
-    public static function fromArray(array $config = []) : self
+    public static function fromArray(array $config = []): self
     {
         $instance = new self();
 
@@ -96,7 +97,7 @@ class Config
      *
      * @param mixed $value
      */
-    public function set(string $key, $value) : void
+    public function set(string $key, $value): void
     {
         $this->userSettingsSource->set($key, $value);
     }
@@ -109,7 +110,7 @@ class Config
      *
      * @psalm-return array<string, mixed>
      */
-    public function asArrayWithSecretsRemoved() : array
+    public function asArrayWithSecretsRemoved(): array
     {
         $keys = ConfigKey::allConfigurationKeys();
 

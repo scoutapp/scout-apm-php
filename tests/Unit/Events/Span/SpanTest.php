@@ -18,7 +18,7 @@ final class SpanTest extends TestCase
     /** @var CommandWithChildren&MockObject */
     private $mockParent;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -26,14 +26,14 @@ final class SpanTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testCanBeInitialized() : void
+    public function testCanBeInitialized(): void
     {
         $span = new Span($this->mockParent, 'name', RequestId::new());
         self::assertNull($span->getStopTime());
     }
 
     /** @throws Exception */
-    public function testCanBeStopped() : void
+    public function testCanBeStopped(): void
     {
         $span = new Span($this->mockParent, '', RequestId::new());
         $span->stop();
@@ -41,7 +41,7 @@ final class SpanTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testJsonSerializes() : void
+    public function testJsonSerializes(): void
     {
         $span = new Span($this->mockParent, '', RequestId::new());
         $span->tag('Foo', 'Bar');
@@ -55,7 +55,7 @@ final class SpanTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testSpansCanBeCounted() : void
+    public function testSpansCanBeCounted(): void
     {
         $span = new Span($this->mockParent, '', RequestId::new());
         $span->tag('Foo', 'Bar');
@@ -66,7 +66,7 @@ final class SpanTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testSpanNameOverride() : void
+    public function testSpanNameOverride(): void
     {
         $span = new Span($this->mockParent, 'original', RequestId::new());
         self::assertSame('original', $span->getName());
@@ -80,7 +80,7 @@ final class SpanTest extends TestCase
      *
      * @psalm-return list<array{spanName: string, startTime: float, endTime: float, expectedTagCount: int}>
      */
-    public function spansForStackTraceProvider() : array
+    public function spansForStackTraceProvider(): array
     {
         return [
             [
@@ -121,7 +121,7 @@ final class SpanTest extends TestCase
      *
      * @dataProvider spansForStackTraceProvider
      */
-    public function testStackTracesAreOnlyAddedForAppropriateSpans(string $spanName, float $startTime, float $endTime, int $expectedTagCount) : void
+    public function testStackTracesAreOnlyAddedForAppropriateSpans(string $spanName, float $startTime, float $endTime, int $expectedTagCount): void
     {
         $request = new Request();
 

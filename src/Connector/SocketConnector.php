@@ -8,12 +8,7 @@ use ErrorException;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\NotConnected;
 use Throwable;
-use const AF_INET;
-use const AF_UNIX;
-use const E_NOTICE;
-use const E_STRICT;
-use const E_WARNING;
-use const SOCK_STREAM;
+
 use function array_key_exists;
 use function is_array;
 use function json_encode;
@@ -30,6 +25,13 @@ use function socket_send;
 use function socket_shutdown;
 use function strlen;
 use function unpack;
+
+use const AF_INET;
+use const AF_UNIX;
+use const E_NOTICE;
+use const E_STRICT;
+use const E_WARNING;
+use const SOCK_STREAM;
 
 /** @internal */
 final class SocketConnector implements Connector
@@ -72,7 +74,7 @@ final class SocketConnector implements Connector
     {
         // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.IncorrectReturnTypeHint
         set_error_handler(
-            static function (int $severity, string $message, string $file = '', int $line = 0, array $context = []) : bool {
+            static function (int $severity, string $message, string $file = '', int $line = 0, array $context = []): bool {
                 throw new ErrorException($message, 0, $severity, $file, $line);
             },
             E_STRICT | E_NOTICE | E_WARNING
@@ -88,7 +90,7 @@ final class SocketConnector implements Connector
         return $returnValue;
     }
 
-    public function connect() : void
+    public function connect(): void
     {
         if ($this->connected()) {
             return;
@@ -112,16 +114,17 @@ final class SocketConnector implements Connector
             register_shutdown_function([&$this, 'shutdown']);
         } catch (Throwable $e) {
             $this->connected = false;
+
             throw FailedToConnect::fromSocketPathAndPrevious($this->connectionAddress, $e);
         }
     }
 
-    public function connected() : bool
+    public function connected(): bool
     {
         return $this->connected;
     }
 
-    public function sendCommand(Command $message) : string
+    public function sendCommand(Command $message): string
     {
         if (! $this->connected()) {
             throw NotConnected::fromSocketPath($this->connectionAddress);
@@ -180,7 +183,7 @@ final class SocketConnector implements Connector
         return $dataRead;
     }
 
-    public function shutdown() : void
+    public function shutdown(): void
     {
         if (! $this->connected()) {
             return;

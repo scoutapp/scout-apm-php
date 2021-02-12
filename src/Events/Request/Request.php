@@ -16,6 +16,7 @@ use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
+
 use function array_key_exists;
 use function array_map;
 use function is_string;
@@ -54,10 +55,10 @@ class Request implements CommandWithChildren
         $this->currentCommand = $this;
     }
 
-    public function cleanUp() : void
+    public function cleanUp(): void
     {
         array_map(
-            static function (Command $command) : void {
+            static function (Command $command): void {
                 $command->cleanUp();
             },
             $this->children
@@ -73,12 +74,12 @@ class Request implements CommandWithChildren
         );
     }
 
-    public function overrideRequestUri(string $newRequestUri) : void
+    public function overrideRequestUri(string $newRequestUri): void
     {
         $this->requestUriOverride = $newRequestUri;
     }
 
-    private function determineRequestPathFromServerGlobal() : string
+    private function determineRequestPathFromServerGlobal(): string
     {
         $requestUri = $_SERVER['REQUEST_URI'] ?? null;
 
@@ -101,7 +102,7 @@ class Request implements CommandWithChildren
      *
      * @throws Exception
      */
-    private function convertAmbiguousTimestampToSeconds(float $timestamp, float $currentTimestamp) : float
+    private function convertAmbiguousTimestampToSeconds(float $timestamp, float $currentTimestamp): float
     {
         $tenYearsAgo = Timer::utcDateTimeFromFloatTimestamp($currentTimestamp)
             ->sub(new DateInterval('P10Y'));
@@ -110,15 +111,15 @@ class Request implements CommandWithChildren
             ->setDate((int) $tenYearsAgo->format('Y'), 1, 1)
             ->format('U.u');
 
-        if ($timestamp > ($cutoffTimestamp * 1000000000.0)) {
+        if ($timestamp > $cutoffTimestamp * 1000000000.0) {
             return $timestamp / 1000000000;
         }
 
-        if ($timestamp > ($cutoffTimestamp * 1000000.0)) {
+        if ($timestamp > $cutoffTimestamp * 1000000.0) {
             return $timestamp / 1000000;
         }
 
-        if ($timestamp > ($cutoffTimestamp * 1000.0)) {
+        if ($timestamp > $cutoffTimestamp * 1000.0) {
             return $timestamp / 1000.0;
         }
 
@@ -130,7 +131,7 @@ class Request implements CommandWithChildren
     }
 
     /** @throws Exception */
-    private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds) : void
+    private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds): void
     {
         $headers = FetchRequestHeaders::fromServerGlobal();
 
@@ -159,7 +160,7 @@ class Request implements CommandWithChildren
         }
     }
 
-    public function stopIfRunning(?float $overrideTimestamp = null) : void
+    public function stopIfRunning(?float $overrideTimestamp = null): void
     {
         if ($this->timer->getStop() !== null) {
             return;
@@ -168,7 +169,7 @@ class Request implements CommandWithChildren
         $this->stop($overrideTimestamp);
     }
 
-    public function stop(?float $overrideTimestamp = null, ?float $currentTime = null) : void
+    public function stop(?float $overrideTimestamp = null, ?float $currentTime = null): void
     {
         $this->timer->stop($overrideTimestamp);
 
@@ -182,7 +183,7 @@ class Request implements CommandWithChildren
      * @throws SpanLimitReached
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null) : Span
+    public function startSpan(string $operation, ?float $overrideTimestamp = null): Span
     {
         if ($this->spanCount >= self::MAX_COMPLETE_SPANS) {
             throw SpanLimitReached::forOperation($operation, self::MAX_COMPLETE_SPANS);
@@ -199,7 +200,7 @@ class Request implements CommandWithChildren
         return $span;
     }
 
-    public function appendChild(Command $span) : void
+    public function appendChild(Command $span): void
     {
         $this->children[] = $span;
     }
@@ -208,7 +209,7 @@ class Request implements CommandWithChildren
      * Stop the currently "running" span.
      * You can still tag it if needed up until the request as a whole is finished.
      */
-    public function stopSpan(?float $overrideTimestamp = null) : void
+    public function stopSpan(?float $overrideTimestamp = null): void
     {
         $command = $this->currentCommand;
         if (! $command instanceof Span) {
@@ -227,7 +228,7 @@ class Request implements CommandWithChildren
      *
      * @param mixed $value
      */
-    public function tag(string $tagName, $value) : void
+    public function tag(string $tagName, $value): void
     {
         $this->appendChild(new TagRequest($tagName, $value, $this->id));
     }
@@ -257,7 +258,7 @@ class Request implements CommandWithChildren
      *      }
      * }
      */
-    public function jsonSerialize() : array
+    public function jsonSerialize(): array
     {
         $commands   = [];
         $commands[] = [
@@ -286,7 +287,7 @@ class Request implements CommandWithChildren
         ];
     }
 
-    public function collectedSpans() : int
+    public function collectedSpans(): int
     {
         return RecursivelyCountSpans::forCommands($this->children);
     }
@@ -302,7 +303,7 @@ class Request implements CommandWithChildren
      *
      * @todo remove
      */
-    public function getEvents() : array
+    public function getEvents(): array
     {
         return $this->children;
     }

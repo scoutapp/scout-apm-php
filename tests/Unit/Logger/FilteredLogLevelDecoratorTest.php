@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
+
 use function str_repeat;
 use function uniqid;
 
@@ -21,14 +22,14 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     /** @var LoggerInterface&MockObject */
     private $decoratedLogger;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
         $this->decoratedLogger = $this->createMock(LoggerInterface::class);
     }
 
-    public function testInvalidLogLevelStringGivesClearErrorMessage() : void
+    public function testInvalidLogLevelStringGivesClearErrorMessage(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
@@ -38,7 +39,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         new FilteredLogLevelDecorator($this->decoratedLogger, 'foo');
     }
 
-    public function testLogMessagesHaveScoutTagPrepended() : void
+    public function testLogMessagesHaveScoutTagPrepended(): void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, LogLevel::DEBUG);
 
@@ -56,7 +57,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         $decorator->debug($logMessage);
     }
 
-    public function testLogMessagesBelowThresholdAreNotLogged() : void
+    public function testLogMessagesBelowThresholdAreNotLogged(): void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, LogLevel::NOTICE);
 
@@ -67,7 +68,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
         $decorator->info(uniqid('logMessage', true));
     }
 
-    public function testLogMessagesAboveThresholdAreLogged() : void
+    public function testLogMessagesAboveThresholdAreLogged(): void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, LogLevel::NOTICE);
 
@@ -87,7 +88,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     }
 
     /** @return array<int, array<int, string>> */
-    public function invalidLogLevelProvider() : array
+    public function invalidLogLevelProvider(): array
     {
         return [
             ['lizard'],
@@ -98,7 +99,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     }
 
     /** @dataProvider invalidLogLevelProvider */
-    public function testInvalidLogLevelsAreRejected(string $invalidLogLevel) : void
+    public function testInvalidLogLevelsAreRejected(string $invalidLogLevel): void
     {
         $this->expectException(InvalidArgumentException::class);
         new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);

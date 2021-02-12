@@ -13,7 +13,7 @@ use function strtolower;
 final class CoerceBoolean implements CoerceType
 {
     /** {@inheritDoc} */
-    public function coerce($value) : bool
+    public function coerce($value): bool
     {
         if ($value === null) {
             return false;

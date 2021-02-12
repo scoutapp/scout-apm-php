@@ -17,7 +17,7 @@ use Scoutapm\Events\Tag\TagSpan;
 final class TagSpanTest extends TestCase
 {
     /** @throws Exception */
-    public function testCanBeInitialized() : void
+    public function testCanBeInitialized(): void
     {
         $tag = new TagSpan('t', 'v', RequestId::new(), SpanId::new());
 
@@ -26,7 +26,7 @@ final class TagSpanTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testJsonSerializes() : void
+    public function testJsonSerializes(): void
     {
         $requestId = RequestId::new();
         $spanId    = SpanId::new();

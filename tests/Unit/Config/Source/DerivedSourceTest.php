@@ -18,7 +18,7 @@ final class DerivedSourceTest extends TestCase
     /** @var DerivedSource */
     private $derivedSource;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -27,7 +27,7 @@ final class DerivedSourceTest extends TestCase
         $this->derivedSource = new DerivedSource($this->config);
     }
 
-    public function testHasKey() : void
+    public function testHasKey(): void
     {
         self::assertTrue($this->derivedSource->hasKey(ConfigKey::CORE_AGENT_SOCKET_PATH));
         self::assertTrue($this->derivedSource->hasKey(ConfigKey::CORE_AGENT_FULL_NAME));
@@ -35,12 +35,12 @@ final class DerivedSourceTest extends TestCase
         self::assertFalse($this->derivedSource->hasKey('is_array'));
     }
 
-    public function testGetReturnsNullWhenConfigKeyDoesNotExist() : void
+    public function testGetReturnsNullWhenConfigKeyDoesNotExist(): void
     {
         self::assertNull($this->derivedSource->get('not an actual key'));
     }
 
-    public function testCoreAgentFullNameIsDerivedCorrectly() : void
+    public function testCoreAgentFullNameIsDerivedCorrectly(): void
     {
         self::assertStringMatchesFormat(
             'scout_apm_core-v%d.%d.%d-%s-linux-musl',
@@ -48,7 +48,7 @@ final class DerivedSourceTest extends TestCase
         );
     }
 
-    public function testSocketPathIsDerivedCorrectly() : void
+    public function testSocketPathIsDerivedCorrectly(): void
     {
         self::assertSame(
             'tcp://127.0.0.1:6590',
@@ -56,7 +56,7 @@ final class DerivedSourceTest extends TestCase
         );
     }
 
-    public function testMuslIsUsedForLibcVersion() : void
+    public function testMuslIsUsedForLibcVersion(): void
     {
         self::assertStringEndsWith('linux-musl', $this->derivedSource->get(ConfigKey::CORE_AGENT_TRIPLE));
     }

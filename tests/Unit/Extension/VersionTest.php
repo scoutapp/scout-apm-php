@@ -15,7 +15,7 @@ final class VersionTest extends TestCase
      *
      * @psalm-return array<int, array{testVersion: string, isOlderThan: string, expectedResult: bool}>
      */
-    public function olderThanVersionProvider() : array
+    public function olderThanVersionProvider(): array
     {
         return [
             ['testVersion' => '1.0.0', 'isOlderThan' => '2.0.0', 'expectedResult' => true],
@@ -35,7 +35,7 @@ final class VersionTest extends TestCase
     /**
      * @dataProvider olderThanVersionProvider
      */
-    public function testOlderThan(string $testVersion, string $olderThan, bool $expectedResult) : void
+    public function testOlderThan(string $testVersion, string $olderThan, bool $expectedResult): void
     {
         self::assertSame(
             $expectedResult,
@@ -44,7 +44,7 @@ final class VersionTest extends TestCase
         );
     }
 
-    public function testConvertsToString() : void
+    public function testConvertsToString(): void
     {
         self::assertSame('1.2.3', Version::fromString('1.2.3')->toString());
     }

@@ -10,7 +10,7 @@ use Scoutapm\Config\IgnoredEndpoints;
 /** @covers \Scoutapm\Config\IgnoredEndpoints */
 final class IgnoredEndpointsTest extends TestCase
 {
-    public function testIgnoresEndpoints() : void
+    public function testIgnoresEndpoints(): void
     {
         $ignoredEndpoints = new IgnoredEndpoints([
             '/health',
@@ -32,7 +32,7 @@ final class IgnoredEndpointsTest extends TestCase
         self::assertFalse($ignoredEndpoints->ignored('/hero/1/health'));
     }
 
-    public function testWorksWithNullIgnoreSetting() : void
+    public function testWorksWithNullIgnoreSetting(): void
     {
         // No Match
         self::assertFalse((new IgnoredEndpoints([]))->ignored('/signup'));

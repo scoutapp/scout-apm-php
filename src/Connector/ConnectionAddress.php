@@ -7,6 +7,7 @@ namespace Scoutapm\Connector;
 use LogicException;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+
 use function array_key_exists;
 use function explode;
 use function sprintf;
@@ -30,22 +31,22 @@ final class ConnectionAddress
         $this->path = $path;
     }
 
-    public static function fromConfig(Config $config) : self
+    public static function fromConfig(Config $config): self
     {
         return new self($config->get(ConfigKey::CORE_AGENT_SOCKET_PATH));
     }
 
-    public function isTcpAddress() : bool
+    public function isTcpAddress(): bool
     {
         return strpos($this->path, self::TCP_ADDRESS_MARKER) === 0;
     }
 
-    public function isSocketPath() : bool
+    public function isSocketPath(): bool
     {
         return ! $this->isTcpAddress();
     }
 
-    public function socketPath() : string
+    public function socketPath(): string
     {
         if (! $this->isSocketPath()) {
             throw new LogicException('Cannot extract socket path from a non-socket address');
@@ -59,7 +60,7 @@ final class ConnectionAddress
      *
      * @psalm-return list<string>
      */
-    private function explodeTcpAddress() : array
+    private function explodeTcpAddress(): array
     {
         if (! $this->isTcpAddress()) {
             throw new LogicException('Cannot extract TCP address from a non-TCP address');
@@ -68,12 +69,12 @@ final class ConnectionAddress
         return explode(':', substr($this->path, strlen(self::TCP_ADDRESS_MARKER)));
     }
 
-    public function tcpBindAddressPort() : string
+    public function tcpBindAddressPort(): string
     {
         return sprintf('%s:%d', $this->tcpBindAddress(), $this->tcpBindPort());
     }
 
-    public function tcpBindAddress() : string
+    public function tcpBindAddress(): string
     {
         $parts = $this->explodeTcpAddress();
 
@@ -84,7 +85,7 @@ final class ConnectionAddress
         return $parts[0];
     }
 
-    public function tcpBindPort() : int
+    public function tcpBindPort(): int
     {
         $parts = $this->explodeTcpAddress();
 
@@ -95,7 +96,7 @@ final class ConnectionAddress
         return (int) $parts[1];
     }
 
-    public function toString() : string
+    public function toString(): string
     {
         return $this->path;
     }

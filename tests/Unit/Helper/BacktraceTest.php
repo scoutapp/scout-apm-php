@@ -6,12 +6,13 @@ namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Helper\Backtrace;
+
 use function array_keys;
 
 /** @covers \Scoutapm\Helper\Backtrace */
 final class BacktraceTest extends TestCase
 {
-    public function testCapturingBacktrace() : void
+    public function testCapturingBacktrace(): void
     {
         $backtrace = Backtrace::capture();
 
@@ -23,7 +24,7 @@ final class BacktraceTest extends TestCase
         }
     }
 
-    public function testCapturingBacktraceFiltersOutVendor() : void
+    public function testCapturingBacktraceFiltersOutVendor(): void
     {
         // Since all Scoutapm stuff is already filtered out AND we're filtering vendor, this stack trace is actually
         // empty. This wouldn't happen if we're installed as a library, so is just a quirk of running this test

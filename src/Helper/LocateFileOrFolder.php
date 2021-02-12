@@ -34,7 +34,7 @@ class LocateFileOrFolder
      *  - /home/composer.json (Fail, doesn't exist)
      *  - /composer.json (Fail, doesn't exist, reached "root", so return `null`)
      */
-    public function __invoke(string $fileOrFolder, int $skipLevels = 3) : ?string
+    public function __invoke(string $fileOrFolder, int $skipLevels = 3): ?string
     {
         $dir = __DIR__;
 
@@ -56,6 +56,7 @@ class LocateFileOrFolder
 
                 return $realPath;
             }
+
             $dir = dirname($dir);
         }
 

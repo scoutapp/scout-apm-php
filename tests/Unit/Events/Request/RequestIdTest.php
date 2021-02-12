@@ -13,7 +13,7 @@ use Scoutapm\Events\Request\RequestId;
 final class RequestIdTest extends TestCase
 {
     /** @throws Exception */
-    public function testRequestIdCanBeGeneratedAndConvertedToString() : void
+    public function testRequestIdCanBeGeneratedAndConvertedToString(): void
     {
         self::assertTrue(Uuid::isValid(RequestId::new()->toString()));
     }

@@ -14,6 +14,7 @@ namespace Scoutapm\Config\Source;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+
 use function in_array;
 use function php_uname;
 
@@ -34,8 +35,7 @@ final class DerivedSource implements ConfigSource
         $this->config = $config;
     }
 
-    /** @inheritDoc */
-    public function hasKey(string $key) : bool
+    public function hasKey(string $key): bool
     {
         return in_array($key, self::SUPPORTED_DERIVED_KEYS, true);
     }
@@ -46,8 +46,10 @@ final class DerivedSource implements ConfigSource
         switch ($key) {
             case ConfigKey::CORE_AGENT_SOCKET_PATH:
                 return $this->socketPath();
+
             case ConfigKey::CORE_AGENT_FULL_NAME:
                 return $this->coreAgentFullName();
+
             case ConfigKey::CORE_AGENT_TRIPLE:
                 return $this->coreAgentTriple();
         }
@@ -55,12 +57,12 @@ final class DerivedSource implements ConfigSource
         return null;
     }
 
-    private function socketPath() : string
+    private function socketPath(): string
     {
         return 'tcp://127.0.0.1:6590';
     }
 
-    private function coreAgentFullName() : string
+    private function coreAgentFullName(): string
     {
         $name    = 'scout_apm_core';
         $version = $this->config->get(ConfigKey::CORE_AGENT_VERSION);
@@ -69,7 +71,7 @@ final class DerivedSource implements ConfigSource
         return $name . '-' . $version . '-' . $triple;
     }
 
-    private function architecture() : string
+    private function architecture(): string
     {
         $unameArch = php_uname('m');
 
@@ -80,7 +82,7 @@ final class DerivedSource implements ConfigSource
         return 'unknown';
     }
 
-    private function coreAgentTriple() : string
+    private function coreAgentTriple(): string
     {
         /**
          * Since the `musl`-based agent should work on `glibc`-based systems, we can hard-code this now.

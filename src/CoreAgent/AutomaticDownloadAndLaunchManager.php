@@ -7,6 +7,7 @@ namespace Scoutapm\CoreAgent;
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+
 use function sprintf;
 
 /** @internal */
@@ -38,7 +39,7 @@ final class AutomaticDownloadAndLaunchManager implements Manager
         $this->verifier   = $verifier;
     }
 
-    public function launch() : bool
+    public function launch(): bool
     {
         if (! $this->config->get(ConfigKey::CORE_AGENT_LAUNCH_ENABLED)) {
             $this->logger->debug(sprintf(

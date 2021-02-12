@@ -19,12 +19,12 @@ final class SpanId
     }
 
     /** @throws Exception */
-    public static function new() : self
+    public static function new(): self
     {
         return new self(Uuid::uuid4());
     }
 
-    public function toString() : string
+    public function toString(): string
     {
         return $this->spanId->toString();
     }

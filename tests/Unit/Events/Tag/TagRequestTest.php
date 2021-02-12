@@ -16,7 +16,7 @@ use Scoutapm\Events\Tag\TagRequest;
 final class TagRequestTest extends TestCase
 {
     /** @throws Exception */
-    public function testCanBeInitialized() : void
+    public function testCanBeInitialized(): void
     {
         $tag = new TagRequest('t', 'v', RequestId::new());
 
@@ -25,7 +25,7 @@ final class TagRequestTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testJsonSerializes() : void
+    public function testJsonSerializes(): void
     {
         $requestId  = RequestId::new();
         $serialized = (new TagRequest('t', 'v', $requestId))->jsonSerialize();

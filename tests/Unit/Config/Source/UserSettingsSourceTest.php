@@ -10,7 +10,7 @@ use Scoutapm\Config\Source\UserSettingsSource;
 /** @covers \Scoutapm\Config\Source\UserSettingsSource */
 final class UserSettingsSourceTest extends TestCase
 {
-    public function testHasKeyAfterBeingSet() : void
+    public function testHasKeyAfterBeingSet(): void
     {
         $config = new UserSettingsSource();
         self::assertFalse($config->hasKey('foo'));
@@ -20,7 +20,7 @@ final class UserSettingsSourceTest extends TestCase
         self::assertTrue($config->hasKey('foo'));
     }
 
-    public function testGet() : void
+    public function testGet(): void
     {
         $config = new UserSettingsSource();
         self::assertNull($config->get('foo'));

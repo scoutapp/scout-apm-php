@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
-<ruleset name="Scout APM coding standard">
+<ruleset
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        name="Scout APM coding standard"
+        xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd"
+>
+    <config name="php_version" value="70100" />
     <arg value="p"/>
     <arg value="s"/>
     <arg name="colors"/>

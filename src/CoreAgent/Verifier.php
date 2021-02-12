@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\CoreAgent;
 
 use Psr\Log\LoggerInterface;
+
 use function hash_equals;
 use function hash_file;
 
@@ -23,7 +24,7 @@ class Verifier
         $this->coreAgentDownloadPath = $coreAgentDownloadPath;
     }
 
-    public function verify() : ?string
+    public function verify(): ?string
     {
         // Check for a well formed manifest
         $manifest = new Manifest($this->coreAgentDownloadPath . '/manifest.json', $this->logger);

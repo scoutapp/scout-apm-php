@@ -8,6 +8,7 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Scoutapm\Connector\ConnectionAddress;
 use Throwable;
+
 use function array_map;
 use function exec;
 use function explode;
@@ -46,7 +47,7 @@ class Launcher
         $this->coreAgentLogFile    = $coreAgentLogFile ?? '/dev/null';
     }
 
-    public function launch(string $coreAgentBinaryPath) : bool
+    public function launch(string $coreAgentBinaryPath): bool
     {
         if (! $this->phpCanExec()) {
             return false;
@@ -102,7 +103,7 @@ class Launcher
         }
     }
 
-    private function phpCanExec() : bool
+    private function phpCanExec(): bool
     {
         if (! function_exists('exec')) {
             $this->logger->warning('PHP function exec is not available');
@@ -127,7 +128,7 @@ class Launcher
         return true;
     }
 
-    private function assertOutputDoesNotContainErrors(string $output, int $exitStatus) : void
+    private function assertOutputDoesNotContainErrors(string $output, int $exitStatus): void
     {
         if (stripos($output, "version `GLIBC_2.18' not found") !== false) {
             throw new RuntimeException('core-agent currently needs at least glibc 2.18. Output: ' . $output);

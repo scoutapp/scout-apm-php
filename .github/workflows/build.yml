@@ -19,6 +19,7 @@ jobs:
           - "7.2"
           - "7.3"
           - "7.4"
+          - "8.0"
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -32,10 +33,10 @@ jobs:
           extensions: ${{ matrix.extensions }}
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
-        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
       - name: "Install highest dependencies"
         if: ${{ matrix.dependencies == 'highest' }}
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHPUnit test suite"
         run: "vendor/bin/phpunit"
       - name: "Check for memory leaks"
@@ -50,9 +51,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "7.1"
+          php-version: "8.0"
       - name: "Install dependencies"
-        run: "composer update --prefer-dist --no-interaction --no-progress --no-suggest"
+        run: "composer install"
       - name: "Run PHP_CodeSniffer"
         run: "vendor/bin/phpcs"
 
@@ -65,8 +66,25 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "7.4"
+          php-version: "8.0"
       - name: "Install dependencies"
         run: "composer install"
       - name: "Run Psalm"
         run: "vendor/bin/psalm"
+
+  roave-backwards-compatibility-check:
+    name: "Check for Backward Compatibility breaks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "7.4" # https://github.com/Roave/BackwardCompatibilityCheck/issues/283
+      - name: "Require Roave/BackwardCompatibilityCheck"
+        run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Check for BC breaks"
+        run: "vendor/bin/roave-backward-compatibility-check --format=markdown"

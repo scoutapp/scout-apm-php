@@ -6,6 +6,7 @@ namespace Scoutapm\UnitTests\Extension;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+
 use function extension_loaded;
 use function file_get_contents;
 use function phpversion;
@@ -17,7 +18,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
     /** @var PotentiallyAvailableExtensionCapabilities */
     private $capabilities;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -27,7 +28,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         $this->capabilities->clearRecordedCalls();
     }
 
-    public function testGetCallsReturnsEmptyArrayWhenExtensionNotAvailable() : void
+    public function testGetCallsReturnsEmptyArrayWhenExtensionNotAvailable(): void
     {
         if (extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is not available');
@@ -38,7 +39,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         self::assertEquals([], $this->capabilities->getCalls());
     }
 
-    public function testGetCallsReturnsFileGetContentsCallWhenExtensionIsAvailable() : void
+    public function testGetCallsReturnsFileGetContentsCallWhenExtensionIsAvailable(): void
     {
         if (! extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is loaded');
@@ -57,7 +58,7 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         self::assertGreaterThan(0, $recordedCall->timeTakenInSeconds());
     }
 
-    public function testRecordedCallsAreClearedWhenExtensionIsAvailable() : void
+    public function testRecordedCallsAreClearedWhenExtensionIsAvailable(): void
     {
         if (! extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is loaded');
@@ -78,16 +79,19 @@ final class PotentiallyAvailableExtensionCapabilitiesTest extends TestCase
         self::assertCount(0, $this->capabilities->getCalls());
     }
 
-    public function testVersionIsReturnedWhenAvailable() : void
+    public function testVersionIsReturnedWhenAvailable(): void
     {
         if (! extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is loaded');
         }
 
-        self::assertSame(phpversion('scoutapm'), $this->capabilities->version()->toString());
+        $version = $this->capabilities->version();
+
+        self::assertNotNull($version);
+        self::assertSame(phpversion('scoutapm'), $version->toString());
     }
 
-    public function testVersionReturnsNullWhenExtensionNotLoaded() : void
+    public function testVersionReturnsNullWhenExtensionNotLoaded(): void
     {
         if (extension_loaded('scoutapm')) {
             self::markTestSkipped('Test can only be run when extension is not available');

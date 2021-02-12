@@ -9,7 +9,7 @@ interface ConfigSource
     /**
      * Returns true if this config source knows for certain it has an answer for this key
      */
-    public function hasKey(string $key) : bool;
+    public function hasKey(string $key): bool;
 
     /**
      * Returns the value for this configuration key.

@@ -19,8 +19,7 @@ final class EnvSource implements ConfigSource
 {
     private const SCOUT_PREFIX = 'SCOUT_';
 
-    /** @inheritDoc */
-    public function hasKey(string $key) : bool
+    public function hasKey(string $key): bool
     {
         return getenv($this->envVarName($key)) !== false;
     }
@@ -38,7 +37,7 @@ final class EnvSource implements ConfigSource
         return $value;
     }
 
-    private function envVarName(string $key) : string
+    private function envVarName(string $key): string
     {
         return self::SCOUT_PREFIX . strtoupper($key);
     }

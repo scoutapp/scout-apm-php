@@ -8,12 +8,14 @@ use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Throwable;
 use Webmozart\Assert\Assert;
-use const JSON_ERROR_NONE;
+
 use function file_get_contents;
 use function json_decode;
 use function json_last_error;
 use function json_last_error_msg;
 use function sprintf;
+
+use const JSON_ERROR_NONE;
 
 /** @internal */
 class Manifest
@@ -52,7 +54,7 @@ class Manifest
         }
     }
 
-    private function parse() : void
+    private function parse(): void
     {
         $this->logger->info(sprintf('Parsing Core Agent Manifest at "%s"', $this->manifestPath));
 
@@ -73,26 +75,26 @@ class Manifest
         $this->valid      = true;
     }
 
-    public function isValid() : bool
+    public function isValid(): bool
     {
         return $this->valid;
     }
 
-    public function hashOfBinary() : string
+    public function hashOfBinary(): string
     {
         Assert::string($this->sha256);
 
         return $this->sha256;
     }
 
-    public function binaryName() : string
+    public function binaryName(): string
     {
         Assert::string($this->binName);
 
         return $this->binName;
     }
 
-    public function binaryVersion() : string
+    public function binaryVersion(): string
     {
         Assert::stringNotEmpty($this->binVersion);
 

@@ -12,7 +12,7 @@ use Throwable;
 /** @covers \Scoutapm\Connector\ConnectionAddress */
 final class ConnectionAddressTest extends TestCase
 {
-    private function connectionAddressFromString(string $connectionAddress) : ConnectionAddress
+    private function connectionAddressFromString(string $connectionAddress): ConnectionAddress
     {
         $config = new Config();
         $config->set(Config\ConfigKey::CORE_AGENT_SOCKET_PATH, $connectionAddress);
@@ -20,12 +20,12 @@ final class ConnectionAddressTest extends TestCase
         return ConnectionAddress::fromConfig($config);
     }
 
-    private function expectExceptionInCall(callable $callableThatShouldThrow, string $message) : void
+    private function expectExceptionInCall(callable $callableThatShouldThrow, string $message): void
     {
         try {
             $callableThatShouldThrow();
             self::fail($message);
-        } catch (Throwable $_) {
+        } catch (Throwable $expected) {
             // exception is expected
         }
     }
@@ -35,7 +35,7 @@ final class ConnectionAddressTest extends TestCase
      *
      * @psalm-return list<array{configuration:string,address:string,port:int,both:string}>
      */
-    public function tcpAddressProvider() : array
+    public function tcpAddressProvider(): array
     {
         return [
             [
@@ -101,14 +101,14 @@ final class ConnectionAddressTest extends TestCase
         string $address,
         int $port,
         string $both
-    ) : void {
+    ): void {
         $connectionAddress = $this->connectionAddressFromString($configuration);
 
         self::assertSame($configuration, $connectionAddress->toString());
 
         self::assertFalse($connectionAddress->isSocketPath());
         $this->expectExceptionInCall(
-            static function () use ($connectionAddress) : void {
+            static function () use ($connectionAddress): void {
                 $connectionAddress->socketPath();
             },
             'Trying to retrieve a socket path should throw an exception'
@@ -121,7 +121,7 @@ final class ConnectionAddressTest extends TestCase
         self::assertSame($both, $connectionAddress->tcpBindAddressPort());
     }
 
-    public function testConnectionAddressWithSocketPath() : void
+    public function testConnectionAddressWithSocketPath(): void
     {
         $connectionAddress = $this->connectionAddressFromString('/path/to/my/socket');
 
@@ -132,19 +132,19 @@ final class ConnectionAddressTest extends TestCase
 
         self::assertFalse($connectionAddress->isTcpAddress());
         $this->expectExceptionInCall(
-            static function () use ($connectionAddress) : void {
+            static function () use ($connectionAddress): void {
                 $connectionAddress->tcpBindAddressPort();
             },
             'Trying to retrieve a TCP address/port should throw an exception'
         );
         $this->expectExceptionInCall(
-            static function () use ($connectionAddress) : void {
+            static function () use ($connectionAddress): void {
                 $connectionAddress->tcpBindAddress();
             },
             'Trying to retrieve a TCP address should throw an exception'
         );
         $this->expectExceptionInCall(
-            static function () use ($connectionAddress) : void {
+            static function () use ($connectionAddress): void {
                 $connectionAddress->tcpBindPort();
             },
             'Trying to retrieve a TCP port should throw an exception'
