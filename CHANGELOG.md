@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.0.0 - TBC
+
+### Added
+
+- [#202](https://github.com/scoutapp/scout-apm-php/pull/202) Added support for PHP 8
+- [#204](https://github.com/scoutapp/scout-apm-php/pull/204) Merge `scoutapp/scout-apm-laravel` library into `scoutapp/scout-apm-php`
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 5.3.0 - 2020-12-16
 
 ### Added
