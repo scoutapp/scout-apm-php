@@ -22,6 +22,7 @@ use Illuminate\View\Engines\EngineResolver;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Helper\ComposerPackagesCheck;
 use Scoutapm\Laravel\Database\QueryListener;
 use Scoutapm\Laravel\Middleware\ActionInstrument;
 use Scoutapm\Laravel\Middleware\IgnoredEndpoints;
@@ -130,6 +131,8 @@ final class ScoutApmServiceProvider extends ServiceProvider
         Connection $connection
     ): void {
         $log->debug('Agent is starting');
+
+        ComposerPackagesCheck::logIfLaravelPackageNotPresent($log);
 
         $this->publishes([
             __DIR__ . '/../config/scout_apm.php' => config_path('scout_apm.php'),
