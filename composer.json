@@ -43,6 +43,16 @@
             "Scoutapm\\UnitTests\\": "tests/Unit/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Scoutapm\\Laravel\\Providers\\ScoutApmServiceProvider"
+            ],
+            "aliases": {
+                "ScoutApm": "Scoutapm\\Laravel\\Facades\\ScoutApm"
+            }
+        }
+    },
     "config": {
         "preferred-install": "dist",
         "sort-packages": true
