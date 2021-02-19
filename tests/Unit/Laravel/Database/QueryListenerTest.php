@@ -14,12 +14,10 @@ use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Laravel\Database\QueryListener;
 use Scoutapm\ScoutApmAgent;
 
-use function assert;
-
 /** @covers \Scoutapm\Laravel\Database\QueryListener */
 final class QueryListenerTest extends TestCase
 {
-    /** @var ScoutApmAgent|MockObject */
+    /** @var ScoutApmAgent&MockObject */
     private $agent;
 
     /** @var QueryListener */
@@ -39,7 +37,6 @@ final class QueryListenerTest extends TestCase
         $query = new QueryExecuted('SELECT 1', [], 1000, $this->createMock(Connection::class));
 
         $spanMock = $this->createMock(Span::class);
-        assert($spanMock instanceof Span && $spanMock instanceof MockObject);
         $spanMock->expects(self::once())
             ->method('tag')
             ->with('db.statement', 'SELECT 1');

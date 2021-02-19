@@ -48,9 +48,12 @@ final class MiddlewareInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('instrument')
             ->with('Middleware', 'all', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(static function (string $type, string $name, callable $transaction) {
-                return $transaction();
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                static function (string $type, string $name, callable $transaction) {
+                    return $transaction();
+                }
+            );
 
         $this->logger->expects(self::once())
             ->method('log')

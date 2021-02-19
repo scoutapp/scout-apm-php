@@ -80,9 +80,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $originalName, callable $transaction) {
-                return $transaction(SpanReference::fromSpan($this->span));
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                function (string $originalName, callable $transaction) {
+                    return $transaction(SpanReference::fromSpan($this->span));
+                }
+            );
 
         self::assertSame(
             $expectedResponse,
@@ -109,9 +112,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(static function (string $originalName, callable $transaction) {
-                return $transaction(null);
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                static function (string $originalName, callable $transaction) {
+                    return $transaction(null);
+                }
+            );
 
         self::assertSame(
             $expectedResponse,
@@ -147,9 +153,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $originalName, callable $transaction) {
-                return $transaction(SpanReference::fromSpan($this->span));
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                function (string $originalName, callable $transaction) {
+                    return $transaction(SpanReference::fromSpan($this->span));
+                }
+            );
 
         self::assertSame(
             $expectedResponse,
@@ -183,9 +192,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $originalName, callable $transaction) {
-                return $transaction(SpanReference::fromSpan($this->span));
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                function (string $originalName, callable $transaction) {
+                    return $transaction(SpanReference::fromSpan($this->span));
+                }
+            );
 
         self::assertSame(
             $expectedResponse,
@@ -225,9 +237,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $originalName, callable $transaction) {
-                return $transaction(SpanReference::fromSpan($this->span));
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                function (string $originalName, callable $transaction) {
+                    return $transaction(SpanReference::fromSpan($this->span));
+                }
+            );
 
         self::assertSame(
             $expectedResponse,
@@ -251,9 +266,12 @@ final class ActionInstrumentTest extends TestCase
             ->expects(self::once())
             ->method('webTransaction')
             ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $originalName, callable $transaction) {
-                return $transaction(SpanReference::fromSpan($this->span));
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                function (string $originalName, callable $transaction) {
+                    return $transaction(SpanReference::fromSpan($this->span));
+                }
+            );
 
         $this->expectException(Throwable::class);
         $this->expectExceptionMessage('Any old exception');

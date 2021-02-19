@@ -9,6 +9,9 @@ use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
 use Scoutapm\ScoutApmAgent;
 
+use function assert;
+use function method_exists;
+
 /** @noinspection ContractViolationInspection */
 final class ScoutViewEngineDecorator implements Engine
 {
@@ -37,7 +40,7 @@ final class ScoutViewEngineDecorator implements Engine
     {
         return $this->agent->instrument(
             'View',
-            $this->viewFactory->shared(self::VIEW_FACTORY_SHARED_KEY, 'unknown'),
+            (string) $this->viewFactory->shared(self::VIEW_FACTORY_SHARED_KEY, 'unknown'),
             function () use ($path, $data) {
                 return $this->realEngine->get($path, $data);
             }
@@ -48,16 +51,15 @@ final class ScoutViewEngineDecorator implements Engine
      * Since Laravel has a nasty habit of exposing public API that is not defined in interfaces, we must expose the
      * getCompiler method commonly used in the actual view engines.
      *
-     * Unfortunately, we have to disable all kinds of static analysis due to this violation :/
-     *
-     * @noinspection PhpUnused
+     * Unfortunately, we have to make all kinds of assertions due to this violation :/
      */
     public function getCompiler(): CompilerInterface
     {
-        /**
-         * @noinspection PhpUndefinedMethodInspection
-         * @psalm-suppress UndefinedInterfaceMethod
-         */
-        return $this->realEngine->getCompiler();
+        assert(method_exists($this->realEngine, 'getCompiler'));
+        /** @psalm-suppress UndefinedInterfaceMethod */
+        $compiler = $this->realEngine->getCompiler();
+        assert($compiler instanceof CompilerInterface);
+
+        return $compiler;
     }
 }

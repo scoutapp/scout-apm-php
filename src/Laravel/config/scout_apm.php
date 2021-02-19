@@ -16,7 +16,8 @@ use Scoutapm\Config\ConfigKey;
 $config = array_combine(
     ConfigKey::allConfigurationKeys(),
     array_map(
-        static function ($configKey) {
+        /** @return mixed */
+        static function (string $configKey) {
             return env('SCOUT_' . strtoupper($configKey), null);
         },
         ConfigKey::allConfigurationKeys()

@@ -24,11 +24,16 @@ final class SendRequestToScout
         $this->logger = $logger;
     }
 
-    /** @return mixed */
+    /**
+     * @return mixed
+     *
+     * @psalm-param Closure(Request):mixed $next
+     */
     public function handle(Request $request, Closure $next)
     {
         $this->agent->connect();
 
+        /** @var mixed $response */
         $response = $next($request);
 
         try {

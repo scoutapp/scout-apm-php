@@ -58,9 +58,12 @@ final class ScoutViewEngineDecoratorTest extends TestCase
             ->expects(self::once())
             ->method('instrument')
             ->with('View', $viewTemplateName, self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(static function (string $type, string $name, callable $transaction) {
-                return $transaction();
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                static function (string $type, string $name, callable $transaction) {
+                    return $transaction();
+                }
+            );
 
         $this->realEngine->expects(self::once())
             ->method('get')
@@ -85,9 +88,12 @@ final class ScoutViewEngineDecoratorTest extends TestCase
             ->expects(self::once())
             ->method('instrument')
             ->with('View', 'unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(static function (string $type, string $name, callable $transaction) {
-                return $transaction();
-            });
+            ->willReturnCallback(
+                /** @return mixed */
+                static function (string $type, string $name, callable $transaction) {
+                    return $transaction();
+                }
+            );
 
         $this->realEngine->expects(self::once())
             ->method('get')

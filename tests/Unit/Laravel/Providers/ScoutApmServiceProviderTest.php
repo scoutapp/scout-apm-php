@@ -167,7 +167,6 @@ final class ScoutApmServiceProviderTest extends TestCase
         $this->serviceProvider->register();
 
         $agent = $this->application->make(ScoutApmAgent::class);
-        assert($agent instanceof ScoutApmAgent);
 
         $configProperty = new ReflectionProperty($agent, 'config');
         $configProperty->setAccessible(true);
@@ -192,7 +191,7 @@ final class ScoutApmServiceProviderTest extends TestCase
         assert($viewResolver instanceof EngineResolver);
 
         $viewFactory = $this->application->make('view');
-        assert($viewFactory instanceof ViewFactory && $viewFactory instanceof MockObject);
+        assert($viewFactory instanceof MockObject);
         $viewFactory->expects(self::once())
             ->method('composer')
             ->with('*', self::isType(IsType::TYPE_CALLABLE))
@@ -221,7 +220,10 @@ final class ScoutApmServiceProviderTest extends TestCase
         $agent = $this->application->make(ScoutApmAgent::class);
         assert($agent instanceof Agent);
 
-        $commands = $agent->getRequest()->jsonSerialize()['BatchCommand']['commands'];
+        /** @psalm-suppress DeprecatedMethod */
+        $requestMade = $agent->getRequest();
+        assert($requestMade !== null);
+        $commands = $requestMade->jsonSerialize()['BatchCommand']['commands'];
 
         self::assertCount(4, $commands);
 
@@ -452,6 +454,7 @@ final class ScoutApmServiceProviderTest extends TestCase
         $this->serviceProvider->register();
 
         $this->application->singleton(ScoutApmAgent::class, function () use ($connectorMock) {
+            /** @psalm-suppress InvalidArgument */
             return Agent::fromConfig(
                 $this->application->make(self::CONFIG_SERVICE_KEY),
                 $this->application->make(FilteredLogLevelDecorator::class),
@@ -465,6 +468,7 @@ final class ScoutApmServiceProviderTest extends TestCase
         $connectorMock->expects(self::at(3))
             ->method('sendCommand')
             ->with(self::callback(static function (Metadata $metadata) {
+                /** @psalm-var array{framework: string, framework_version: string} $flattenedMetadata */
                 $flattenedMetadata = json_decode(json_encode($metadata), true)['ApplicationEvent']['event_value'];
 
                 self::assertArrayHasKey('framework', $flattenedMetadata);
@@ -476,9 +480,9 @@ final class ScoutApmServiceProviderTest extends TestCase
                 return true;
             }));
 
-        $agent = $this->application->make(ScoutApmAgent::class);
-        assert($agent instanceof ScoutApmAgent);
-        $agent->send();
+        $this->application
+            ->make(ScoutApmAgent::class)
+            ->send();
     }
 
     /** @throws BindingResolutionException */
@@ -496,6 +500,8 @@ final class ScoutApmServiceProviderTest extends TestCase
     /**
      * Helper to create a Laravel application instance that has very basic wiring up of services that our Laravel
      * binding library actually interacts with in some way.
+     *
+     * @psalm-return Application&MockObject
      */
     private function createLaravelApplicationFulfillingBasicRequirementsForScout(bool $runningInConsole = false): Application
     {

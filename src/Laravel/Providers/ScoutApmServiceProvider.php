@@ -19,7 +19,6 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Engines\EngineResolver;
-use Illuminate\View\Factory as ViewFactory;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -38,7 +37,6 @@ use function array_combine;
 use function array_filter;
 use function array_map;
 use function array_merge;
-use function assert;
 use function config_path;
 
 final class ScoutApmServiceProvider extends ServiceProvider
@@ -60,7 +58,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
                 array_filter(array_combine(
                     ConfigKey::allConfigurationKeys(),
                     array_map(
-                    /** @return mixed */
+                        /** @return mixed */
                         static function (string $configurationKey) use ($configRepo) {
                             return $configRepo->get('scout_apm.' . $configurationKey);
                         },
@@ -111,7 +109,6 @@ final class ScoutApmServiceProvider extends ServiceProvider
     public function wrapEngine(Engine $realEngine): Engine
     {
         $viewFactory = $this->app->make('view');
-        assert($viewFactory instanceof ViewFactory);
 
         /** @noinspection UnusedFunctionResultInspection */
         $viewFactory->composer('*', static function (View $view) use ($viewFactory): void {
@@ -151,6 +148,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
         }
 
         $httpKernel = $application->make(HttpKernelInterface::class);
+        /** @psalm-suppress ArgumentTypeCoercion */
         $this->instrumentMiddleware($httpKernel);
     }
 

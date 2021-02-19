@@ -6,14 +6,12 @@ namespace Scoutapm\Laravel\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Route;
 use Illuminate\Routing\Router;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
-
-use function assert;
+use Webmozart\Assert\Assert;
 
 final class ActionInstrument
 {
@@ -37,6 +35,8 @@ final class ActionInstrument
      * @return mixed
      *
      * @throws Throwable
+     *
+     * @psalm-param Closure(Request):mixed $next
      */
     public function handle(Request $request, Closure $next)
     {
@@ -47,6 +47,7 @@ final class ActionInstrument
             /** @return mixed */
             function (?SpanReference $span) use ($request, $next) {
                 try {
+                    /** @var mixed $response */
                     $response = $next($request);
                 } catch (Throwable $e) {
                     $this->agent->tagRequest('error', 'true');
@@ -73,9 +74,10 @@ final class ActionInstrument
 
         try {
             $route = $this->router->current();
-            assert($route instanceof Route || $route === null);
             if ($route !== null) {
+                /** @var mixed $name */
                 $name = $route->action['controller'] ?? $route->uri();
+                Assert::stringNotEmpty($name);
             }
         } catch (Throwable $e) {
             $this->logger->debug(
