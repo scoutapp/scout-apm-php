@@ -46,6 +46,8 @@ use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
+
+use function assert;
 use function json_decode;
 use function json_encode;
 use function putenv;
@@ -70,7 +72,7 @@ final class ScoutApmServiceProviderTest extends TestCase
     /** @var Connection&MockObject */
     private $connection;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -81,7 +83,7 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws BindingResolutionException */
-    public function testScoutAgentIsRegistered() : void
+    public function testScoutAgentIsRegistered(): void
     {
         self::assertFalse($this->application->has(ScoutApmAgent::class));
 
@@ -98,7 +100,7 @@ final class ScoutApmServiceProviderTest extends TestCase
      * @throws BindingResolutionException
      * @throws ReflectionException
      */
-    public function testScoutAgentUsesLaravelCacheWhenConfigured() : void
+    public function testScoutAgentUsesLaravelCacheWhenConfigured(): void
     {
         $this->application->singleton('config', static function () {
             return new ConfigRepository([
@@ -126,7 +128,7 @@ final class ScoutApmServiceProviderTest extends TestCase
      * @throws BindingResolutionException
      * @throws ReflectionException
      */
-    public function testScoutAgentUsesDevNullCacheWhenNoCacheIsConfigured() : void
+    public function testScoutAgentUsesDevNullCacheWhenNoCacheIsConfigured(): void
     {
         $laravelVersion = Version::fromString(Application::VERSION);
         if (! $laravelVersion->isOlderThan(Version::fromString('8.0.0'))) {
@@ -149,7 +151,7 @@ final class ScoutApmServiceProviderTest extends TestCase
      * @throws BindingResolutionException
      * @throws ReflectionException
      */
-    public function testScoutAgentPullsConfigFromConfigRepositoryAndEnv() : void
+    public function testScoutAgentPullsConfigFromConfigRepositoryAndEnv(): void
     {
         $configName = uniqid('configName', true);
         $configKey  = uniqid('configKey', true);
@@ -164,14 +166,14 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->serviceProvider->register();
 
-        /** @var ScoutApmAgent $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof ScoutApmAgent);
 
         $configProperty = new ReflectionProperty($agent, 'config');
         $configProperty->setAccessible(true);
 
-        /** @var Config $configUsed */
         $configUsed = $configProperty->getValue($agent);
+        assert($configUsed instanceof Config);
 
         self::assertSame($configName, $configUsed->get(Config\ConfigKey::APPLICATION_NAME));
         self::assertSame($configKey, $configUsed->get(Config\ConfigKey::APPLICATION_KEY));
@@ -180,23 +182,23 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testViewEngineResolversHaveBeenWrapped() : void
+    public function testViewEngineResolversHaveBeenWrapped(): void
     {
         $this->serviceProvider->register();
 
         $templateName = uniqid('test_template_name', true);
 
-        /** @var EngineResolver $viewResolver */
         $viewResolver = $this->application->make('view.engine.resolver');
+        assert($viewResolver instanceof EngineResolver);
 
-        /** @var ViewFactory&MockObject $viewFactory */
         $viewFactory = $this->application->make('view');
+        assert($viewFactory instanceof ViewFactory && $viewFactory instanceof MockObject);
         $viewFactory->expects(self::once())
             ->method('composer')
             ->with('*', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(function (string $whichViews, callable $composer) use ($templateName) : void {
-                /** @var View&MockObject $mockView */
+            ->willReturnCallback(function (string $whichViews, callable $composer) use ($templateName): void {
                 $mockView = $this->createMock(View::class);
+                assert($mockView instanceof View && $mockView instanceof MockObject);
                 $mockView->expects(self::once())
                     ->method('name')
                     ->willReturn($templateName);
@@ -216,8 +218,8 @@ final class ScoutApmServiceProviderTest extends TestCase
         $engine = $viewResolver->resolve('file');
         self::assertSame('Fake view engine for [file] - rendered path "/path/to/view"', $engine->get('/path/to/view'));
 
-        /** @var Agent $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent);
 
         $commands = $agent->getRequest()->jsonSerialize()['BatchCommand']['commands'];
 
@@ -230,10 +232,10 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testMiddlewareAreRegisteredOnBootForHttpRequest() : void
+    public function testMiddlewareAreRegisteredOnBootForHttpRequest(): void
     {
-        /** @var HttpKernelImplementation $kernel */
         $kernel = $this->application->make(HttpKernelInterface::class);
+        assert($kernel instanceof HttpKernelImplementation);
 
         $this->serviceProvider->register();
 
@@ -251,14 +253,14 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testMiddlewareAreNotRegisteredOnBootForConsoleRequest() : void
+    public function testMiddlewareAreNotRegisteredOnBootForConsoleRequest(): void
     {
         $this->application = $this->createLaravelApplicationFulfillingBasicRequirementsForScout(true);
 
         $this->serviceProvider = new ScoutApmServiceProvider($this->application);
 
-        /** @var HttpKernelImplementation $kernel */
         $kernel = $this->application->make(HttpKernelInterface::class);
+        assert($kernel instanceof HttpKernelImplementation);
 
         $this->serviceProvider->register();
 
@@ -276,7 +278,7 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testDatabaseQueryListenerIsRegistered() : void
+    public function testDatabaseQueryListenerIsRegistered(): void
     {
         $this->serviceProvider->register();
 
@@ -288,7 +290,7 @@ final class ScoutApmServiceProviderTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testJobQueueIsInstrumentedWhenRunningInConsole() : void
+    public function testJobQueueIsInstrumentedWhenRunningInConsole(): void
     {
         $this->application     = $this->createLaravelApplicationFulfillingBasicRequirementsForScout(true);
         $this->serviceProvider = new ScoutApmServiceProvider($this->application);
@@ -296,13 +298,13 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->application->singleton(
             ScoutApmAgent::class,
-            function () : ScoutApmAgent {
+            function (): ScoutApmAgent {
                 return $this->createMock(ScoutApmAgent::class);
             }
         );
 
-        /** @var Agent&MockObject $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent && $agent instanceof MockObject);
 
         $agent->expects(self::once())
             ->method('shouldInstrument')
@@ -326,27 +328,27 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->bootServiceProvider();
 
-        /** @var Dispatcher $events */
         $events = $this->application->make('events');
+        assert($events instanceof Dispatcher);
 
         $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
         $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
     }
 
     /** @throws Throwable */
-    public function testJobQueueIsInstrumentedWhenRunningInHttp() : void
+    public function testJobQueueIsInstrumentedWhenRunningInHttp(): void
     {
         $this->serviceProvider->register();
 
         $this->application->singleton(
             ScoutApmAgent::class,
-            function () : ScoutApmAgent {
+            function (): ScoutApmAgent {
                 return $this->createMock(ScoutApmAgent::class);
             }
         );
 
-        /** @var Agent&MockObject $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent && $agent instanceof MockObject);
 
         $agent->expects(self::once())
             ->method('shouldInstrument')
@@ -370,15 +372,15 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->bootServiceProvider();
 
-        /** @var Dispatcher $events */
         $events = $this->application->make('events');
+        assert($events instanceof Dispatcher);
 
         $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
         $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
     }
 
     /** @throws Throwable */
-    public function testJobQueuesAreNotInstrumentedWhenNotConfigured() : void
+    public function testJobQueuesAreNotInstrumentedWhenNotConfigured(): void
     {
         $this->application     = $this->createLaravelApplicationFulfillingBasicRequirementsForScout(true);
         $this->serviceProvider = new ScoutApmServiceProvider($this->application);
@@ -395,13 +397,13 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->application->singleton(
             ScoutApmAgent::class,
-            function () : ScoutApmAgent {
+            function (): ScoutApmAgent {
                 return $this->createMock(ScoutApmAgent::class);
             }
         );
 
-        /** @var Agent&MockObject $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent && $agent instanceof MockObject);
 
         $agent->expects(self::once())
             ->method('shouldInstrument')
@@ -425,15 +427,15 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->bootServiceProvider();
 
-        /** @var Dispatcher $events */
         $events = $this->application->make('events');
+        assert($events instanceof Dispatcher);
 
         $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
         $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
     }
 
     /** @throws BindingResolutionException */
-    public function testMetadataContainsFrameworkNameAndVersion() : void
+    public function testMetadataContainsFrameworkNameAndVersion(): void
     {
         $connectorMock = $this->createMock(Connector::class);
 
@@ -474,13 +476,13 @@ final class ScoutApmServiceProviderTest extends TestCase
                 return true;
             }));
 
-        /** @var ScoutApmAgent $agent */
         $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof ScoutApmAgent);
         $agent->send();
     }
 
     /** @throws BindingResolutionException */
-    private function bootServiceProvider() : void
+    private function bootServiceProvider(): void
     {
         $log = $this->application->make(FilteredLogLevelDecorator::class);
         $this->serviceProvider->boot(
@@ -495,7 +497,7 @@ final class ScoutApmServiceProviderTest extends TestCase
      * Helper to create a Laravel application instance that has very basic wiring up of services that our Laravel
      * binding library actually interacts with in some way.
      */
-    private function createLaravelApplicationFulfillingBasicRequirementsForScout(bool $runningInConsole = false) : Application
+    private function createLaravelApplicationFulfillingBasicRequirementsForScout(bool $runningInConsole = false): Application
     {
         $application = $this->getMockBuilder(Application::class)
             ->setMethods(['runningInConsole'])
@@ -507,7 +509,7 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $application->singleton(
             LoggerInterface::class,
-            function () : LoggerInterface {
+            function (): LoggerInterface {
                 return $this->createMock(LoggerInterface::class);
             }
         );
@@ -515,7 +517,7 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $application->singleton(
             FilteredLogLevelDecorator::class,
-            static function () use ($application) : FilteredLogLevelDecorator {
+            static function () use ($application): FilteredLogLevelDecorator {
                 return new FilteredLogLevelDecorator(
                     $application->make(LoggerInterface::class),
                     LogLevel::DEBUG
@@ -525,27 +527,27 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $application->singleton(
             HttpKernelInterface::class,
-            function () use ($application) : HttpKernelInterface {
+            function () use ($application): HttpKernelInterface {
                 return new HttpKernelImplementation($application, $this->createMock(Router::class));
             }
         );
 
         $application->singleton(
             'view',
-            function () : ViewFactory {
+            function (): ViewFactory {
                 return $this->createMock(ViewFactory::class);
             }
         );
 
         $application->singleton(
             'view.engine.resolver',
-            function () : EngineResolver {
+            function (): EngineResolver {
                 $viewEngineResolver = new EngineResolver();
 
                 foreach (self::VIEW_ENGINES_TO_WRAP as $viewEngineName) {
                     $viewEngineResolver->register(
                         $viewEngineName,
-                        function () use ($viewEngineName) : Engine {
+                        function () use ($viewEngineName): Engine {
                             return new class ($viewEngineName) implements Engine {
                                 /** @var string */
                                 private $viewEngineName;
@@ -556,7 +558,7 @@ final class ScoutApmServiceProviderTest extends TestCase
                                 }
 
                                 /** @inheritDoc */
-                                public function get($path, array $data = []) : string
+                                public function get($path, array $data = []): string
                                 {
                                     return sprintf(
                                         'Fake view engine for [%s] - rendered path "%s"',
@@ -575,7 +577,7 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $application->singleton(
             'cache',
-            static function () use ($application) : CacheManager {
+            static function () use ($application): CacheManager {
                 return new CacheManager($application);
             }
         );
@@ -583,14 +585,14 @@ final class ScoutApmServiceProviderTest extends TestCase
         // Older versions of Laravel used `path.config` service name for path...
         $application->singleton(
             'path.config',
-            static function () : string {
+            static function (): string {
                 return sys_get_temp_dir();
             }
         );
 
         $application->singleton(
             'config',
-            static function () : ConfigRepository {
+            static function (): ConfigRepository {
                 return new ConfigRepository();
             }
         );

@@ -27,7 +27,7 @@ use Scoutapm\ScoutApmAgent;
  */
 final class ScoutApm extends Facade
 {
-    protected static function getFacadeAccessor() : string
+    protected static function getFacadeAccessor(): string
     {
         return ScoutApmAgent::class;
     }

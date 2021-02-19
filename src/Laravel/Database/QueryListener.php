@@ -6,6 +6,7 @@ namespace Scoutapm\Laravel\Database;
 
 use Illuminate\Database\Events\QueryExecuted;
 use Scoutapm\ScoutApmAgent;
+
 use function microtime;
 
 final class QueryListener
@@ -18,7 +19,7 @@ final class QueryListener
         $this->agent = $agent;
     }
 
-    public function __invoke(QueryExecuted $query) : void
+    public function __invoke(QueryExecuted $query): void
     {
         $startingTime = microtime(true) - ($query->time / 1000);
 

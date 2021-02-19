@@ -12,6 +12,7 @@ declare(strict_types=1);
 use Scoutapm\Config\ConfigKey;
 
 /** @noinspection PhpUnnecessaryLocalVariableInspection */
+// phpcs:ignore SlevomatCodingStandard.Variables.UselessVariable.UselessVariable
 $config = array_combine(
     ConfigKey::allConfigurationKeys(),
     array_map(

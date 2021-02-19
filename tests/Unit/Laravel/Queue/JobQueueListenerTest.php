@@ -20,7 +20,7 @@ final class JobQueueListenerTest extends TestCase
     /** @var JobQueueListener */
     private $jobQueueListener;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
         $this->agent = $this->createMock(ScoutApmAgent::class);
@@ -28,7 +28,7 @@ final class JobQueueListenerTest extends TestCase
         $this->jobQueueListener = new JobQueueListener($this->agent);
     }
 
-    public function testRequestIsReset() : void
+    public function testRequestIsReset(): void
     {
         $this->agent->expects(self::once())
             ->method('startNewRequest');
@@ -37,7 +37,7 @@ final class JobQueueListenerTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testSpanIsStarted() : void
+    public function testSpanIsStarted(): void
     {
         $this->agent->expects(self::once())
             ->method('startSpan')
@@ -54,7 +54,7 @@ final class JobQueueListenerTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testSpanIsStopped() : void
+    public function testSpanIsStopped(): void
     {
         $this->agent->expects(self::once())
             ->method('stopSpan');
@@ -63,7 +63,7 @@ final class JobQueueListenerTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testAgentConnectsAndSendsWhenRequestIsToBeSent() : void
+    public function testAgentConnectsAndSendsWhenRequestIsToBeSent(): void
     {
         $this->agent->expects(self::once())
             ->method('connect');

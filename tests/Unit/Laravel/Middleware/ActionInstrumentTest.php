@@ -20,6 +20,7 @@ use Scoutapm\Laravel\Middleware\ActionInstrument;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
+
 use function uniqid;
 
 /** @covers \Scoutapm\Laravel\Middleware\ActionInstrument */
@@ -40,7 +41,7 @@ final class ActionInstrumentTest extends TestCase
     /** @var ActionInstrument */
     private $middleware;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -57,7 +58,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsControllerNameWhenRouteHasControllerKey() : void
+    public function testHandleRecordsControllerNameWhenRouteHasControllerKey(): void
     {
         $expectedResponse = new Response();
 
@@ -95,7 +96,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsDoesNotUpdateNameWhenSpanIsNull() : void
+    public function testHandleRecordsDoesNotUpdateNameWhenSpanIsNull(): void
     {
         $expectedResponse = new Response();
 
@@ -124,7 +125,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsControllerNameWhenRouteDoesNotHaveAControllerKey() : void
+    public function testHandleRecordsControllerNameWhenRouteDoesNotHaveAControllerKey(): void
     {
         $expectedResponse = new Response();
 
@@ -162,7 +163,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsUnknownControllerNameWhenNoRouteFound() : void
+    public function testHandleRecordsUnknownControllerNameWhenNoRouteFound(): void
     {
         $expectedResponse = new Response();
 
@@ -198,7 +199,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsUnknownControllerNameWhenRouterCurrentThrowsException() : void
+    public function testHandleRecordsUnknownControllerNameWhenRouterCurrentThrowsException(): void
     {
         $expectedResponse = new Response();
 
@@ -240,7 +241,7 @@ final class ActionInstrumentTest extends TestCase
     }
 
     /** @throws Throwable */
-    public function testTagAsErrorIfControllerRaises() : void
+    public function testTagAsErrorIfControllerRaises(): void
     {
         $this->agent->expects(self::once())
             ->method('tagRequest')
@@ -259,7 +260,7 @@ final class ActionInstrumentTest extends TestCase
 
         $this->middleware->handle(
             new Request(),
-            static function () : void {
+            static function (): void {
                 throw new Exception('Any old exception');
             }
         );

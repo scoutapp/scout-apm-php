@@ -13,6 +13,8 @@ use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
 
+use function assert;
+
 final class ActionInstrument
 {
     /** @var ScoutApmAgent */
@@ -48,6 +50,7 @@ final class ActionInstrument
                     $response = $next($request);
                 } catch (Throwable $e) {
                     $this->agent->tagRequest('error', 'true');
+
                     throw $e;
                 }
 
@@ -64,13 +67,13 @@ final class ActionInstrument
      * Get the name of the controller span from the controller name if possible, but fall back on the uri if no
      * controller was found.
      */
-    private function automaticallyDetermineControllerName() : string
+    private function automaticallyDetermineControllerName(): string
     {
         $name = 'unknown';
 
         try {
-            /** @var Route|null $route */
             $route = $this->router->current();
+            assert($route instanceof Route || $route === null);
             if ($route !== null) {
                 $name = $route->action['controller'] ?? $route->uri();
             }

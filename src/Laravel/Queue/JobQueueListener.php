@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Queue\Events\JobProcessing;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\ScoutApmAgent;
+
 use function class_basename;
 use function sprintf;
 
@@ -21,13 +22,13 @@ final class JobQueueListener
         $this->agent = $agent;
     }
 
-    public function startNewRequestForJob() : void
+    public function startNewRequestForJob(): void
     {
         $this->agent->startNewRequest();
     }
 
     /** @throws Exception */
-    public function startSpanForJob(JobProcessing $jobProcessingEvent) : void
+    public function startSpanForJob(JobProcessing $jobProcessingEvent): void
     {
         /** @noinspection UnusedFunctionResultInspection */
         $this->agent->startSpan(sprintf(
@@ -38,13 +39,13 @@ final class JobQueueListener
     }
 
     /** @throws Exception */
-    public function stopSpanForJob() : void
+    public function stopSpanForJob(): void
     {
         $this->agent->stopSpan();
     }
 
     /** @throws Exception */
-    public function sendRequestForJob() : void
+    public function sendRequestForJob(): void
     {
         $this->agent->connect();
         $this->agent->send();

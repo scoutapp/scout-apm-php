@@ -20,7 +20,7 @@ final class IgnoredEndpointsTest extends TestCase
     /** @var IgnoredEndpoints */
     private $middleware;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -29,7 +29,7 @@ final class IgnoredEndpointsTest extends TestCase
         $this->middleware = new IgnoredEndpoints($this->agent);
     }
 
-    public function testHandleIgnoresPathIfItIsIgnored() : void
+    public function testHandleIgnoresPathIfItIsIgnored(): void
     {
         $request          = new Request();
         $expectedResponse = new Response();
@@ -53,7 +53,7 @@ final class IgnoredEndpointsTest extends TestCase
         );
     }
 
-    public function testHandleDoesNothingIfPathIsNotIgnored() : void
+    public function testHandleDoesNothingIfPathIsNotIgnored(): void
     {
         $request          = new Request();
         $expectedResponse = new Response();

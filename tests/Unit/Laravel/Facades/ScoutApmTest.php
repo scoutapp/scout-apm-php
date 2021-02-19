@@ -15,7 +15,7 @@ final class ScoutApmTest extends TestCase
     /** @var ScoutApmAgent&MockObject */
     private $agent;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -28,9 +28,9 @@ final class ScoutApmTest extends TestCase
     /**
      * @return string[][]|string[][][]|null[][][]|callable[][][]
      */
-    public function proxiedMethodsProvider() : array
+    public function proxiedMethodsProvider(): array
     {
-        $callable = static function () : void {
+        $callable = static function (): void {
         };
 
         return [
@@ -54,7 +54,7 @@ final class ScoutApmTest extends TestCase
      *
      * @dataProvider proxiedMethodsProvider
      */
-    public function testFacadeProxiesMethodsToRealAgent(string $method, array $args) : void
+    public function testFacadeProxiesMethodsToRealAgent(string $method, array $args): void
     {
         $this->agent->expects(self::once())
             ->method($method)

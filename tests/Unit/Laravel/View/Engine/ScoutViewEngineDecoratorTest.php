@@ -12,6 +12,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\ScoutApmAgent;
+
 use function uniqid;
 
 /** @covers \Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator */
@@ -29,7 +30,7 @@ final class ScoutViewEngineDecoratorTest extends TestCase
     /** @var ScoutViewEngineDecorator */
     private $viewEngineDecorator;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -41,7 +42,7 @@ final class ScoutViewEngineDecoratorTest extends TestCase
         $this->viewEngineDecorator = new ScoutViewEngineDecorator($this->realEngine, $this->agent, $this->viewFactory);
     }
 
-    public function testGetWrapsCallToRealEngineInInstrumentation() : void
+    public function testGetWrapsCallToRealEngineInInstrumentation(): void
     {
         $viewTemplateName = uniqid('viewTemplateName', true);
         $path             = uniqid('path', true);
@@ -69,7 +70,7 @@ final class ScoutViewEngineDecoratorTest extends TestCase
         self::assertSame($renderedString, $this->viewEngineDecorator->get($path, $data));
     }
 
-    public function testGetFallsBackToUnknownTemplateNameWhenPathWasNotDefined() : void
+    public function testGetFallsBackToUnknownTemplateNameWhenPathWasNotDefined(): void
     {
         $path           = uniqid('path', true);
         $data           = ['foo' => 'bar'];
@@ -96,7 +97,7 @@ final class ScoutViewEngineDecoratorTest extends TestCase
         self::assertSame($renderedString, $this->viewEngineDecorator->get($path, $data));
     }
 
-    public function testGetCompilerWillProxyToRealEngineGetCompilerMethd() : void
+    public function testGetCompilerWillProxyToRealEngineGetCompilerMethd(): void
     {
         $compiler = $this->createMock(CompilerInterface::class);
 

@@ -14,6 +14,8 @@ use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Laravel\Database\QueryListener;
 use Scoutapm\ScoutApmAgent;
 
+use function assert;
+
 /** @covers \Scoutapm\Laravel\Database\QueryListener */
 final class QueryListenerTest extends TestCase
 {
@@ -23,7 +25,7 @@ final class QueryListenerTest extends TestCase
     /** @var QueryListener */
     private $queryListener;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -32,12 +34,12 @@ final class QueryListenerTest extends TestCase
         $this->queryListener = new QueryListener($this->agent);
     }
 
-    public function testSqlQueryIsLogged() : void
+    public function testSqlQueryIsLogged(): void
     {
         $query = new QueryExecuted('SELECT 1', [], 1000, $this->createMock(Connection::class));
 
-        /** @var Span&MockObject $spanMock */
         $spanMock = $this->createMock(Span::class);
+        assert($spanMock instanceof Span && $spanMock instanceof MockObject);
         $spanMock->expects(self::once())
             ->method('tag')
             ->with('db.statement', 'SELECT 1');
@@ -53,7 +55,7 @@ final class QueryListenerTest extends TestCase
         $this->queryListener->__invoke($query);
     }
 
-    public function testSqlQueryIsNotLoggedWhenStartSpanReturnsNull() : void
+    public function testSqlQueryIsNotLoggedWhenStartSpanReturnsNull(): void
     {
         $query = new QueryExecuted('SELECT 1', [], 1000, $this->createMock(Connection::class));
 

@@ -27,7 +27,7 @@ final class SendRequestToScoutTest extends TestCase
     /** @var SendRequestToScout */
     private $middleware;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -40,7 +40,7 @@ final class SendRequestToScoutTest extends TestCase
         );
     }
 
-    public function testHandleSendsRequestToScout() : void
+    public function testHandleSendsRequestToScout(): void
     {
         $expectedResponse = new Response();
 
@@ -62,7 +62,7 @@ final class SendRequestToScoutTest extends TestCase
         );
     }
 
-    public function testHandleDoesNotThrowExceptionWhenAgentSendCausesException() : void
+    public function testHandleDoesNotThrowExceptionWhenAgentSendCausesException(): void
     {
         $expectedResponse = new Response();
 

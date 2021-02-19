@@ -33,7 +33,7 @@ final class ScoutViewEngineDecorator implements Engine
     /**
      * {@inheritDoc}
      */
-    public function get($path, array $data = []) : string
+    public function get($path, array $data = []): string
     {
         return $this->agent->instrument(
             'View',
@@ -52,7 +52,7 @@ final class ScoutViewEngineDecorator implements Engine
      *
      * @noinspection PhpUnused
      */
-    public function getCompiler() : CompilerInterface
+    public function getCompiler(): CompilerInterface
     {
         /**
          * @noinspection PhpUndefinedMethodInspection

@@ -27,7 +27,7 @@ final class MiddlewareInstrumentTest extends TestCase
     /** @var MiddlewareInstrument */
     private $middleware;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -40,7 +40,7 @@ final class MiddlewareInstrumentTest extends TestCase
         );
     }
 
-    public function testHandleWrappsMiddlewareExecutionInInstrumentation() : void
+    public function testHandleWrappsMiddlewareExecutionInInstrumentation(): void
     {
         $expectedResponse = new Response();
 

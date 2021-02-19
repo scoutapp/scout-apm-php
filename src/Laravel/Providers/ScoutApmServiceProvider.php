@@ -33,10 +33,12 @@ use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
+
 use function array_combine;
 use function array_filter;
 use function array_map;
 use function array_merge;
+use function assert;
 use function config_path;
 
 final class ScoutApmServiceProvider extends ServiceProvider
@@ -49,7 +51,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
     public const INSTRUMENT_LARAVEL_QUEUES = 'laravel_queues';
 
     /** @throws BindingResolutionException */
-    public function register() : void
+    public function register(): void
     {
         $this->app->singleton(self::CONFIG_SERVICE_KEY, function () {
             $configRepo = $this->app->make(ConfigRepository::class);
@@ -95,7 +97,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
             );
         });
 
-        $this->app->afterResolving('view.engine.resolver', function (EngineResolver $engineResolver) : void {
+        $this->app->afterResolving('view.engine.resolver', function (EngineResolver $engineResolver): void {
             foreach (self::VIEW_ENGINES_TO_WRAP as $engineName) {
                 $realEngine = $engineResolver->resolve($engineName);
 
@@ -106,13 +108,13 @@ final class ScoutApmServiceProvider extends ServiceProvider
         });
     }
 
-    public function wrapEngine(Engine $realEngine) : Engine
+    public function wrapEngine(Engine $realEngine): Engine
     {
-        /** @var ViewFactory $viewFactory */
         $viewFactory = $this->app->make('view');
+        assert($viewFactory instanceof ViewFactory);
 
         /** @noinspection UnusedFunctionResultInspection */
-        $viewFactory->composer('*', static function (View $view) use ($viewFactory) : void {
+        $viewFactory->composer('*', static function (View $view) use ($viewFactory): void {
             $viewFactory->share(ScoutViewEngineDecorator::VIEW_FACTORY_SHARED_KEY, $view->name());
         });
 
@@ -129,7 +131,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
         ScoutApmAgent $agent,
         FilteredLogLevelDecorator $log,
         Connection $connection
-    ) : void {
+    ): void {
         $log->debug('Agent is starting');
 
         $this->publishes([
@@ -157,7 +159,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
      *
      * @noinspection PhpDocSignatureInspection
      */
-    private function instrumentMiddleware(HttpKernelInterface $kernel) : void
+    private function instrumentMiddleware(HttpKernelInterface $kernel): void
     {
         $kernel->prependMiddleware(MiddlewareInstrument::class);
         $kernel->pushMiddleware(ActionInstrument::class);
@@ -168,18 +170,18 @@ final class ScoutApmServiceProvider extends ServiceProvider
         $kernel->prependMiddleware(SendRequestToScout::class);
     }
 
-    private function instrumentDatabaseQueries(ScoutApmAgent $agent, Connection $connection) : void
+    private function instrumentDatabaseQueries(ScoutApmAgent $agent, Connection $connection): void
     {
-        $connection->listen(static function (QueryExecuted $query) use ($agent) : void {
+        $connection->listen(static function (QueryExecuted $query) use ($agent): void {
             (new QueryListener($agent))->__invoke($query);
         });
     }
 
-    private function instrumentQueues(ScoutApmAgent $agent, Dispatcher $eventDispatcher, bool $runningInConsole) : void
+    private function instrumentQueues(ScoutApmAgent $agent, Dispatcher $eventDispatcher, bool $runningInConsole): void
     {
         $listener = new JobQueueListener($agent);
 
-        $eventDispatcher->listen(JobProcessing::class, static function (JobProcessing $event) use ($listener, $runningInConsole) : void {
+        $eventDispatcher->listen(JobProcessing::class, static function (JobProcessing $event) use ($listener, $runningInConsole): void {
             if ($runningInConsole) {
                 $listener->startNewRequestForJob();
             }
@@ -187,7 +189,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
             $listener->startSpanForJob($event);
         });
 
-        $eventDispatcher->listen(JobProcessed::class, static function (JobProcessed $event) use ($listener, $runningInConsole) : void {
+        $eventDispatcher->listen(JobProcessed::class, static function (JobProcessed $event) use ($listener, $runningInConsole): void {
             $listener->stopSpanForJob();
 
             if (! $runningInConsole) {
