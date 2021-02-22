@@ -1,0 +1,43 @@
+name: Main Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  base-unit-tests:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dependencies: ["lowest", "highest"]
+        extensions: ["scoutapm", ""]
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ${{ matrix.extensions }}
+      - name: "Install lowest dependencies"
+        if: ${{ matrix.dependencies == 'lowest' }}
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
+      - name: "Install highest dependencies"
+        if: ${{ matrix.dependencies == 'highest' }}
+        run: "composer update --prefer-dist --no-interaction --no-progress"
+      - name: "Run PHPUnit test suite"
+        run: "vendor/bin/phpunit --testsuite=unit,integration"
+      - name: "Check for memory leaks"
+        run: "tests/check-memory-leaks.sh"

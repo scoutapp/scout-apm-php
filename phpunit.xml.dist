@@ -17,9 +17,17 @@
     <testsuites>
         <testsuite name="unit">
             <directory>./tests/Unit</directory>
+            <exclude>./tests/Unit/Laravel</exclude>
+            <exclude>./tests/Unit/ScoutApmBundle</exclude>
         </testsuite>
         <testsuite name="integration">
             <directory>./tests/Integration</directory>
+        </testsuite>
+        <testsuite name="laravel">
+            <directory>./tests/Unit/Laravel</directory>
+        </testsuite>
+        <testsuite name="symfony">
+            <directory>./tests/Unit/ScoutApmBundle</directory>
         </testsuite>
     </testsuites>
     <php>
