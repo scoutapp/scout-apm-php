@@ -270,6 +270,16 @@ final class TwigDecoratorTest extends TestCase
      */
     public function testAllMethodsAreProxiedToOriginalTwig(string $methodName, $returnValue, array $args) : void
     {
+        $twigClassReflection = new \ReflectionClass(Twig::class);
+
+        if (! $twigClassReflection->hasMethod($methodName)) {
+            self::markTestSkipped(sprintf(
+                'Installed Symfony version does not have method: %s#%s()',
+                $twigClassReflection->getName(),
+                $methodName
+            ));
+        }
+
         $this->agent
             ->method('instrument')
             ->willReturnCallback(
@@ -279,12 +289,39 @@ final class TwigDecoratorTest extends TestCase
                 }
             );
 
-        $this->twig
-            ->expects(self::once())
-            ->method($methodName)
-            ->with(...$args)
-            ->willReturn($returnValue);
+        if ($this->methodIsVoid($twigClassReflection, $methodName)) {
+            $this->twig
+                ->expects(self::once())
+                ->method($methodName)
+                ->with(...$args);
+        } else {
+            $this->twig
+                ->expects(self::once())
+                ->method($methodName)
+                ->with(...$args)
+                ->willReturn($returnValue);
+        }
+
 
         self::assertSame($returnValue, $this->twigDecorator->{$methodName}(...$args));
+    }
+
+    private function methodIsVoid(\ReflectionClass $reflectionClass, string $methodName): bool
+    {
+        $methodReflection = $reflectionClass->getMethod($methodName);
+
+        if (! $methodReflection->hasReturnType()) {
+            return false;
+        }
+
+        $returnType = $methodReflection->getReturnType();
+
+        assert($returnType !== null);
+
+        if ($returnType instanceof \ReflectionNamedType) {
+            return $returnType->getName() === 'void';
+        }
+
+        return $returnType->__toString() === 'void';
     }
 }
