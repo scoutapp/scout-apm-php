@@ -187,6 +187,86 @@
       <code>self::LOG_LEVEL_ORDER[$level]</code>
     </MixedArrayOffset>
   </file>
+  <file src="src/ScoutApmBundle/DependencyInjection/Configuration.php">
+    <MixedAssignment occurrences="2">
+      <code>$children</code>
+      <code>$children</code>
+    </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>NodeDefinition|ArrayNodeDefinition</code>
+    </MixedInferredReturnType>
+    <MixedMethodCall occurrences="8">
+      <code>arrayNode</code>
+      <code>children</code>
+      <code>defaultNull</code>
+      <code>end</code>
+      <code>end</code>
+      <code>end</code>
+      <code>end</code>
+      <code>scalarNode</code>
+    </MixedMethodCall>
+    <MixedReturnStatement occurrences="1">
+      <code>$treeBuilder-&gt;root(self::ROOT_NODE_NAME)</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="src/ScoutApmBundle/Twig/TwigDecorator.php">
+    <MixedInferredReturnType occurrences="1">
+      <code>string</code>
+    </MixedInferredReturnType>
+    <MixedReturnStatement occurrences="1"/>
+  </file>
+  <file src="src/ScoutApmBundle/Twig/TwigMethods-Twig2.php">
+    <DuplicateClass occurrences="1">
+      <code>TwigMethods</code>
+    </DuplicateClass>
+  </file>
+  <file src="src/ScoutApmBundle/Twig/TwigMethods-Twig3.php">
+    <InternalMethod occurrences="13">
+      <code>getBinaryOperators</code>
+      <code>getFilter</code>
+      <code>getFilters</code>
+      <code>getFunction</code>
+      <code>getFunctions</code>
+      <code>getGlobals</code>
+      <code>getNodeVisitors</code>
+      <code>getTemplateClass</code>
+      <code>getTest</code>
+      <code>getTests</code>
+      <code>getTokenParsers</code>
+      <code>getUnaryOperators</code>
+      <code>loadTemplate</code>
+    </InternalMethod>
+    <LessSpecificImplementedReturnType occurrences="6">
+      <code>array</code>
+      <code>array</code>
+      <code>array</code>
+      <code>array</code>
+      <code>array</code>
+      <code>array</code>
+    </LessSpecificImplementedReturnType>
+    <MissingParamType occurrences="5">
+      <code>$cache</code>
+      <code>$name</code>
+      <code>$names</code>
+      <code>$original</code>
+      <code>$value</code>
+    </MissingParamType>
+    <MixedArgument occurrences="4">
+      <code>$cache</code>
+      <code>$name</code>
+      <code>$names</code>
+      <code>$original</code>
+    </MixedArgument>
+    <MixedArgumentTypeCoercion occurrences="1">
+      <code>$extensions</code>
+    </MixedArgumentTypeCoercion>
+    <MixedInferredReturnType occurrences="1">
+      <code>array</code>
+    </MixedInferredReturnType>
+    <UndefinedMethod occurrences="1">
+      <code>getTags</code>
+    </UndefinedMethod>
+  </file>
   <file src="tests/Integration/AgentTest.php">
     <MixedArgument occurrences="34">
       <code>$batchCommand</code>
@@ -440,5 +520,34 @@
       <code>$commands[1]['StartSpan']['operation']</code>
       <code>json_decode(json_encode($metadata), true)['ApplicationEvent']</code>
     </MixedArrayAccess>
+  </file>
+  <file src="tests/Unit/ScoutApmBundle/DependencyInjection/ScoutApmExtensionTest.php">
+    <MixedArgument occurrences="1">
+      <code>$agentConfigurationArgument</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="2">
+      <code>$agentConfigurationArgument</code>
+      <code>$agentConfigurationArgument</code>
+    </MixedAssignment>
+  </file>
+  <file src="tests/Unit/ScoutApmBundle/ScoutApmAgentFactoryTest.php">
+    <DeprecatedClass occurrences="1">
+      <code>self::at(3)</code>
+    </DeprecatedClass>
+    <DeprecatedMethod occurrences="1">
+      <code>self::at(3)</code>
+    </DeprecatedMethod>
+    <MixedArgument occurrences="2">
+      <code>$flattenedMetadata</code>
+      <code>$flattenedMetadata</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="3">
+      <code>$flattenedMetadata['framework']</code>
+      <code>$flattenedMetadata['framework_version']</code>
+      <code>json_decode(json_encode($metadata), true)['ApplicationEvent']</code>
+    </MixedArrayAccess>
+    <MixedAssignment occurrences="1">
+      <code>$flattenedMetadata</code>
+    </MixedAssignment>
   </file>
 </files>
