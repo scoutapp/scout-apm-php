@@ -7,8 +7,8 @@ on:
     branches: [ master ]
 
 jobs:
-  tests:
-    name: "Run tests"
+  base-unit-tests:
+    name: "Unit tests"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -38,27 +38,21 @@ jobs:
         if: ${{ matrix.dependencies == 'highest' }}
         run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHPUnit test suite"
-        run: "vendor/bin/phpunit"
+        run: "vendor/bin/phpunit --testsuite=unit,integration"
       - name: "Check for memory leaks"
         run: "tests/check-memory-leaks.sh"
 
-  framework-unit-tests:
-    name: "Framework Tests"
+  laravel-unit-tests:
+    name: "Laravel Tests"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         extensions: ["scoutapm", ""]
-        framework-version:
-          - "laravel/framework:5.5.*"
-          - "laravel/framework:6.*"
-          - "laravel/framework:7.*"
-          - "laravel/framework:8.*"
-          - "symfony/symfony:4.0.* twig/twig:2.*"
-          - "symfony/symfony:4.0.* twig/twig:3.*"
-          - "symfony/symfony:4.* twig/twig:2.*"
-          - "symfony/symfony:4.* twig/twig:3.*"
-          - "symfony/symfony:5.* twig/twig:2.*"
-          - "symfony/symfony:5.* twig/twig:3.*"
+        laravel-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -66,14 +60,10 @@ jobs:
           - "7.4"
           - "8.0"
         exclude:
-          - {php-version: "7.1", framework-version: "laravel/framework:6.*"} # Laravel 6 requires 7.2+
-          - {php-version: "7.1", framework-version: "laravel/framework:7.*"} # Laravel 7 requires 7.2+
-          - {php-version: "7.1", framework-version: "laravel/framework:8.*"} # Laravel 8 requires 7.3+
-          - {php-version: "7.2", framework-version: "laravel/framework:8.*"} # Laravel 8 requires 7.3+
-          - {php-version: "7.1", framework-version: "symfony/symfony:4.0.* twig/twig:3.*"} # Twig 3 requires 7.2+
-          - {php-version: "7.1", framework-version: "symfony/symfony:4.* twig/twig:3.*"} # Twig 3 requires 7.2+
-          - {php-version: "7.1", framework-version: "symfony/symfony:5.* twig/twig:2.*"} # Symfony 5 requires 7.2+
-          - {php-version: "7.1", framework-version: "symfony/symfony:5.* twig/twig:2.*"} # Symfony 5 requires 7.2+
+          - {php-version: "7.1", laravel-version: "6.*"} # Laravel 6 requires 7.2+
+          - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
+          - {php-version: "7.1", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "7.2", laravel-version: "8.*"} # Laravel 8 requires 7.3+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
@@ -85,12 +75,54 @@ jobs:
           extensions: ${{ matrix.extensions }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
-      - name: "Require framework ${{ matrix.framework-version}}"
-        run: "composer require ${{ matrix.framework-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Remove symfony components (conflicts)"
+        run: "composer remove --dev symfony/* --no-update --no-interaction"
+      - name: "Require framework ${{ matrix.laravel-version}}"
+        run: "composer require laravel/framework:${{ matrix.laravel-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Run PHPUnit (Laravel) test suite"
+        run: "vendor/bin/phpunit --testsuite=laravel"
+
+  symfony-unit-tests:
+    name: "Symfony Tests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extensions: ["scoutapm", ""]
+        twig-version:
+          - "2.*"
+          - "3.*"
+        symfony-version:
+          - "4.*"
+          - "5.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+        exclude:
+          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "2.*" } # Symfony 5 (with Twig 2) requires 7.2+
+          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "3.*" } # Symfony 5 (with Twig 3) requires 7.2+
+          - { php-version: "7.1", symfony-version: "4.*", "twig-version": "3.*" } # Twig 3 (on Symfony 4) requires 7.2+
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ${{ matrix.extensions }}
+      # --no-update then a full `composer update` is needed to overcome locked dependencies
+      # See: https://github.com/composer/composer/issues/9561
+      - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
+        run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit test suite"
-        run: "vendor/bin/phpunit"
+        run: "vendor/bin/phpunit --testsuite=symfony"
 
   laravel-e2e:
     name: "Laravel End-to-End Test"
