@@ -9,13 +9,14 @@ use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+
 use function method_exists;
 
 final class Configuration implements ConfigurationInterface
 {
     private const ROOT_NODE_NAME = 'scout_apm';
 
-    public function getConfigTreeBuilder() : TreeBuilder
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         /** @psalm-suppress TooManyArguments */
         $treeBuilder = new TreeBuilder(self::ROOT_NODE_NAME);
@@ -38,7 +39,7 @@ final class Configuration implements ConfigurationInterface
     }
 
     /** @return NodeDefinition|ArrayNodeDefinition */
-    private function crossCompatibleRootNode(TreeBuilder $treeBuilder) : NodeDefinition
+    private function crossCompatibleRootNode(TreeBuilder $treeBuilder): NodeDefinition
     {
         /** @noinspection ClassMemberExistenceCheckInspection */
         if (method_exists($treeBuilder, 'getRootNode')) {

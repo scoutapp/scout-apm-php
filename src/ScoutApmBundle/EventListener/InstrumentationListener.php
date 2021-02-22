@@ -13,6 +13,7 @@ use Scoutapm\ScoutApmAgent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -32,7 +33,7 @@ final class InstrumentationListener implements EventSubscriberInterface
     }
 
     /** @noinspection PhpUnused */
-    public function onKernelRequest() : void
+    public function onKernelRequest(): void
     {
         $this->agent->connect();
     }
@@ -40,7 +41,7 @@ final class InstrumentationListener implements EventSubscriberInterface
     /**
      * @throws Exception
      */
-    public function onKernelController(ControllerEvent $controllerEvent) : void
+    public function onKernelController(ControllerEvent $controllerEvent): void
     {
         $this->currentSpan = $this->agent->startSpan(sprintf(
             '%s/%s',
@@ -52,7 +53,7 @@ final class InstrumentationListener implements EventSubscriberInterface
     /**
      * @throws ReflectionException
      */
-    private function controllerNameFromCallable(callable $controller) : string
+    private function controllerNameFromCallable(callable $controller): string
     {
         if (is_array($controller)) {
             return sprintf('%s::%s', (new ReflectionClass($controller[0]))->getShortName(), $controller[1]);
@@ -70,7 +71,7 @@ final class InstrumentationListener implements EventSubscriberInterface
     }
 
     /** @noinspection PhpUnused */
-    public function onKernelResponse() : void
+    public function onKernelResponse(): void
     {
         if ($this->currentSpan === null) {
             return;
@@ -85,7 +86,7 @@ final class InstrumentationListener implements EventSubscriberInterface
      *
      * @noinspection PhpUnused
      */
-    public function onKernelTerminate() : void
+    public function onKernelTerminate(): void
     {
         $this->agent->send();
     }
@@ -93,7 +94,7 @@ final class InstrumentationListener implements EventSubscriberInterface
     /**
      * @inheritDoc
      */
-    public static function getSubscribedEvents() : array
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::REQUEST => ['onKernelRequest', -100],

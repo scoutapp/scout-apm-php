@@ -11,7 +11,7 @@ use Symfony\Component\Config\Definition\Processor;
 /** @covers \Scoutapm\ScoutApmBundle\DependencyInjection\Configuration */
 final class ConfigurationTest extends TestCase
 {
-    public function testConfigTreeBuilderCanParseConfig() : void
+    public function testConfigTreeBuilderCanParseConfig(): void
     {
         self::assertEquals(
             [

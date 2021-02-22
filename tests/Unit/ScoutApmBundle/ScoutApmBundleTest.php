@@ -22,7 +22,7 @@ final class ScoutApmBundleTest extends TestCase
     /** @var ScoutApmBundle */
     private $bundle;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -32,7 +32,7 @@ final class ScoutApmBundleTest extends TestCase
         $this->bundle->setContainer($this->container);
     }
 
-    public function testBootRegistersWhenContainerHasService() : void
+    public function testBootRegistersWhenContainerHasService(): void
     {
         $sqlLogger = new DoctrineSqlLogger($this->createMock(ScoutApmAgent::class));
 
@@ -65,7 +65,7 @@ final class ScoutApmBundleTest extends TestCase
         self::assertSame($sqlLogger, $configuration->getSQLLogger());
     }
 
-    public function testBootDoesNothingWhenDoctrineDoesNotExist() : void
+    public function testBootDoesNothingWhenDoctrineDoesNotExist(): void
     {
         $this->container->expects(self::once())
             ->method('has')

@@ -41,7 +41,7 @@ class TwigDecorator extends Twig
     /**
      * @param string|TemplateWrapper $nameOrTemplateWrapper
      */
-    private function nameOrConvertTemplateWrapperToString($nameOrTemplateWrapper) : string
+    private function nameOrConvertTemplateWrapperToString($nameOrTemplateWrapper): string
     {
         if (! $nameOrTemplateWrapper instanceof TemplateWrapper) {
             return $nameOrTemplateWrapper;
@@ -61,7 +61,7 @@ class TwigDecorator extends Twig
     }
 
     /** {@inheritDoc} */
-    public function render($name, array $context = []) : string
+    public function render($name, array $context = []): string
     {
         return $this->instrument(
             $this->nameOrConvertTemplateWrapperToString($name),
@@ -72,11 +72,11 @@ class TwigDecorator extends Twig
     }
 
     /** {@inheritDoc} */
-    public function display($name, array $context = []) : void
+    public function display($name, array $context = []): void
     {
         $this->instrument(
             $this->nameOrConvertTemplateWrapperToString($name),
-            function () use ($name, $context) : void {
+            function () use ($name, $context): void {
                 $this->twig->display($name, $context);
             }
         );

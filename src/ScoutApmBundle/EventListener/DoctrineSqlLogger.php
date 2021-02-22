@@ -23,7 +23,7 @@ final class DoctrineSqlLogger implements SQLLogger
         $this->agent = $agent;
     }
 
-    public function registerWith(Connection $connection) : void
+    public function registerWith(Connection $connection): void
     {
         $connectionConfiguration = $connection->getConfiguration();
 
@@ -51,6 +51,7 @@ final class DoctrineSqlLogger implements SQLLogger
         if ($this->currentSpan === null) {
             return;
         }
+
         $this->currentSpan->tag('db.statement', $sql);
     }
 

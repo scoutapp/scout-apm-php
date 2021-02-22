@@ -12,6 +12,7 @@ use Scoutapm\Connector\Connector;
 use Scoutapm\Extension\ExtentionCapabilities;
 use Scoutapm\ScoutApmAgent;
 use Symfony\Component\HttpKernel\Kernel;
+
 use function array_filter;
 use function array_merge;
 
@@ -26,7 +27,7 @@ final class ScoutApmAgentFactory
         ?Connector $connector,
         ?ExtentionCapabilities $extentionCapabilities,
         array $agentConfiguration
-    ) : ScoutApmAgent {
+    ): ScoutApmAgent {
         return Agent::fromConfig(
             Config::fromArray(array_merge(
                 [

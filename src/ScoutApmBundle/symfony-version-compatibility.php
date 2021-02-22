@@ -1,4 +1,5 @@
 <?php
+// phpcs:ignoreFile
 /** @noinspection AutoloadingIssuesInspection */
 
 declare(strict_types=1);

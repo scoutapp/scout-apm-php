@@ -24,7 +24,7 @@ final class InstrumentationListenerTest extends TestCase
     /** @var InstrumentationListener */
     private $listener;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -38,7 +38,7 @@ final class InstrumentationListenerTest extends TestCase
      *
      * @psalm-return array<string, array{0: callable, 1: string}>
      */
-    public function controllerCallableTypeProvider() : array
+    public function controllerCallableTypeProvider(): array
     {
         return [
             'array-class-string' => [[self::class, 'setUpBeforeClass'], 'InstrumentationListenerTest::setUpBeforeClass'],
@@ -46,13 +46,13 @@ final class InstrumentationListenerTest extends TestCase
             'string' => ['file_get_contents', 'file_get_contents'],
             'closure' => [
                 // phpcs:ignore Squiz.Arrays.ArrayDeclaration.ValueNoNewline
-                static function () : void {
+                static function (): void {
                 },
                 'closure',
             ],
             'invokable' => [
                 new class () {
-                    public function __invoke() : void
+                    public function __invoke(): void
                     {
                     }
                 },
@@ -66,7 +66,7 @@ final class InstrumentationListenerTest extends TestCase
      *
      * @dataProvider controllerCallableTypeProvider
      */
-    public function testControllerNameIsSentOnControllerEvent(callable $controller, string $expectedName) : void
+    public function testControllerNameIsSentOnControllerEvent(callable $controller, string $expectedName): void
     {
         /**
          * @psalm-suppress MissingDependency https://github.com/scoutapp/scout-apm-symfony-bundle/issues/10
@@ -87,7 +87,7 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelController($controllerEvent);
     }
 
-    public function testSpanIsNotStoppedWhenStartSpanReturnsNull() : void
+    public function testSpanIsNotStoppedWhenStartSpanReturnsNull(): void
     {
         $this->agent->expects(self::once())
             ->method('startSpan')
@@ -107,7 +107,7 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelResponse();
     }
 
-    public function testSpanIsNotStoppedWhenSpanNeverStarted() : void
+    public function testSpanIsNotStoppedWhenSpanNeverStarted(): void
     {
         $this->agent->expects(self::never())
             ->method('stopSpan');
@@ -115,7 +115,7 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelResponse();
     }
 
-    public function testSpanIsStoppedOnKernelResponseWhenSpanWasStarted() : void
+    public function testSpanIsStoppedOnKernelResponseWhenSpanWasStarted(): void
     {
         $this->agent->expects(self::once())
             ->method('startSpan')
@@ -136,7 +136,7 @@ final class InstrumentationListenerTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testAgentSendsPayloadOnKernelTerminate() : void
+    public function testAgentSendsPayloadOnKernelTerminate(): void
     {
         $this->agent->expects(self::once())
             ->method('send');
@@ -144,7 +144,7 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelTerminate();
     }
 
-    public function testAgentConnectsOnKernelRequest() : void
+    public function testAgentConnectsOnKernelRequest(): void
     {
         $this->agent->expects(self::once())
             ->method('connect');
@@ -152,7 +152,7 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelRequest();
     }
 
-    public function testListenerIsSubscribedToCorrectEvents() : void
+    public function testListenerIsSubscribedToCorrectEvents(): void
     {
         self::assertEquals(
             [

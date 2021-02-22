@@ -7,6 +7,8 @@ namespace Scoutapm\UnitTests\ScoutApmBundle\Twig;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionNamedType;
 use Scoutapm\ScoutApmAgent;
 use Scoutapm\ScoutApmBundle\Twig\TwigDecorator;
 use stdClass;
@@ -32,6 +34,9 @@ use Twig\TokenStream;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
 use Twig\TwigTest;
+
+use function assert;
+use function sprintf;
 use function uniqid;
 
 /** @covers \Scoutapm\ScoutApmBundle\Twig\TwigDecorator */
@@ -44,7 +49,7 @@ final class TwigDecoratorTest extends TestCase
     /** @var TwigDecorator */
     private $twigDecorator;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -59,7 +64,7 @@ final class TwigDecoratorTest extends TestCase
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function testInstrumentationIsPerformedOnRenderAndValueIsReturned() : void
+    public function testInstrumentationIsPerformedOnRenderAndValueIsReturned(): void
     {
         $renderedContent = uniqid('renderedContent', true);
         $templateName    = uniqid('foo.html.twig', true);
@@ -93,7 +98,7 @@ final class TwigDecoratorTest extends TestCase
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    public function testInstrumentationIsPerformedOnDisplay() : void
+    public function testInstrumentationIsPerformedOnDisplay(): void
     {
         $templateName = uniqid('foo.html.twig', true);
 
@@ -120,7 +125,7 @@ final class TwigDecoratorTest extends TestCase
         $this->twigDecorator->display($templateName, ['a' => 'a', 'b' => 'b']);
     }
 
-    public function testTemplateWrapperIsConvertedToStringForInstrumentation() : void
+    public function testTemplateWrapperIsConvertedToStringForInstrumentation(): void
     {
         $templateName    = uniqid('foo.html.twig', true);
         $template        = $this->createMock(Template::class);
@@ -161,7 +166,7 @@ final class TwigDecoratorTest extends TestCase
      *
      * @psalm-return array<int, array{0: string, 1: mixed, 2: mixed[]}>
      */
-    public function decoratedTwigMethodsProvider() : array
+    public function decoratedTwigMethodsProvider(): array
     {
         $moduleNode      = new ModuleNode(
             $this->createMock(Node::class),
@@ -176,6 +181,7 @@ final class TwigDecoratorTest extends TestCase
 
         // phpcs:disable Squiz.Arrays.ArrayDeclaration.ValueNoNewline
         // phpcs:disable SlevomatCodingStandard.ControlStructures.ControlStructureSpacing.IncorrectLinesCountBeforeControlStructure
+
         /**
          * @psalm-suppress RedundantCondition
          * @psalm-suppress TypeDoesNotContainType
@@ -234,7 +240,7 @@ final class TwigDecoratorTest extends TestCase
             [
                 'registerUndefinedFilterCallback',
                 null,
-                [static function () : void {
+                [static function (): void {
                 },
                 ],
             ],
@@ -247,7 +253,7 @@ final class TwigDecoratorTest extends TestCase
             [
                 'registerUndefinedFunctionCallback',
                 null,
-                [static function () : void {
+                [static function (): void {
                 },
                 ],
             ],
@@ -268,9 +274,9 @@ final class TwigDecoratorTest extends TestCase
      *
      * @dataProvider decoratedTwigMethodsProvider
      */
-    public function testAllMethodsAreProxiedToOriginalTwig(string $methodName, $returnValue, array $args) : void
+    public function testAllMethodsAreProxiedToOriginalTwig(string $methodName, $returnValue, array $args): void
     {
-        $twigClassReflection = new \ReflectionClass(Twig::class);
+        $twigClassReflection = new ReflectionClass(Twig::class);
 
         if (! $twigClassReflection->hasMethod($methodName)) {
             self::markTestSkipped(sprintf(
@@ -302,11 +308,10 @@ final class TwigDecoratorTest extends TestCase
                 ->willReturn($returnValue);
         }
 
-
         self::assertSame($returnValue, $this->twigDecorator->{$methodName}(...$args));
     }
 
-    private function methodIsVoid(\ReflectionClass $reflectionClass, string $methodName): bool
+    private function methodIsVoid(ReflectionClass $reflectionClass, string $methodName): bool
     {
         $methodReflection = $reflectionClass->getMethod($methodName);
 
@@ -318,7 +323,7 @@ final class TwigDecoratorTest extends TestCase
 
         assert($returnType !== null);
 
-        if ($returnType instanceof \ReflectionNamedType) {
+        if ($returnType instanceof ReflectionNamedType) {
             return $returnType->getName() === 'void';
         }
 

@@ -23,7 +23,7 @@ final class DoctrineSqlLoggerTest extends TestCase
     /** @var DoctrineSqlLogger */
     private $sqlLogger;
 
-    public function setUp() : void
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -32,7 +32,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         $this->sqlLogger = new DoctrineSqlLogger($this->agent);
     }
 
-    public function testRegisterInjectsSqlLoggerAsChainWhenLoggerAlreadySet() : void
+    public function testRegisterInjectsSqlLoggerAsChainWhenLoggerAlreadySet(): void
     {
         $configuration = new Configuration();
         $configuration->setSQLLogger($this->createMock(SQLLogger::class));
@@ -47,7 +47,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         self::assertInstanceOf(LoggerChain::class, $configuration->getSQLLogger());
     }
 
-    public function testRegisterAddsSqlLoggerWhenNoLoggerHasBeenSet() : void
+    public function testRegisterAddsSqlLoggerWhenNoLoggerHasBeenSet(): void
     {
         $configuration = new Configuration();
 
@@ -61,7 +61,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         self::assertSame($this->sqlLogger, $configuration->getSQLLogger());
     }
 
-    public function testStartQueryStartsAgentSpanAndTagsQuery() : void
+    public function testStartQueryStartsAgentSpanAndTagsQuery(): void
     {
         $span = $this->createMock(Span::class);
         $span->expects(self::once())
@@ -76,7 +76,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         $this->sqlLogger->startQuery('SELECT * FROM great_table', [], []);
     }
 
-    public function testStopQueryStopsQueryWhenSpanWasStarted() : void
+    public function testStopQueryStopsQueryWhenSpanWasStarted(): void
     {
         $span = $this->createMock(Span::class);
         $span->expects(self::once())
@@ -96,7 +96,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         $this->sqlLogger->stopQuery();
     }
 
-    public function testStopQueryDoesNotStopSpanIfStartSpanReturnedNull() : void
+    public function testStopQueryDoesNotStopSpanIfStartSpanReturnedNull(): void
     {
         $this->agent->expects(self::once())
             ->method('startSpan')
@@ -111,7 +111,7 @@ final class DoctrineSqlLoggerTest extends TestCase
         $this->sqlLogger->stopQuery();
     }
 
-    public function testStopQueryDoesNothingIfSpanWasNotStarted() : void
+    public function testStopQueryDoesNothingIfSpanWasNotStarted(): void
     {
         $this->agent->expects(self::never())
             ->method('stopSpan');

@@ -11,13 +11,14 @@ use Scoutapm\ScoutApmBundle\DependencyInjection\ScoutApmExtension;
 use Scoutapm\ScoutApmBundle\EventListener\InstrumentationListener;
 use Scoutapm\ScoutApmBundle\ScoutApmAgentFactory;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+
 use function array_filter;
 
 /** @covers \Scoutapm\ScoutApmBundle\DependencyInjection\ScoutApmExtension */
 final class ScoutApmExtensionTest extends TestCase
 {
     /** @throws Exception */
-    public function testLoadSetsUpDependencyInjectionConfiguration() : void
+    public function testLoadSetsUpDependencyInjectionConfiguration(): void
     {
         $builder = new ContainerBuilder();
 
@@ -49,7 +50,7 @@ final class ScoutApmExtensionTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testLoadPassesEmptyConfigurationAsFactoryParameterWhenNoConfigurationPassedToLoad() : void
+    public function testLoadPassesEmptyConfigurationAsFactoryParameterWhenNoConfigurationPassedToLoad(): void
     {
         $builder = new ContainerBuilder();
 
