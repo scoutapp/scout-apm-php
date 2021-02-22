@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.4.1@9fd7a7d885b3a216cff8dec9d8c21a132f275224">
+<files psalm-version="4.6.1@e93e532e4eaad6d68c4d7b606853800eaceccc72">
   <file src="src/Agent.php">
     <MixedArgument occurrences="12">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
@@ -169,6 +169,18 @@
     <MixedArgumentTypeCoercion occurrences="1">
       <code>$_SERVER</code>
     </MixedArgumentTypeCoercion>
+  </file>
+  <file src="src/Laravel/Providers/ScoutApmServiceProvider.php">
+    <InvalidArgument occurrences="2">
+      <code>$app-&gt;make(self::CACHE_SERVICE_KEY)</code>
+      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
+    </InvalidArgument>
+    <MixedArgument occurrences="1">
+      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)-&gt;get(ConfigKey::LOG_LEVEL)</code>
+    </MixedArgument>
+    <UndefinedClass occurrences="1">
+      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
+    </UndefinedClass>
   </file>
   <file src="src/Logger/FilteredLogLevelDecorator.php">
     <MixedArrayOffset occurrences="1">
@@ -404,5 +416,29 @@
       <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
       <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStop())</code>
     </DeprecatedMethod>
+  </file>
+  <file src="tests/Unit/Laravel/Facades/ScoutApmTest.php">
+    <PossiblyInvalidArgument occurrences="1">
+      <code>testFacadeProxiesMethodsToRealAgent</code>
+    </PossiblyInvalidArgument>
+  </file>
+  <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderTest.php">
+    <DeprecatedClass occurrences="1">
+      <code>self::at(3)</code>
+    </DeprecatedClass>
+    <DeprecatedMethod occurrences="2">
+      <code>self::at(3)</code>
+      <code>setMethods</code>
+    </DeprecatedMethod>
+    <InvalidArrayOffset occurrences="1">
+      <code>$commands[1]['StartSpan']</code>
+    </InvalidArrayOffset>
+    <MixedArgument occurrences="1">
+      <code>$commands[1]['StartSpan']</code>
+    </MixedArgument>
+    <MixedArrayAccess occurrences="2">
+      <code>$commands[1]['StartSpan']['operation']</code>
+      <code>json_decode(json_encode($metadata), true)['ApplicationEvent']</code>
+    </MixedArrayAccess>
   </file>
 </files>
