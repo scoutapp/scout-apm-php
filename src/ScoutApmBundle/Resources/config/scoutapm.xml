@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services https://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <defaults public="false" />
+
+        <service id="Scoutapm\ScoutApmAgent" public="true">
+            <factory class="Scoutapm\ScoutApmBundle\ScoutApmAgentFactory" method="createAgent" />
+            <argument type="service" id="Psr\Log\LoggerInterface" />
+            <argument type="service" id="Psr\SimpleCache\CacheInterface" on-invalid="null" />
+            <argument>null</argument>
+            <argument>null</argument>
+            <argument key="$agentConfiguration" />
+        </service>
+
+        <service id="Scoutapm\ScoutApmBundle\EventListener\InstrumentationListener"
+                 class="Scoutapm\ScoutApmBundle\EventListener\InstrumentationListener">
+            <tag name="kernel.event_subscriber" />
+            <argument type="service" id="Scoutapm\ScoutApmAgent" />
+        </service>
+
+        <service id="Scoutapm\ScoutApmBundle\EventListener\DoctrineSqlLogger"
+                 class="Scoutapm\ScoutApmBundle\EventListener\DoctrineSqlLogger"
+                 public="true">
+            <argument type="service" id="Scoutapm\ScoutApmAgent" />
+        </service>
+
+        <service id="Scoutapm\ScoutApmBundle\Twig\TwigDecorator"
+                 decorates="twig">
+            <argument type="service" id="Scoutapm\ScoutApmBundle\Twig\TwigDecorator.inner" />
+            <argument type="service" id="Scoutapm\ScoutApmAgent" />
+        </service>
+    </services>
+</container>
