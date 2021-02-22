@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#202](https://github.com/scoutapp/scout-apm-php/pull/202) Added support for PHP 8
 - [#204](https://github.com/scoutapp/scout-apm-php/pull/204) Merge `scoutapp/scout-apm-laravel` library into `scoutapp/scout-apm-php`
+- [#205](https://github.com/scoutapp/scout-apm-php/pull/205) Merge `scoutapp/scout-apm-symfony-bundle` library into `scoutapp/scout-apm-php`
 
 ### Changed
 
