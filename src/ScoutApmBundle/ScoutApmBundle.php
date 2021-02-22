@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Scoutapm\ScoutApmBundle;
 
 use Doctrine\DBAL\Connection;
+use Psr\Log\LoggerInterface;
+use Scoutapm\Helper\ComposerPackagesCheck;
 use Scoutapm\ScoutApmBundle\EventListener\DoctrineSqlLogger;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -17,6 +19,8 @@ final class ScoutApmBundle extends Bundle
 
     public function boot(): void
     {
+        $this->safelyCheckForSymfonyPackagePresence();
+
         /** @noinspection UnusedFunctionResultInspection */
         array_map(
             function (string $connectionServiceName): void {
@@ -33,5 +37,19 @@ final class ScoutApmBundle extends Bundle
             },
             self::DOCTRINE_CONNECTIONS
         );
+    }
+
+    private function safelyCheckForSymfonyPackagePresence(): void
+    {
+        if (! $this->container->has(LoggerInterface::class)) {
+            return;
+        }
+
+        $logger = $this->container->get(LoggerInterface::class);
+        if (! $logger instanceof LoggerInterface) {
+            return;
+        }
+
+        ComposerPackagesCheck::logIfSymfonyPackageNotPresent($logger);
     }
 }

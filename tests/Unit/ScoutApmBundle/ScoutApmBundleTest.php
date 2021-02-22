@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\ORM\Configuration;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Scoutapm\ScoutApmAgent;
 use Scoutapm\ScoutApmBundle\EventListener\DoctrineSqlLogger;
 use Scoutapm\ScoutApmBundle\ScoutApmBundle;
@@ -38,10 +39,16 @@ final class ScoutApmBundleTest extends TestCase
 
         $connection = $this->createMock(Connection::class);
 
-        $this->container->expects(self::once())
+        $this->container->expects(self::exactly(2))
             ->method('has')
-            ->with('doctrine.dbal.default_connection')
-            ->willReturn(true);
+            ->withConsecutive(
+                [LoggerInterface::class],
+                ['doctrine.dbal.default_connection']
+            )
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
 
         $this->container->expects(self::exactly(2))
             ->method('get')
@@ -67,10 +74,16 @@ final class ScoutApmBundleTest extends TestCase
 
     public function testBootDoesNothingWhenDoctrineDoesNotExist(): void
     {
-        $this->container->expects(self::once())
+        $this->container->expects(self::exactly(2))
             ->method('has')
-            ->with('doctrine.dbal.default_connection')
-            ->willReturn(false);
+            ->withConsecutive(
+                [LoggerInterface::class],
+                ['doctrine.dbal.default_connection']
+            )
+            ->willReturnOnConsecutiveCalls(
+                false,
+                false
+            );
 
         $this->container->expects(self::never())
             ->method('get');
