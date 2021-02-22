@@ -53,6 +53,12 @@ jobs:
           - "laravel/framework:6.*"
           - "laravel/framework:7.*"
           - "laravel/framework:8.*"
+          - "symfony/symfony:4.0.* twig/twig:2.*"
+          - "symfony/symfony:4.0.* twig/twig:3.*"
+          - "symfony/symfony:4.* twig/twig:2.*"
+          - "symfony/symfony:4.* twig/twig:3.*"
+          - "symfony/symfony:5.* twig/twig:2.*"
+          - "symfony/symfony:5.* twig/twig:3.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -64,6 +70,10 @@ jobs:
           - {php-version: "7.1", framework-version: "laravel/framework:7.*"} # Laravel 7 requires 7.2+
           - {php-version: "7.1", framework-version: "laravel/framework:8.*"} # Laravel 8 requires 7.3+
           - {php-version: "7.2", framework-version: "laravel/framework:8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "7.1", framework-version: "symfony/symfony:4.0.* twig/twig:3.*"} # Twig 3 requires 7.2+
+          - {php-version: "7.1", framework-version: "symfony/symfony:4.* twig/twig:3.*"} # Twig 3 requires 7.2+
+          - {php-version: "7.1", framework-version: "symfony/symfony:5.* twig/twig:2.*"} # Symfony 5 requires 7.2+
+          - {php-version: "7.1", framework-version: "symfony/symfony:5.* twig/twig:2.*"} # Symfony 5 requires 7.2+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
