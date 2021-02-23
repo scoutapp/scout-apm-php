@@ -20,7 +20,9 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Removed
 
-- Nothing.
+- [#206](https://github.com/scoutapp/scout-apm-php/pull/206) **[BC]** Removed `\Scoutapm\Events\Span\Span::INSTRUMENT_*` constants
+  - You must use `\Scoutapm\Events\Span\SpanReference::INSTRUMENT_*` constants instead.
+  - See [issue #196](https://github.com/scoutapp/scout-apm-php/issues/196).
 
 ### Fixed
 
