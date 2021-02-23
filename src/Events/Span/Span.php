@@ -24,12 +24,15 @@ class Span implements CommandWithParent, CommandWithChildren
 {
     private const STACK_TRACE_THRESHOLD_SECONDS = 0.5;
 
-    /** @deprecated use SpanReference::INSTRUMENT_CONTROLLER instead, will be removed in 6.0.0 */
-    public const INSTRUMENT_CONTROLLER = SpanReference::INSTRUMENT_CONTROLLER;
-    /** @deprecated use SpanReference::INSTRUMENT_JOB instead, will be removed in 6.0.0 */
-    public const INSTRUMENT_JOB = SpanReference::INSTRUMENT_JOB;
-    /** @deprecated use SpanReference::INSTRUMENT_MIDDLEWARE instead, will be removed in 6.0.0 */
-    public const INSTRUMENT_MIDDLEWARE = SpanReference::INSTRUMENT_MIDDLEWARE;
+    /**
+     * Looking for constants INSTRUMENT_CONTROLLER, INSTRUMENT_JOB, INSTRUMENT_MIDDLEWARE? These were deprecated in
+     * release 5.1.0, so you should now use SpanReference::INSTRUMENT_* constants instead
+     *
+     * @link https://github.com/scoutapp/scout-apm-php/issues/196
+     * @see SpanReference::INSTRUMENT_CONTROLLER
+     * @see SpanReference::INSTRUMENT_JOB
+     * @see SpanReference::INSTRUMENT_MIDDLEWARE
+     */
 
     /** @var SpanId */
     private $id;
