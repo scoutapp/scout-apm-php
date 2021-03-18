@@ -9,7 +9,6 @@ use Scoutapm\Config;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\SocketConnector;
-use Webmozart\Assert\Assert;
 
 use function exec;
 use function file_exists;
@@ -61,11 +60,11 @@ final class SocketConnectorTest extends TestCase
 
     private function runTestSocketServerAndReturnPid(int $port): void
     {
-        Assert::greaterThanEq($port, 1024);
+        self::assertGreaterThanOrEqual(1024, $port);
 
         $realpath = realpath(self::TEST_SOCKET_SERVER_EXECUTABLE);
 
-        Assert::notFalse($realpath);
+        self::assertNotFalse($realpath);
 
         $this->pidsStarted[] = (int) exec($realpath . ' ' . $port . ' > /dev/null 2>&1 & echo $!');
 
