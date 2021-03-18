@@ -8,6 +8,7 @@ use ErrorException;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\NotConnected;
 use Throwable;
+use Webmozart\Assert\Assert;
 
 use function array_key_exists;
 use function is_array;
@@ -38,7 +39,13 @@ final class SocketConnector implements Connector
 {
     private const MAXIMUM_RESPONSE_LENGTH_TO_READ = 10000000;
 
-    /** @var resource */
+    /**
+     * Note: this should be `\Socket|resource|null` but Psalm does not support \Socket properly at the time of writing
+     *
+     * @link https://github.com/vimeo/psalm/issues/3824
+     *
+     * @var resource|null
+     */
     private $socket;
 
     /** @var bool */
@@ -69,7 +76,13 @@ final class SocketConnector implements Connector
         }
     }
 
-    /** @return mixed */
+    /**
+     * @return mixed
+     *
+     * @psalm-template T
+     * @psalm-param callable():T $functionToRun
+     * @psalm-return T
+     */
     private function convertErrorsToExceptions(callable $functionToRun)
     {
         // phpcs:disable SlevomatCodingStandard.TypeHints.TypeHintDeclaration.IncorrectReturnTypeHint
@@ -97,9 +110,21 @@ final class SocketConnector implements Connector
         }
 
         try {
+            $this->socket = $this->convertErrorsToExceptions(function () {
+                return socket_create(
+                    $this->connectionAddress->isTcpAddress() ? AF_INET : AF_UNIX,
+                    SOCK_STREAM,
+                    0
+                ) ?: null;
+            });
+
+            Assert::notNull($this->socket, 'Socket was null even after socket_create');
+
             socket_clear_error($this->socket);
 
             $this->connected = $this->convertErrorsToExceptions(function () {
+                Assert::notNull($this->socket);
+
                 if ($this->connectionAddress->isTcpAddress()) {
                     return socket_connect(
                         $this->socket,
@@ -119,9 +144,12 @@ final class SocketConnector implements Connector
         }
     }
 
+    /**
+     * @psalm-assert-if-true !null $this->socket
+     */
     public function connected(): bool
     {
-        return $this->connected;
+        return $this->socket !== null && $this->connected;
     }
 
     public function sendCommand(Command $message): string
