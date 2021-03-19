@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.0.1 - 2021-03-19
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#208](https://github.com/scoutapp/scout-apm-php/pull/208) Prevent calling socket_create prior to connection attempt
+
 ## 6.0.0 - 2021-02-23
 
 ### Added

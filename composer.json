@@ -32,7 +32,7 @@
         "symfony/http-kernel": "^4.0 || ^5.0",
         "symfony/orm-pack": "^2.0",
         "symfony/twig-pack": "^1.0",
-        "vimeo/psalm": "^4.4.1"
+        "vimeo/psalm": "^4.6.4"
     },
     "suggest": {
         "composer-runtime-api": "Composer v2 is required for seeing version information in metadata",
