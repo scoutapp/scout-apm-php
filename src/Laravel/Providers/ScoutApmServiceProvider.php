@@ -31,6 +31,9 @@ use Scoutapm\Laravel\Middleware\IgnoredEndpoints;
 use Scoutapm\Laravel\Middleware\MiddlewareInstrument;
 use Scoutapm\Laravel\Middleware\SendRequestToScout;
 use Scoutapm\Laravel\Queue\JobQueueListener;
+use Scoutapm\Laravel\Router\AutomaticallyDetermineControllerName;
+use Scoutapm\Laravel\Router\DetermineLaravelControllerName;
+use Scoutapm\Laravel\Router\DetermineLumenControllerName;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
@@ -97,6 +100,14 @@ final class ScoutApmServiceProvider extends ServiceProvider
                 $app->make(FilteredLogLevelDecorator::class),
                 $app->make(self::CACHE_SERVICE_KEY)
             );
+        });
+
+        $this->app->singleton(AutomaticallyDetermineControllerName::class, function (Container $app) {
+            if ($this->isLumen($app)) {
+                return $app->make(DetermineLumenControllerName::class);
+            }
+
+            return $app->make(DetermineLaravelControllerName::class);
         });
 
         $this->app->afterResolving('view.engine.resolver', function (EngineResolver $engineResolver): void {

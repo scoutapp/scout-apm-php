@@ -6,29 +6,29 @@ namespace Scoutapm\Laravel\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Router;
 use Scoutapm\Events\Span\SpanReference;
+use Scoutapm\Laravel\Router\AutomaticallyDetermineControllerName;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
-use Webmozart\Assert\Assert;
 
 final class ActionInstrument
 {
     /** @var ScoutApmAgent */
     private $agent;
-
     /** @var FilteredLogLevelDecorator */
     private $logger;
+    /** @var AutomaticallyDetermineControllerName */
+    private $determineControllerName;
 
-    /** @var Router */
-    private $router;
-
-    public function __construct(ScoutApmAgent $agent, FilteredLogLevelDecorator $logger, Router $router)
-    {
-        $this->agent  = $agent;
-        $this->logger = $logger;
-        $this->router = $router;
+    public function __construct(
+        ScoutApmAgent $agent,
+        FilteredLogLevelDecorator $logger,
+        AutomaticallyDetermineControllerName $determineControllerName
+    ) {
+        $this->agent                   = $agent;
+        $this->logger                  = $logger;
+        $this->determineControllerName = $determineControllerName;
     }
 
     /**
@@ -56,36 +56,12 @@ final class ActionInstrument
                 }
 
                 if ($span !== null) {
-                    $span->updateName($this->automaticallyDetermineControllerName());
+                    $determineControllerName = $this->determineControllerName;
+                    $span->updateName($determineControllerName($request));
                 }
 
                 return $response;
             }
         );
-    }
-
-    /**
-     * Get the name of the controller span from the controller name if possible, but fall back on the uri if no
-     * controller was found.
-     */
-    private function automaticallyDetermineControllerName(): string
-    {
-        $name = 'unknown';
-
-        try {
-            $route = $this->router->current();
-            if ($route !== null) {
-                /** @var mixed $name */
-                $name = $route->action['controller'] ?? $route->uri();
-                Assert::stringNotEmpty($name);
-            }
-        } catch (Throwable $e) {
-            $this->logger->debug(
-                'Exception obtaining name of endpoint: ' . $e->getMessage(),
-                ['exception' => $e]
-            );
-        }
-
-        return 'Controller/' . $name;
     }
 }
