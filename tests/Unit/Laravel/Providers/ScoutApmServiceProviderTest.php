@@ -33,6 +33,7 @@ use ReflectionProperty;
 use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
+use Scoutapm\Connector\Command;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
@@ -288,6 +289,10 @@ final class ScoutApmServiceProviderTest extends TestCase
             ->method('listen')
             ->with(self::isInstanceOf(Closure::class));
 
+        $this->application->singleton('connection', function () {
+            return $this->connection;
+        });
+
         $this->bootServiceProvider();
     }
 
@@ -465,20 +470,26 @@ final class ScoutApmServiceProviderTest extends TestCase
 
         $this->bootServiceProvider();
 
-        $connectorMock->expects(self::at(3))
+        $connectorMock->expects(self::exactly(3))
             ->method('sendCommand')
-            ->with(self::callback(static function (Metadata $metadata) {
-                /** @psalm-var array{framework: string, framework_version: string} $flattenedMetadata */
-                $flattenedMetadata = json_decode(json_encode($metadata), true)['ApplicationEvent']['event_value'];
+            ->withConsecutive(
+                [self::isInstanceOf(Command::class)],
+                [
+                    self::callback(static function (Metadata $metadata) {
+                        /** @psalm-var array{framework: string, framework_version: string} $flattenedMetadata */
+                        $flattenedMetadata = json_decode(json_encode($metadata), true)['ApplicationEvent']['event_value'];
 
-                self::assertArrayHasKey('framework', $flattenedMetadata);
-                self::assertSame('Laravel', $flattenedMetadata['framework']);
+                        self::assertArrayHasKey('framework', $flattenedMetadata);
+                        self::assertSame('Laravel', $flattenedMetadata['framework']);
 
-                self::assertArrayHasKey('framework_version', $flattenedMetadata);
-                self::assertNotSame('', $flattenedMetadata['framework_version']);
+                        self::assertArrayHasKey('framework_version', $flattenedMetadata);
+                        self::assertNotSame('', $flattenedMetadata['framework_version']);
 
-                return true;
-            }));
+                        return true;
+                    }),
+                ],
+                [self::isInstanceOf(Command::class)]
+            );
 
         $this->application
             ->make(ScoutApmAgent::class)
@@ -492,8 +503,7 @@ final class ScoutApmServiceProviderTest extends TestCase
         $this->serviceProvider->boot(
             $this->application,
             $this->application->make(ScoutApmAgent::class),
-            $log,
-            $this->connection
+            $log
         );
     }
 

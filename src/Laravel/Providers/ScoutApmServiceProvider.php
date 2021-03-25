@@ -9,7 +9,7 @@ use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
-use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Foundation\Application as LaravelApplication;
 use Illuminate\Contracts\Http\Kernel as HttpKernelInterface;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\Contracts\View\View;
@@ -20,6 +20,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\Engines\EngineResolver;
+use Laravel\Lumen\Application as LumenApplication;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -40,6 +41,7 @@ use function array_filter;
 use function array_map;
 use function array_merge;
 use function config_path;
+use function sprintf;
 
 final class ScoutApmServiceProvider extends ServiceProvider
 {
@@ -124,30 +126,49 @@ final class ScoutApmServiceProvider extends ServiceProvider
         );
     }
 
+    /** @psalm-assert-if-true LumenApplication $container */
+    private function isLumen(Container $container): bool
+    {
+        return $container instanceof LumenApplication;
+    }
+
+    /** @psalm-assert-if-true LaravelApplication $container */
+    private function isLaravel(Container $container): bool
+    {
+        return $container instanceof LaravelApplication;
+    }
+
     /** @throws BindingResolutionException */
     public function boot(
-        Application $application,
+        Container $application,
         ScoutApmAgent $agent,
-        FilteredLogLevelDecorator $log,
-        Connection $connection
+        FilteredLogLevelDecorator $log
     ): void {
-        $log->debug('Agent is starting');
+        $log->debug(sprintf('%s Scout Agent is starting', $this->isLumen($application) ? 'Lumen' : 'Laravel'));
 
-        ComposerPackagesCheck::logIfLaravelPackageNotPresent($log);
+        if ($this->isLaravel($application)) {
+            ComposerPackagesCheck::logIfLaravelPackageNotPresent($log);
 
-        $this->publishes([
-            __DIR__ . '/../config/scout_apm.php' => config_path('scout_apm.php'),
-        ]);
+            $this->publishes([
+                __DIR__ . '/../config/scout_apm.php' => config_path('scout_apm.php'),
+            ]);
+        }
 
-        $runningInConsole = $application->runningInConsole();
+        $runningInConsole = false;
+        if ($this->isLumen($application) || $this->isLaravel($application)) {
+            $runningInConsole = $application->runningInConsole();
+        }
 
-        $this->instrumentDatabaseQueries($agent, $connection);
+        if ($application->has('connection')) {
+            $connection = $application->make('connection');
+            $this->instrumentDatabaseQueries($agent, $connection);
+        }
 
         if ($agent->shouldInstrument(self::INSTRUMENT_LARAVEL_QUEUES)) {
             $this->instrumentQueues($agent, $application->make('events'), $runningInConsole);
         }
 
-        if ($runningInConsole) {
+        if ($runningInConsole || ! $application->has(HttpKernelInterface::class)) {
             return;
         }
 
