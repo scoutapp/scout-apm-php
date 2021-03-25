@@ -7,6 +7,7 @@ namespace Scoutapm\Laravel\Providers;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Http\Kernel as HttpKernelInterface;
@@ -73,7 +74,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
             ));
         });
 
-        $this->app->singleton(self::CACHE_SERVICE_KEY, static function (Application $app) {
+        $this->app->singleton(self::CACHE_SERVICE_KEY, static function (Container $app) {
             try {
                 return $app->make(CacheManager::class)->store();
             } catch (Throwable $anything) {
@@ -81,14 +82,14 @@ final class ScoutApmServiceProvider extends ServiceProvider
             }
         });
 
-        $this->app->singleton(FilteredLogLevelDecorator::class, static function (Application $app) {
+        $this->app->singleton(FilteredLogLevelDecorator::class, static function (Container $app) {
             return new FilteredLogLevelDecorator(
                 $app->make('log'),
                 $app->make(self::CONFIG_SERVICE_KEY)->get(ConfigKey::LOG_LEVEL)
             );
         });
 
-        $this->app->singleton(ScoutApmAgent::class, static function (Application $app) {
+        $this->app->singleton(ScoutApmAgent::class, static function (Container $app) {
             return Agent::fromConfig(
                 $app->make(self::CONFIG_SERVICE_KEY),
                 $app->make(FilteredLogLevelDecorator::class),
