@@ -94,7 +94,7 @@ jobs:
       - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
       - name: "Configure the application"
-        run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php"
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"
         run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true" >> .env
       - name: "Load the index page to trigger instrumentation"
