@@ -173,13 +173,13 @@ final class ScoutApmServiceProvider extends ServiceProvider
         try {
             $connection = $application->make('db')->connection();
             $this->instrumentDatabaseQueries($agent, $connection);
-        } catch (BindingResolutionException $bindingResolutionException) {
+        } catch (Throwable $exception) {
             $log->info(
                 sprintf(
                     'Could not set up DB instrumentation: %s',
-                    $bindingResolutionException->getMessage()
+                    $exception->getMessage()
                 ),
-                ['exception' => $bindingResolutionException]
+                ['exception' => $exception]
             );
         }
 
