@@ -1,0 +1,109 @@
+name: Lumen Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lumen-unit-tests:
+    name: "Lumen Tests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extensions: ["scoutapm", ""]
+        lumen-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+        exclude:
+          - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
+          - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
+          - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ${{ matrix.extensions }}
+      # --no-update then a full `composer update` is needed to overcome locked dependencies
+      # See: https://github.com/composer/composer/issues/9561
+      - name: "Remove symfony components (conflicts)"
+        run: "composer remove --dev symfony/* --no-update --no-interaction"
+      - name: "Require framework ${{ matrix.lumen-version}}"
+        run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Run PHPUnit (Lumen) test suite"
+        run: "vendor/bin/phpunit --testsuite=laravel" # Test suite is same as Laravel
+
+  lumen-e2e:
+    name: "Lumen End-to-End Test"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extensions: ["scoutapm", ""]
+        lumen-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+        exclude:
+          - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
+          - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
+          - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: scout-apm-php
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl
+          extensions: ${{ matrix.extensions }}
+      - name: "Install Lumen quickstart project"
+        run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
+      - name: "Add scout-apm-php as a repository"
+        run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Require scout-apm-php current checkout"
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
+      - name: "Configure the application"
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php"
+      - name: "Configure Scout"
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true" >> .env
+      - name: "Load the index page to trigger instrumentation"
+        run: |
+          cd test-app
+          cat .env
+          php -S localhost:8000 -t public/ &
+          sleep 2
+          wget http://localhost:8000
+      - name: "Check logs for successful payload send"
+        run: |
+          cd test-app
+          ls -l storage/logs/
+          cat storage/logs/lumen.log
+          grep -q "local.DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/lumen.log
