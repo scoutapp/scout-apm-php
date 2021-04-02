@@ -15,6 +15,7 @@ use Psr\Log\LogLevel;
 use Scoutapm\Laravel\Router\DetermineLaravelControllerName;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 
+use function class_exists;
 use function uniqid;
 
 /** @covers \Scoutapm\Laravel\Router\DetermineLaravelControllerName */
@@ -32,6 +33,10 @@ final class DetermineLaravelControllerNameTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        if (! class_exists(Router::class)) {
+            self::markTestSkipped(Router::class . ' is not available in the current dependency tree');
+        }
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->router = $this->createMock(Router::class);
