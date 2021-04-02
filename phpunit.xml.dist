@@ -37,6 +37,10 @@
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory>./src/</directory>
+            <exclude>
+                <file>./src/ScoutApmBundle/Twig/TwigMethods-Twig2.php</file>
+                <file>./src/ScoutApmBundle/Twig/TwigMethods-Twig3.php</file>
+            </exclude>
         </whitelist>
     </filter>
     <listeners>

@@ -179,9 +179,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
                     'Could not set up DB instrumentation: %s',
                     $bindingResolutionException->getMessage()
                 ),
-                [
-                    'exception' => $bindingResolutionException,
-                ]
+                ['exception' => $bindingResolutionException]
             );
         }
 

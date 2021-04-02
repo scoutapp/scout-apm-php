@@ -23,7 +23,6 @@ final class DetermineLaravelControllerName implements AutomaticallyDetermineCont
         $this->router = $router;
     }
 
-    // @todo needs tests
     public function __invoke(Request $request): string
     {
         $name = 'unknown';

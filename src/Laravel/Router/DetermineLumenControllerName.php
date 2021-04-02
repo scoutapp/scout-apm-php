@@ -13,17 +13,20 @@ use Throwable;
 
 use function array_key_exists;
 use function basename;
-use function count;
-use function get_class;
-use function is_array;
-use function is_callable;
-use function is_object;
-use function is_string;
 use function sprintf;
 use function trim;
 
+/**
+ * @psalm-type LumenRouterActionShape = array{
+ *     "as"?: string,
+ *     uses?: string,
+ *     0?: ?\Closure,
+ * }
+ */
 final class DetermineLumenControllerName implements AutomaticallyDetermineControllerName
 {
+    private const CONTROLLER_PREFIX = 'Controller/';
+
     /** @var FilteredLogLevelDecorator */
     private $logger;
     /** @var Router */
@@ -35,7 +38,6 @@ final class DetermineLumenControllerName implements AutomaticallyDetermineContro
         $this->router = $router;
     }
 
-    // @todo needs tests
     public function __invoke(Request $request): string
     {
         $name = 'unknown';
@@ -43,6 +45,16 @@ final class DetermineLumenControllerName implements AutomaticallyDetermineContro
         try {
             $route = $request->getMethod() . '/' . trim($request->getPathInfo(), '/');
 
+            /**
+             * @psalm-var array<
+             *      string,
+             *      array{
+             *          method: string,
+             *          uri: string,
+             *          action: LumenRouterActionShape
+             *      }
+             * > $lumenRouteConfiguration
+             */
             $lumenRouteConfiguration = $this->router->getRoutes();
 
             if (array_key_exists($route, $lumenRouteConfiguration)) {
@@ -52,33 +64,17 @@ final class DetermineLumenControllerName implements AutomaticallyDetermineContro
                     $matchedRouteAction = $matchedRoute['action'];
 
                     if (array_key_exists('as', $matchedRouteAction)) {
-                        $name = $matchedRouteAction['as'];
+                        return self::CONTROLLER_PREFIX . $matchedRouteAction['as'];
                     }
 
                     if (array_key_exists('uses', $matchedRouteAction)) {
-                        $name = $matchedRouteAction['uses'];
+                        return self::CONTROLLER_PREFIX . $matchedRouteAction['uses'];
                     }
 
-                    if (
-                        is_callable($matchedRouteAction)
-                        || (is_array($matchedRouteAction) && count($matchedRouteAction) === 2)
-                    ) {
-                        if (is_string($matchedRouteAction)) {
-                            $name = $matchedRouteAction;
-                        }
-
-                        if (is_array($matchedRoute['action'])) {
-                            $name = sprintf(
-                                '%s@%s',
-                                is_object($matchedRouteAction[0]) ? get_class($matchedRouteAction[0]) : trim($matchedRouteAction[0]),
-                                trim($matchedRouteAction[1])
-                            );
-                        }
-                    }
-
-                    if (is_array($matchedRouteAction) && array_key_exists(0, $matchedRouteAction) && $matchedRouteAction[0] instanceof Closure) {
+                    if (array_key_exists(0, $matchedRouteAction) && $matchedRouteAction[0] instanceof Closure) {
                         $function = new ReflectionFunction($matchedRouteAction[0]);
-                        $name     = sprintf(
+
+                        return self::CONTROLLER_PREFIX . sprintf(
                             'closure_%s@%d',
                             basename($function->getFileName()),
                             $function->getStartLine()
@@ -93,6 +89,6 @@ final class DetermineLumenControllerName implements AutomaticallyDetermineContro
             );
         }
 
-        return 'Controller/' . $name;
+        return self::CONTROLLER_PREFIX . $name;
     }
 }

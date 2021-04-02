@@ -16,6 +16,7 @@ use Illuminate\Contracts\Queue\Job;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Connection;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Http\Kernel as HttpKernelImplementation;
 use Illuminate\Queue\Events\JobProcessed;
@@ -289,8 +290,13 @@ final class ScoutApmServiceProviderTest extends TestCase
             ->method('listen')
             ->with(self::isInstanceOf(Closure::class));
 
-        $this->application->singleton('connection', function () {
-            return $this->connection;
+        $dbManager = $this->createMock(DatabaseManager::class);
+        $dbManager->expects(self::once())
+            ->method('connection')
+            ->willReturn($this->connection);
+
+        $this->application->singleton('db', static function () use ($dbManager) {
+            return $dbManager;
         });
 
         $this->bootServiceProvider();

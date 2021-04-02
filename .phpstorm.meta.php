@@ -5,7 +5,7 @@ namespace PHPSTORM_META {
         'log' => \Psr\Log\LoggerInterface::class,
         'view' => \Illuminate\View\Factory::class,
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
-        'connection' => \Illuminate\Database\Connection::class,
+        'db' => \Illuminate\Database\DatabaseManager::class,
     ]));
     override(\Illuminate\Foundation\Application::make(0), map([
         '' => '@',
@@ -16,6 +16,6 @@ namespace PHPSTORM_META {
         'log' => \Psr\Log\LoggerInterface::class,
         'view' => \Illuminate\View\Factory::class,
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
-        'connection' => \Illuminate\Database\Connection::class,
+        'db' => \Illuminate\Database\DatabaseManager::class,
     ]));
 }

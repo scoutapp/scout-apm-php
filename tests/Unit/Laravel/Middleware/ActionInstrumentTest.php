@@ -7,8 +7,6 @@ namespace Scoutapm\UnitTests\Laravel\Middleware;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Routing\Route;
-use Illuminate\Routing\Router;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +15,7 @@ use Psr\Log\LogLevel;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Laravel\Middleware\ActionInstrument;
+use Scoutapm\Laravel\Router\AutomaticallyDetermineControllerName;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
 use Throwable;
@@ -28,16 +27,12 @@ final class ActionInstrumentTest extends TestCase
 {
     /** @var ScoutApmAgent&MockObject */
     private $agent;
-
     /** @var LoggerInterface&MockObject */
     private $logger;
-
-    /** @var Router&MockObject */
-    private $router;
-
     /** @var Span&MockObject */
     private $span;
-
+    /** @var AutomaticallyDetermineControllerName&MockObject */
+    private $determineControllerName;
     /** @var ActionInstrument */
     private $middleware;
 
@@ -45,32 +40,32 @@ final class ActionInstrumentTest extends TestCase
     {
         parent::setUp();
 
-        $this->agent  = $this->createMock(ScoutApmAgent::class);
-        $this->logger = $this->createMock(LoggerInterface::class);
-        $this->router = $this->createMock(Router::class);
-        $this->span   = $this->createMock(Span::class);
+        $this->agent                   = $this->createMock(ScoutApmAgent::class);
+        $this->logger                  = $this->createMock(LoggerInterface::class);
+        $this->span                    = $this->createMock(Span::class);
+        $this->determineControllerName = $this->createMock(AutomaticallyDetermineControllerName::class);
 
         $this->middleware = new ActionInstrument(
             $this->agent,
             new FilteredLogLevelDecorator($this->logger, LogLevel::DEBUG),
-            $this->router
+            $this->determineControllerName
         );
     }
 
     /** @throws Throwable */
-    public function testHandleRecordsControllerNameWhenRouteHasControllerKey(): void
+    public function testHandleRecordsControllerName(): void
     {
         $expectedResponse = new Response();
 
         $controllerName = uniqid('controllerName', true);
 
-        $this->router->expects(self::once())
-            ->method('current')
-            ->willReturn(new Route('GET', '/default-url', ['controller' => $controllerName]));
+        $this->determineControllerName
+            ->method('__invoke')
+            ->willReturn($controllerName);
 
         $this->span->expects(self::once())
             ->method('updateName')
-            ->with('Controller/' . $controllerName);
+            ->with($controllerName);
 
         $this->logger->expects(self::once())
             ->method('log')
@@ -103,8 +98,6 @@ final class ActionInstrumentTest extends TestCase
     {
         $expectedResponse = new Response();
 
-        $controllerName = uniqid('controllerName', true);
-
         $this->span->expects(self::never())
             ->method('updateName');
 
@@ -116,131 +109,6 @@ final class ActionInstrumentTest extends TestCase
                 /** @return mixed */
                 static function (string $originalName, callable $transaction) {
                     return $transaction(null);
-                }
-            );
-
-        self::assertSame(
-            $expectedResponse,
-            $this->middleware->handle(
-                new Request(),
-                static function () use ($expectedResponse) {
-                    return $expectedResponse;
-                }
-            )
-        );
-    }
-
-    /** @throws Throwable */
-    public function testHandleRecordsControllerNameWhenRouteDoesNotHaveAControllerKey(): void
-    {
-        $expectedResponse = new Response();
-
-        $url = uniqid('url', true);
-
-        $this->router->expects(self::once())
-            ->method('current')
-            ->willReturn(new Route('GET', $url, []));
-
-        $this->span->expects(self::once())
-            ->method('updateName')
-            ->with('Controller/' . $url);
-
-        $this->logger->expects(self::once())
-            ->method('log')
-            ->with(LogLevel::DEBUG, '[Scout] Handle ActionInstrument');
-
-        $this->agent
-            ->expects(self::once())
-            ->method('webTransaction')
-            ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(
-                /** @return mixed */
-                function (string $originalName, callable $transaction) {
-                    return $transaction(SpanReference::fromSpan($this->span));
-                }
-            );
-
-        self::assertSame(
-            $expectedResponse,
-            $this->middleware->handle(
-                new Request(),
-                static function () use ($expectedResponse) {
-                    return $expectedResponse;
-                }
-            )
-        );
-    }
-
-    /** @throws Throwable */
-    public function testHandleRecordsUnknownControllerNameWhenNoRouteFound(): void
-    {
-        $expectedResponse = new Response();
-
-        $this->router->expects(self::once())
-            ->method('current')
-            ->willReturn(null);
-
-        $this->span->expects(self::once())
-            ->method('updateName')
-            ->with('Controller/unknown');
-
-        $this->logger->expects(self::once())
-            ->method('log')
-            ->with(LogLevel::DEBUG, '[Scout] Handle ActionInstrument');
-
-        $this->agent
-            ->expects(self::once())
-            ->method('webTransaction')
-            ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(
-                /** @return mixed */
-                function (string $originalName, callable $transaction) {
-                    return $transaction(SpanReference::fromSpan($this->span));
-                }
-            );
-
-        self::assertSame(
-            $expectedResponse,
-            $this->middleware->handle(
-                new Request(),
-                static function () use ($expectedResponse) {
-                    return $expectedResponse;
-                }
-            )
-        );
-    }
-
-    /** @throws Throwable */
-    public function testHandleRecordsUnknownControllerNameWhenRouterCurrentThrowsException(): void
-    {
-        $expectedResponse = new Response();
-
-        $this->router->expects(self::once())
-            ->method('current')
-            ->willThrowException(new Exception('oh no'));
-
-        $this->span->expects(self::once())
-            ->method('updateName')
-            ->with('Controller/unknown');
-
-        $this->logger->expects(self::exactly(2))
-            ->method('log')
-            ->with(
-                LogLevel::DEBUG,
-                self::logicalOr(
-                    '[Scout] Handle ActionInstrument',
-                    '[Scout] Exception obtaining name of endpoint: oh no'
-                )
-            );
-
-        $this->agent
-            ->expects(self::once())
-            ->method('webTransaction')
-            ->with('unknown', self::isType(IsType::TYPE_CALLABLE))
-            ->willReturnCallback(
-                /** @return mixed */
-                function (string $originalName, callable $transaction) {
-                    return $transaction(SpanReference::fromSpan($this->span));
                 }
             );
 
