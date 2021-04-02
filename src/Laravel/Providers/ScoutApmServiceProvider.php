@@ -170,9 +170,19 @@ final class ScoutApmServiceProvider extends ServiceProvider
             $runningInConsole = $application->runningInConsole();
         }
 
-        if ($application->has('connection')) {
-            $connection = $application->make('connection');
+        try {
+            $connection = $application->make('db')->connection();
             $this->instrumentDatabaseQueries($agent, $connection);
+        } catch (BindingResolutionException $bindingResolutionException) {
+            $log->info(
+                sprintf(
+                    'Could not set up DB instrumentation: %s',
+                    $bindingResolutionException->getMessage()
+                ),
+                [
+                    'exception' => $bindingResolutionException,
+                ]
+            );
         }
 
         if ($agent->shouldInstrument(self::INSTRUMENT_LARAVEL_QUEUES)) {
