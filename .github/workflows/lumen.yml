@@ -40,8 +40,8 @@ jobs:
           extensions: ${{ matrix.extensions }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
-      - name: "Remove symfony components (conflicts)"
-        run: "composer remove --dev symfony/* --no-update --no-interaction"
+      - name: "Remove existing requirements components (avoid conflicts)"
+        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"

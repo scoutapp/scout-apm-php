@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.6.4@97fe86c4e158b5a57c5150aa5055c38b5a809aab">
+<files psalm-version="4.7.0@d4377c0baf3ffbf0b1ec6998e8d1be2a40971005">
   <file src="src/Agent.php">
     <MixedArgument occurrences="12">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
@@ -75,6 +75,12 @@
     <MixedPropertyFetch occurrences="1">
       <code>$this-&gt;connectionAddress</code>
     </MixedPropertyFetch>
+    <UnusedClosureParam occurrences="1">
+      <code>$context</code>
+    </UnusedClosureParam>
+    <UnusedFunctionCall occurrences="1">
+      <code>socket_shutdown</code>
+    </UnusedFunctionCall>
   </file>
   <file src="src/CoreAgent/Manifest.php">
     <MixedArrayAccess occurrences="3">
@@ -177,6 +183,9 @@
     <UndefinedClass occurrences="1">
       <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
     </UndefinedClass>
+    <UnusedClosureParam occurrences="1">
+      <code>$event</code>
+    </UnusedClosureParam>
   </file>
   <file src="src/Logger/FilteredLogLevelDecorator.php">
     <MixedArrayOffset occurrences="1">
@@ -468,6 +477,9 @@
       <code>$tagRequest</code>
       <code>$tagRequest</code>
     </MixedAssignment>
+    <UnusedVariable occurrences="1">
+      <code>$block</code>
+    </UnusedVariable>
   </file>
   <file src="tests/Unit/Events/Span/SpanReferenceTest.php">
     <MixedAssignment occurrences="1">
@@ -487,6 +499,11 @@
       <code>$version</code>
     </MixedAssignment>
   </file>
+  <file src="tests/Unit/Helper/MemoryUsageTest.php">
+    <UnusedVariable occurrences="1">
+      <code>$block</code>
+    </UnusedVariable>
+  </file>
   <file src="tests/Unit/Helper/TimerTest.php">
     <DeprecatedMethod occurrences="2">
       <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
@@ -498,12 +515,21 @@
       <code>testFacadeProxiesMethodsToRealAgent</code>
     </PossiblyInvalidArgument>
   </file>
+  <file src="tests/Unit/Laravel/Middleware/ActionInstrumentTest.php">
+    <UnusedClosureParam occurrences="3">
+      <code>$originalName</code>
+      <code>$originalName</code>
+      <code>$originalName</code>
+    </UnusedClosureParam>
+  </file>
+  <file src="tests/Unit/Laravel/Middleware/MiddlewareInstrumentTest.php">
+    <UnusedClosureParam occurrences="2">
+      <code>$name</code>
+      <code>$type</code>
+    </UnusedClosureParam>
+  </file>
   <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderTest.php">
-    <DeprecatedClass occurrences="1">
-      <code>self::at(3)</code>
-    </DeprecatedClass>
-    <DeprecatedMethod occurrences="2">
-      <code>self::at(3)</code>
+    <DeprecatedMethod occurrences="1">
       <code>setMethods</code>
     </DeprecatedMethod>
     <InvalidArrayOffset occurrences="1">
@@ -516,6 +542,17 @@
       <code>$commands[1]['StartSpan']['operation']</code>
       <code>json_decode(json_encode($metadata), true)['ApplicationEvent']</code>
     </MixedArrayAccess>
+    <UnusedClosureParam occurrences="1">
+      <code>$whichViews</code>
+    </UnusedClosureParam>
+  </file>
+  <file src="tests/Unit/Laravel/View/Engine/ScoutViewEngineDecoratorTest.php">
+    <UnusedClosureParam occurrences="4">
+      <code>$name</code>
+      <code>$name</code>
+      <code>$type</code>
+      <code>$type</code>
+    </UnusedClosureParam>
   </file>
   <file src="tests/Unit/ScoutApmBundle/DependencyInjection/ScoutApmExtensionTest.php">
     <MixedArgument occurrences="1">
@@ -545,5 +582,17 @@
     <MixedAssignment occurrences="1">
       <code>$flattenedMetadata</code>
     </MixedAssignment>
+  </file>
+  <file src="tests/Unit/ScoutApmBundle/Twig/TwigDecoratorTest.php">
+    <UnusedClosureParam occurrences="8">
+      <code>$name</code>
+      <code>$name</code>
+      <code>$name</code>
+      <code>$name</code>
+      <code>$type</code>
+      <code>$type</code>
+      <code>$type</code>
+      <code>$type</code>
+    </UnusedClosureParam>
   </file>
 </files>
