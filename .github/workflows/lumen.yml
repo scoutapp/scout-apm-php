@@ -29,6 +29,9 @@ jobs:
           - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
           - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
           - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "8.0", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
