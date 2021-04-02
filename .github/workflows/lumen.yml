@@ -71,6 +71,9 @@ jobs:
           - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
           - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
           - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "8.0", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -85,7 +88,7 @@ jobs:
           tools: pecl
           extensions: ${{ matrix.extensions }}
       - name: "Install Lumen quickstart project"
-        run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
+        run: "composer create-project laravel/lumen-framework:${{ matrix.lumen-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout"

@@ -71,6 +71,7 @@ jobs:
           - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
           - {php-version: "7.1", laravel-version: "8.*"} # Laravel 8 requires 7.3+
           - {php-version: "7.2", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "8.0", laravel-version: "5.5.*"} # Laravel 5.5.* does not support PHP 8.0+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
