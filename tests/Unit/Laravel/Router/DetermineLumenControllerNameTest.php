@@ -14,6 +14,8 @@ use Psr\Log\LogLevel;
 use Scoutapm\Laravel\Router\DetermineLumenControllerName;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 
+use function class_exists;
+
 /**
  * @covers \Scoutapm\Laravel\Router\DetermineLumenControllerName
  * @psalm-import-type LumenRouterActionShape from DetermineLumenControllerName
@@ -32,6 +34,10 @@ final class DetermineLumenControllerNameTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
+        if (! class_exists(Router::class)) {
+            self::markTestSkipped(Router::class . ' is not available in the current dependency tree');
+        }
 
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->router = $this->createMock(Router::class);
@@ -75,7 +81,7 @@ final class DetermineLumenControllerNameTest extends TestCase
                     static function (): void {
                     },
                 ],
-                'closure_DetermineLumenControllerNameTest.php@75',
+                'closure_%s@%d',
             ],
         ];
     }
@@ -99,7 +105,7 @@ final class DetermineLumenControllerNameTest extends TestCase
                 ],
             ]);
 
-        self::assertSame(
+        self::assertStringMatchesFormat(
             self::EXPECTED_CONTROLLER_PREFIX . $expectedControllerSuffix,
             $this->determineControllerName->__invoke($request)
         );
