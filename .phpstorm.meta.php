@@ -18,4 +18,11 @@ namespace PHPSTORM_META {
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
     ]));
+    override(\Laravel\Lumen\Application::make(0), map([
+        '' => '@',
+        'log' => \Psr\Log\LoggerInterface::class,
+        'view' => \Illuminate\View\Factory::class,
+        'events' => \Illuminate\Contracts\Events\Dispatcher::class,
+        'db' => \Illuminate\Database\DatabaseManager::class,
+    ]));
 }
