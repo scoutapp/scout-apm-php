@@ -112,4 +112,4 @@ jobs:
           cd test-app
           ls -l storage/logs/
           cat storage/logs/lumen.log
-          grep -q "local.DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/lumen.log
+          grep -q "DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/lumen.log
