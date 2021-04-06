@@ -6,6 +6,7 @@ namespace PHPSTORM_META {
         'view' => \Illuminate\View\Factory::class,
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
+        'view.engine.resolver' => \Illuminate\View\Engines\EngineResolver::class,
     ]));
     override(\Illuminate\Foundation\Application::make(0), map([
         '' => '@',
@@ -17,6 +18,7 @@ namespace PHPSTORM_META {
         'view' => \Illuminate\View\Factory::class,
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
+        'view.engine.resolver' => \Illuminate\View\Engines\EngineResolver::class,
     ]));
     override(\Laravel\Lumen\Application::make(0), map([
         '' => '@',
@@ -24,5 +26,6 @@ namespace PHPSTORM_META {
         'view' => \Illuminate\View\Factory::class,
         'events' => \Illuminate\Contracts\Events\Dispatcher::class,
         'db' => \Illuminate\Database\DatabaseManager::class,
+        'view.engine.resolver' => \Illuminate\View\Engines\EngineResolver::class,
     ]));
 }

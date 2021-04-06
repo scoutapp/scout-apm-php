@@ -158,6 +158,7 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
     public function testViewEngineResolversHaveBeenWrapped(): void
     {
         $this->serviceProvider->register();
+        $this->bootServiceProvider();
 
         $templateName = uniqid('test_template_name', true);
 

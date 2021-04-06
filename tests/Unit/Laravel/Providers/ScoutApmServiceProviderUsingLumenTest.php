@@ -80,6 +80,7 @@ final class ScoutApmServiceProviderUsingLumenTest extends ScoutApmServiceProvide
             }
         );
 
+        $application->make('view');
         $application->singleton(
             'view',
             function (): ViewFactory {
@@ -148,6 +149,15 @@ final class ScoutApmServiceProviderUsingLumenTest extends ScoutApmServiceProvide
                 return new ConfigRepository();
             }
         );
+
+        /**
+         * For some reason, if we don't `make` these services first, the tests fail in Lumen 5.5.*. Which is
+         * very odd, since in those cases, we're overwriting it immediately after. Without lengthy investigation into
+         * the depths of Lumen, I don't know the exact reason for this, but it may just be a bug solved in later
+         * versions, or some unclear magic.
+         */
+        $application->make('db');
+        $application->make('config');
 
         return $application;
     }

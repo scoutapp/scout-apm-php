@@ -55,6 +55,9 @@ final class ScoutApmServiceProvider extends ServiceProvider
 
     public const INSTRUMENT_LARAVEL_QUEUES = 'laravel_queues';
 
+    /** @var bool */
+    private $resolveViewEngineResolverOnBoot = false;
+
     /** @throws BindingResolutionException */
     public function register(): void
     {
@@ -110,15 +113,24 @@ final class ScoutApmServiceProvider extends ServiceProvider
             return $app->make(DetermineLaravelControllerName::class);
         });
 
-        $this->app->afterResolving('view.engine.resolver', function (EngineResolver $engineResolver): void {
-            foreach (self::VIEW_ENGINES_TO_WRAP as $engineName) {
-                $realEngine = $engineResolver->resolve($engineName);
+        if (! $this->app->resolved('view.engine.resolver')) {
+            $this->app->afterResolving('view.engine.resolver', function (EngineResolver $engineResolver): void {
+                $this->registerWrappedEngines($engineResolver);
+            });
+        } else {
+            $this->resolveViewEngineResolverOnBoot = true;
+        }
+    }
 
-                $engineResolver->register($engineName, function () use ($realEngine) {
-                    return $this->wrapEngine($realEngine);
-                });
-            }
-        });
+    public function registerWrappedEngines(EngineResolver $engineResolver): void
+    {
+        foreach (self::VIEW_ENGINES_TO_WRAP as $engineName) {
+            $realEngine = $engineResolver->resolve($engineName);
+
+            $engineResolver->register($engineName, function () use ($realEngine) {
+                return $this->wrapEngine($realEngine);
+            });
+        }
     }
 
     public function wrapEngine(Engine $realEngine): Engine
@@ -185,6 +197,13 @@ final class ScoutApmServiceProvider extends ServiceProvider
 
         if ($agent->shouldInstrument(self::INSTRUMENT_LARAVEL_QUEUES)) {
             $this->instrumentQueues($agent, $application->make('events'), $runningInConsole);
+        }
+
+        if ($this->resolveViewEngineResolverOnBoot) {
+            $engineResolver = $this->app->make('view.engine.resolver');
+            $this->registerWrappedEngines($engineResolver);
+
+            $this->resolveViewEngineResolverOnBoot = false;
         }
 
         if ($runningInConsole || ! $application->has(HttpKernelInterface::class)) {
