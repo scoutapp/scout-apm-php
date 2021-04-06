@@ -2,9 +2,18 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-(new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
-    dirname(__DIR__)
-))->bootstrap();
+// LoadEnvironmentVariables since Lumen 6.*
+if (class_exists(Laravel\Lumen\Bootstrap\LoadEnvironmentVariables::class)) {
+    (new Laravel\Lumen\Bootstrap\LoadEnvironmentVariables(
+        dirname(__DIR__)
+    ))->bootstrap();
+} else {
+    try {
+        (new Dotenv\Dotenv(__DIR__.'/../'))->load();
+    } catch (Dotenv\Exception\InvalidPathException $e) {
+        //
+    }
+}
 
 date_default_timezone_set(env('APP_TIMEZONE', 'UTC'));
 
