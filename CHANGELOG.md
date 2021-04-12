@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#213](https://github.com/scoutapp/scout-apm-php/pull/213) Fix X-Request-Start header not being recognised in some situations
 
 ## 6.0.1 - 2021-03-19
 

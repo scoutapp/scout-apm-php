@@ -30,6 +30,10 @@ final class FetchRequestHeadersTest extends TestCase
 
         self::assertEquals(
             [
+                'Script-Name' => $oldServer['SCRIPT_NAME'],
+                'Request-Time' => $oldServer['REQUEST_TIME'],
+                'Document-Root' => '/path/to/public',
+                'Remote-Addr' => '127.0.0.1',
                 'Host' => 'scout-apm-test',
                 'User-Agent' => 'Scout APM test',
                 'Cookie' => 'cookie_a=null; cookie_b=null',

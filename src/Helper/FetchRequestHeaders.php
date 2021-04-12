@@ -8,18 +8,23 @@ use function array_combine;
 use function array_filter;
 use function array_keys;
 use function array_map;
+use function in_array;
 use function is_string;
 use function str_replace;
-use function strpos;
 use function strtolower;
 use function substr;
 use function ucwords;
 
 use const ARRAY_FILTER_USE_BOTH;
 
+/** @internal */
 abstract class FetchRequestHeaders
 {
-    /** @return array<string, string> */
+    /**
+     * @internal
+     *
+     * @return array<string, string>
+     */
     public static function fromServerGlobal(): array
     {
         return self::fromArray($_SERVER);
@@ -37,7 +42,11 @@ abstract class FetchRequestHeaders
         return array_combine(
             array_map(
                 static function (string $key): string {
-                    return ucwords(str_replace('_', '-', strtolower(substr($key, 5))), '-');
+                    if (in_array(strtolower(substr($key, 0, 5)), ['http_', 'http-'], true)) {
+                        $key = substr($key, 5);
+                    }
+
+                    return ucwords(str_replace('_', '-', strtolower($key)), '-');
                 },
                 array_keys($qualifyingServerKeys)
             ),
@@ -63,8 +72,7 @@ abstract class FetchRequestHeaders
              */
             static function ($value, $key): bool {
                 return is_string($key)
-                    && $value !== ''
-                    && strpos($key, 'HTTP_') === 0;
+                    && $value !== '';
             },
             ARRAY_FILTER_USE_BOTH
         );

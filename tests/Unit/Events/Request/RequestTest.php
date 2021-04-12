@@ -203,6 +203,14 @@ final class RequestTest extends TestCase
                 'headerName' => 'HTTP_X_REQUEST_START',
                 'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000000000) + 2000000),
             ],
+            'requestStartWhenNotPrefixedWithHttp' => [
+                'headerName' => 'X-Request-Start',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
+            'requestStartWhenNotPrefixedWithHttpLowercase' => [
+                'headerName' => 'x-request-start',
+                'headerValue' => sprintf('%d', (self::FIXED_POINT_UNIX_EPOCH_SECONDS * 1000) + 2),
+            ],
         ];
     }
 
