@@ -20,7 +20,9 @@ use function array_values;
 use function class_exists;
 use function getenv;
 use function gethostname;
+use function is_array;
 use function is_string;
+use function method_exists;
 use function sprintf;
 
 use const PHP_VERSION;
@@ -129,8 +131,12 @@ final class Metadata implements Command
             return $herokuSlugCommit;
         }
 
-        if (class_exists(InstalledVersions::class)) {
-            return InstalledVersions::getRootPackage()['reference'];
+        if (class_exists(InstalledVersions::class) && method_exists(InstalledVersions::class, 'getRootPackage')) {
+            /** @var mixed $rootPackage */
+            $rootPackage = InstalledVersions::getRootPackage();
+            if (is_array($rootPackage) && array_key_exists('reference', $rootPackage) && is_string($rootPackage['reference'])) {
+                return $rootPackage['reference'];
+            }
         }
 
         return '';

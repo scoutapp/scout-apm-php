@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file, in reverse 
 ### Fixed
 
 - [#213](https://github.com/scoutapp/scout-apm-php/pull/213) Fix X-Request-Start header not being recognised in some situations
+- [#214](https://github.com/scoutapp/scout-apm-php/pull/214) Additional type checking for rootPackageGitSha method
 
 ## 6.0.1 - 2021-03-19
 
