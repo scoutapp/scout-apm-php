@@ -40,8 +40,10 @@ jobs:
           extensions: ${{ matrix.extensions }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
+      - name: "Remove existing requirements components (avoid conflicts)"
+        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
       - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
-        run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} --no-update --no-interaction --prefer-dist --prefer-stable"
+        run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit test suite"

@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.1.0 - TBD
+
+### Added
+
+- [#210](https://github.com/scoutapp/scout-apm-php/pull/210) Add support for Lumen 6+
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.0.1 - 2021-03-19
 
 ### Added

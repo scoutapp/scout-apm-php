@@ -21,6 +21,7 @@
         "composer-plugin-api": "^2.0",
         "doctrine/coding-standard": "^8.2",
         "laravel/framework": "^5.5.0|^6.0|^7.0|^8.0",
+        "laravel/lumen-framework": "^5.5.0|^6.0|^7.0|^8.0",
         "monolog/monolog": "^1.26|^2.2.0",
         "phpunit/phpunit": "^7.5.20|^8.5.14|^9.5.2",
         "psalm/plugin-phpunit": "^0.15.1",
