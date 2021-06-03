@@ -7,6 +7,7 @@ namespace Scoutapm\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
+use Throwable;
 use Webmozart\Assert\Assert;
 
 use function array_keys;
@@ -45,15 +46,24 @@ final class FilteredLogLevelDecorator implements LoggerInterface
      */
     public function __construct(LoggerInterface $realLogger, string $minimumLogLevel)
     {
-        Assert::keyExists(
-            self::LOG_LEVEL_ORDER,
-            strtolower($minimumLogLevel),
-            sprintf(
-                'Log level %s was not a valid PSR-3 compatible log level. Should be one of: %s',
-                $minimumLogLevel,
-                implode(', ', array_keys(self::LOG_LEVEL_ORDER))
-            )
-        );
+        try {
+            Assert::keyExists(
+                self::LOG_LEVEL_ORDER,
+                strtolower($minimumLogLevel),
+                sprintf(
+                    'Log level %s was not a valid PSR-3 compatible log level. Should be one of: %s',
+                    $minimumLogLevel,
+                    implode(', ', array_keys(self::LOG_LEVEL_ORDER))
+                )
+            );
+        } catch (Throwable $e) {
+            $minimumLogLevel = LogLevel::DEBUG;
+            $realLogger->log(
+                LogLevel::ERROR,
+                $e->getMessage(),
+                ['exception' => $e]
+            );
+        }
 
         $this->minimumLogLevel = self::LOG_LEVEL_ORDER[strtolower($minimumLogLevel)];
         $this->realLogger      = $realLogger;
