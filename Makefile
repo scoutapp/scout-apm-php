@@ -31,3 +31,9 @@ deps-php71-highest: ## Update deps to highest
 
 deps-php8-highest: ## Update deps to highest
 	php8.0 /usr/local/bin/composer update --prefer-dist --no-interaction
+
+update-static-analysis-baseline: ## bump static analysis baseline issues, reducing set of allowed failures
+	vendor/bin/psalm --update-baseline
+
+reset-static-analysis-baseline: ## reset static analysis baseline issues to current HEAD
+	vendor/bin/psalm --set-baseline=known-issues.xml

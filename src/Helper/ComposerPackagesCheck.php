@@ -48,6 +48,6 @@ final class ComposerPackagesCheck
             return true;
         }
 
-        return (bool) InstalledVersions::isInstalled($package);
+        return InstalledVersions::isInstalled($package);
     }
 }

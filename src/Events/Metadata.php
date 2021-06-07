@@ -159,11 +159,11 @@ final class Metadata implements Command
             $composerPlatformVersions = array_map(
                 static function (string $packageName): array {
                     return [
-                        $packageName === 'root' ? (string) InstalledVersions::getRootPackage()['name'] : $packageName,
+                        $packageName === 'root' ? InstalledVersions::getRootPackage()['name'] : $packageName,
                         sprintf(
                             '%s@%s',
-                            InstalledVersions::getPrettyVersion($packageName),
-                            InstalledVersions::getReference($packageName)
+                            (string) InstalledVersions::getPrettyVersion($packageName),
+                            (string) InstalledVersions::getReference($packageName)
                         ),
                     ];
                 },

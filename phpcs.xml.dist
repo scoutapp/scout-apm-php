@@ -13,6 +13,8 @@
     <file>src</file>
     <file>tests</file>
 
+    <exclude-pattern>tests/psalm-stubs.php</exclude-pattern>
+
     <rule ref="Doctrine">
         <exclude name="Generic.Files.LineLength.TooLong"/>
     </rule>

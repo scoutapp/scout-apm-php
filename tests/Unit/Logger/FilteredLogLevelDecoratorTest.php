@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Logger;
 
-use InvalidArgumentException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -31,11 +30,16 @@ final class FilteredLogLevelDecoratorTest extends TestCase
 
     public function testInvalidLogLevelStringGivesClearErrorMessage(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(
-            'Log level foo was not a valid PSR-3 compatible log level. '
-            . 'Should be one of: debug, info, notice, warning, error, critical, alert, emergency'
-        );
+        $this->decoratedLogger
+            ->expects(self::once())
+            ->method('log')
+            ->with(
+                LogLevel::ERROR,
+                'Log level foo was not a valid PSR-3 compatible log level. '
+                . 'Should be one of: debug, info, notice, warning, error, critical, alert, emergency',
+                self::anything()
+            );
+
         new FilteredLogLevelDecorator($this->decoratedLogger, 'foo');
     }
 
@@ -99,9 +103,36 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     }
 
     /** @dataProvider invalidLogLevelProvider */
-    public function testInvalidLogLevelsAreRejected(string $invalidLogLevel): void
+    public function testInvalidLogLevelsAreLoggedAsErrors(string $invalidLogLevel): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->decoratedLogger
+            ->expects(self::once())
+            ->method('log')
+            ->with(
+                LogLevel::ERROR,
+                self::stringContains($invalidLogLevel . ' was not a valid PSR-3'),
+                self::anything()
+            );
+
         new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);
+    }
+
+    /** @dataProvider invalidLogLevelProvider */
+    public function testInvalidLogLevelsDefaultToDebug(string $invalidLogLevel): void
+    {
+        $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);
+
+        $message = 'info message';
+
+        $this->decoratedLogger
+            ->expects(self::once())
+            ->method('log')
+            ->with(
+                LogLevel::DEBUG,
+                self::stringContains($message),
+                self::anything()
+            );
+
+        $decorator->debug($message);
     }
 }

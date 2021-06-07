@@ -64,8 +64,8 @@ final class MetadataTest extends TestCase
                 $packageName === 'root' ? InstalledVersions::getRootPackage()['name'] : $packageName,
                 sprintf(
                     '%s@%s',
-                    InstalledVersions::getPrettyVersion($packageName),
-                    InstalledVersions::getReference($packageName)
+                    (string) InstalledVersions::getPrettyVersion($packageName),
+                    (string) InstalledVersions::getReference($packageName)
                 ),
             ];
         }
