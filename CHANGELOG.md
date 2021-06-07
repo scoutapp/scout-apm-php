@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.2.0 - TBC
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#216](https://github.com/scoutapp/scout-apm-php/pull/216) Log invalid log levels and default to "debug" (thanks @pjohnmeyer)
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.1.0 - 2021-04-12
 
 ### Added
