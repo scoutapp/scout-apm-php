@@ -96,27 +96,17 @@
     </MixedAssignment>
   </file>
   <file src="src/Events/Metadata.php">
-    <MixedArgument occurrences="3">
-      <code>InstalledVersions::getInstalledPackages()</code>
-      <code>InstalledVersions::getPrettyVersion($packageName)</code>
-      <code>InstalledVersions::getReference($packageName)</code>
-    </MixedArgument>
-    <MixedArrayAccess occurrences="2">
-      <code>InstalledVersions::getRootPackage()['name']</code>
-      <code>InstalledVersions::getRootPackage()['reference']</code>
-    </MixedArrayAccess>
     <MixedAssignment occurrences="3">
       <code>$applicationRootConfiguration</code>
       <code>$revisionShaConfiguration</code>
       <code>$scmSubdirectoryConfiguration</code>
     </MixedAssignment>
-    <MixedInferredReturnType occurrences="2">
+    <MixedInferredReturnType occurrences="1">
       <code>string</code>
       <code>string</code>
     </MixedInferredReturnType>
-    <MixedReturnStatement occurrences="2">
+    <MixedReturnStatement occurrences="1">
       <code>$_SERVER['DOCUMENT_ROOT']</code>
-      <code>InstalledVersions::getRootPackage()['reference']</code>
     </MixedReturnStatement>
     <MixedReturnTypeCoercion occurrences="2">
       <code>array&lt;string, (string|VersionList|null)&gt;</code>
@@ -219,58 +209,6 @@
       <code>string</code>
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1"/>
-  </file>
-  <file src="src/ScoutApmBundle/Twig/TwigMethods-Twig2.php">
-    <DuplicateClass occurrences="1">
-      <code>TwigMethods</code>
-    </DuplicateClass>
-  </file>
-  <file src="src/ScoutApmBundle/Twig/TwigMethods-Twig3.php">
-    <InternalMethod occurrences="13">
-      <code>getBinaryOperators</code>
-      <code>getFilter</code>
-      <code>getFilters</code>
-      <code>getFunction</code>
-      <code>getFunctions</code>
-      <code>getGlobals</code>
-      <code>getNodeVisitors</code>
-      <code>getTemplateClass</code>
-      <code>getTest</code>
-      <code>getTests</code>
-      <code>getTokenParsers</code>
-      <code>getUnaryOperators</code>
-      <code>loadTemplate</code>
-    </InternalMethod>
-    <LessSpecificImplementedReturnType occurrences="6">
-      <code>array</code>
-      <code>array</code>
-      <code>array</code>
-      <code>array</code>
-      <code>array</code>
-      <code>array</code>
-    </LessSpecificImplementedReturnType>
-    <MissingParamType occurrences="5">
-      <code>$cache</code>
-      <code>$name</code>
-      <code>$names</code>
-      <code>$original</code>
-      <code>$value</code>
-    </MissingParamType>
-    <MixedArgument occurrences="4">
-      <code>$cache</code>
-      <code>$name</code>
-      <code>$names</code>
-      <code>$original</code>
-    </MixedArgument>
-    <MixedArgumentTypeCoercion occurrences="1">
-      <code>$extensions</code>
-    </MixedArgumentTypeCoercion>
-    <MixedInferredReturnType occurrences="1">
-      <code>array</code>
-    </MixedInferredReturnType>
-    <UndefinedMethod occurrences="1">
-      <code>getTags</code>
-    </UndefinedMethod>
   </file>
   <file src="tests/Integration/AgentTest.php">
     <MixedArgument occurrences="34">
@@ -435,17 +373,7 @@
     </MixedArgument>
   </file>
   <file src="tests/Unit/Events/MetadataTest.php">
-    <MixedArgument occurrences="2">
-      <code>InstalledVersions::getPrettyVersion($packageName)</code>
-      <code>InstalledVersions::getReference($packageName)</code>
-    </MixedArgument>
-    <MixedArrayAccess occurrences="3">
-      <code>InstalledVersions::getRootPackage()['name']</code>
-      <code>InstalledVersions::getRootPackage()['reference']</code>
-    </MixedArrayAccess>
-    <MixedAssignment occurrences="1">
-      <code>$packageName</code>
-    </MixedAssignment>
+    <MixedArrayAccess occurrences="1"/>
   </file>
   <file src="tests/Unit/Events/Request/RequestTest.php">
     <MixedArrayAccess occurrences="20">

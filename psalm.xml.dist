@@ -11,8 +11,14 @@
         <directory name="tests" />
         <ignoreFiles>
             <directory name="vendor" />
+            <file name="src/ScoutApmBundle/Twig/TwigMethods-Twig2.php" />
+            <file name="src/ScoutApmBundle/Twig/TwigMethods-Twig3.php" />
+            <file name="tests/psalm-stubs.php" />
         </ignoreFiles>
     </projectFiles>
+    <stubs>
+        <file name="tests/psalm-stubs.php"/>
+    </stubs>
     <issueHandlers>
         <DeprecatedClass>
             <errorLevel type="info">
