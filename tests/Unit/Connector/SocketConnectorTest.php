@@ -6,8 +6,10 @@ namespace Scoutapm\UnitTests\Connector;
 
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
+use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Exception\FailedToConnect;
+use Scoutapm\Connector\Exception\FailedToSendCommand;
 use Scoutapm\Connector\SocketConnector;
 
 use function exec;
@@ -56,6 +58,32 @@ final class SocketConnectorTest extends TestCase
             true
         );
         self::assertTrue($connector->connected());
+    }
+
+    public function testExceptionIsRaisedWhenCommandCannotBeSerialized(): void
+    {
+        $this->runTestSocketServerAndReturnPid(10003);
+
+        $connector = new SocketConnector(
+            ConnectionAddress::fromConfig(Config::fromArray([Config\ConfigKey::CORE_AGENT_SOCKET_PATH => 'tcp://localhost:10003'])),
+            true
+        );
+        $connector->connect();
+
+        $this->expectException(FailedToSendCommand::class);
+        $this->expectExceptionMessage('Failed to serialize command of type');
+
+        $connector->sendCommand(new class implements Command {
+            public function cleanUp(): void
+            {
+            }
+
+            /** @return mixed */
+            public function jsonSerialize()
+            {
+                return "\xB1\x31"; // should cause json_encode to return false
+            }
+        });
     }
 
     private function runTestSocketServerAndReturnPid(int $port): void

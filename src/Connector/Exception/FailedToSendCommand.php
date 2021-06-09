@@ -11,6 +11,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Throwable;
 
 use function get_class;
+use function json_last_error_msg;
 use function socket_last_error;
 use function socket_strerror;
 use function sprintf;
@@ -40,6 +41,18 @@ final class FailedToSendCommand extends RuntimeException
     public function logLevel(): string
     {
         return $this->logLevel;
+    }
+
+    public static function unableToSerializeCommand(Command $attemptedCommand): self
+    {
+        return new self(
+            LogLevel::CRITICAL,
+            sprintf(
+                'Failed to serialize command of type %s to JSON. Last JSON error: %s',
+                get_class($attemptedCommand),
+                json_last_error_msg()
+            )
+        );
     }
 
     /** @param resource $socketResource */
