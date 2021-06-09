@@ -54,10 +54,11 @@ $agent->send();
 
 #### Default log level
 
-By default, the library is *very* noisy in logging by design - this is to help us figure out what is going wrong if you
-need assistance. If you are confident everything is working, and you can see data in your Scout dashboard, then you
-can increase the minimum log level by adding the following configuration to set the "minimum" log level (which **only**
-applies to Scout's logging):
+Since release `6.2.0`, the default log level is set to `Psr\Log\LogLevel::WARNING`. If you are having issues with
+instrumentation, we recommend setting the log level to `Psr\Log\LogLevel::DEBUG` to increase the verbosity of logging.
+This will help support to identify issues that may occur.
+
+You may change the log level to any other `Psr\Log\LogLevel::*` constant value, for example:
 
 ```php
 use Psr\Log\LoggerInterface;
@@ -73,7 +74,7 @@ $agent = Agent::fromConfig(
         ConfigKey::APPLICATION_NAME => 'Your application name',
         ConfigKey::APPLICATION_KEY => 'your scout key',
         ConfigKey::MONITORING_ENABLED => true,
-        ConfigKey::LOG_LEVEL => LogLevel::ERROR, // <-- add this configuration
+        ConfigKey::LOG_LEVEL => LogLevel::DEBUG, // <-- add this configuration to increase logging verbosity
     ]),
     $psrLoggerImplementation
 );
