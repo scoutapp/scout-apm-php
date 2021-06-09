@@ -23,7 +23,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
-- Nothing.
+- [#222](https://github.com/scoutapp/scout-apm-php/pull/222) Added guard against json_encode returning false
 
 ## 6.1.0 - 2021-04-12
 
