@@ -160,6 +160,10 @@ final class SocketConnector implements Connector
 
         $serializedJsonString = json_encode($message);
 
+        if (! $serializedJsonString) {
+            throw Exception\FailedToSendCommand::unableToSerializeCommand($message);
+        }
+
         $size = strlen($serializedJsonString);
 
         // Socket error is a global state, so we must reset to a known state first...
