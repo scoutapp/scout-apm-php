@@ -165,7 +165,7 @@ final class AgentTest extends TestCase
         self::assertFalse($this->logger->hasDebugRecords());
     }
 
-    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
+    public function testNoLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My Application',
@@ -175,8 +175,7 @@ final class AgentTest extends TestCase
 
         $agent->connect();
 
-        self::assertTrue($this->logger->hasDebugThatContains('Configuration'));
-        self::assertTrue($this->logger->hasDebugThatContains('Connection skipped, since monitoring is disabled'));
+        self::assertEquals([], $this->logger->records);
     }
 
     /** @throws Exception */
@@ -186,6 +185,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $microtime = microtime(true);
@@ -457,7 +457,10 @@ final class AgentTest extends TestCase
      */
     public function testIgnoredAgentSequence(): void
     {
-        $agent = $this->agentFromConfigArray([ConfigKey::MONITORING_ENABLED => true]);
+        $agent = $this->agentFromConfigArray([
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
+        ]);
         $agent->ignore();
 
         // Start a Parent Controller Span
@@ -612,6 +615,7 @@ final class AgentTest extends TestCase
             ConfigKey::MONITORING_ENABLED => true,
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $agent->connect();
@@ -635,6 +639,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $agent->connect();
@@ -685,6 +690,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => false,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $this->connector->expects(self::never())->method('connected')->willReturn(true);
@@ -703,6 +709,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $this->connector->expects(self::once())
@@ -803,6 +810,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $this->connector->expects(self::once())
@@ -826,6 +834,7 @@ final class AgentTest extends TestCase
             ConfigKey::MONITORING_ENABLED => true,
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $this->phpExtension
@@ -867,6 +876,7 @@ final class AgentTest extends TestCase
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => false,
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => false,
             ConfigKey::LOG_PAYLOAD_CONTENT => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         $this->connector->expects(self::at(2))
@@ -907,6 +917,7 @@ final class AgentTest extends TestCase
             ConfigKey::APPLICATION_NAME => 'My test app',
             ConfigKey::APPLICATION_KEY => uniqid('applicationKey', true),
             ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::LOG_LEVEL => LogLevel::DEBUG,
         ]);
 
         // Even if we randomise the number of spans over the limit, the number of spans actually sent should remain fixed

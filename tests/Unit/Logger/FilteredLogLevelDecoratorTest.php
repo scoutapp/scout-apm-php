@@ -118,7 +118,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     }
 
     /** @dataProvider invalidLogLevelProvider */
-    public function testInvalidLogLevelsDefaultToDebug(string $invalidLogLevel): void
+    public function testInvalidLogLevelsDefaultToWarning(string $invalidLogLevel): void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);
 
@@ -128,11 +128,11 @@ final class FilteredLogLevelDecoratorTest extends TestCase
             ->expects(self::once())
             ->method('log')
             ->with(
-                LogLevel::DEBUG,
+                LogLevel::WARNING,
                 self::stringContains($message),
                 self::anything()
             );
 
-        $decorator->debug($message);
+        $decorator->warning($message);
     }
 }
