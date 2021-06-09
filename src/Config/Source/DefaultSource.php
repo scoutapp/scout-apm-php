@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config\Source;
 
+use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 
 use function array_key_exists;
@@ -55,7 +56,7 @@ final class DefaultSource implements ConfigSource
             ConfigKey::CORE_AGENT_PERMISSIONS => 0777,
             ConfigKey::MONITORING_ENABLED => false,
             ConfigKey::IGNORED_ENDPOINTS => [],
-            ConfigKey::LOG_LEVEL => 'debug',
+            ConfigKey::LOG_LEVEL => Config::DEFAULT_LOG_LEVEL,
             ConfigKey::LOG_PAYLOAD_CONTENT => false,
         ];
     }

@@ -7,6 +7,7 @@ namespace Scoutapm\Logger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LogLevel;
+use Scoutapm\Config;
 use Throwable;
 use Webmozart\Assert\Assert;
 
@@ -57,7 +58,7 @@ final class FilteredLogLevelDecorator implements LoggerInterface
                 )
             );
         } catch (Throwable $e) {
-            $minimumLogLevel = LogLevel::DEBUG;
+            $minimumLogLevel = Config::DEFAULT_LOG_LEVEL;
             $realLogger->log(
                 LogLevel::ERROR,
                 $e->getMessage(),

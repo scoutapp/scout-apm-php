@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
+- [#221](https://github.com/scoutapp/scout-apm-php/pull/221) Change default log level to "warning"
 - [#216](https://github.com/scoutapp/scout-apm-php/pull/216) Log invalid log levels and default to "debug" (thanks @pjohnmeyer)
 
 ### Deprecated
