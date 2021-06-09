@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 namespace Scoutapm;
 
+use Psr\Log\LogLevel;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Config\Source\DefaultSource;
 use Scoutapm\Config\Source\DerivedSource;
@@ -25,6 +26,9 @@ use function array_map;
 // @todo needs interface
 class Config
 {
+    /** @internal */
+    public const DEFAULT_LOG_LEVEL = LogLevel::WARNING;
+
     /** @var array<int, (EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource)> */
     private $sources;
 

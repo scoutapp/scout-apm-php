@@ -100,7 +100,7 @@ jobs:
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app

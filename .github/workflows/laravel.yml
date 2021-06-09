@@ -94,7 +94,7 @@ jobs:
       - name: "Publish the provider"
         run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app
