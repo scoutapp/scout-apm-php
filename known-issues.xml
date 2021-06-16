@@ -211,48 +211,15 @@
     <MixedReturnStatement occurrences="1"/>
   </file>
   <file src="tests/Integration/AgentTest.php">
-    <MixedArgument occurrences="34">
-      <code>$batchCommand</code>
+    <MixedArgument occurrences="2">
       <code>$logMessage['level']</code>
       <code>$logMessage['message']</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($unserialized)</code>
-      <code>reset($commands)</code>
-      <code>reset($unserialized)</code>
     </MixedArgument>
     <MixedArrayAccess occurrences="2">
       <code>$logMessage['level']</code>
       <code>$logMessage['message']</code>
     </MixedArrayAccess>
-    <MixedAssignment occurrences="2">
-      <code>$batchCommand</code>
+    <MixedAssignment occurrences="1">
       <code>$logMessage</code>
     </MixedAssignment>
   </file>

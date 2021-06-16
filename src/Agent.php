@@ -34,9 +34,11 @@ use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
+use Scoutapm\MongoDB\QueryTimeCollector;
 use Throwable;
 
 use function count;
+use function extension_loaded;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -99,6 +101,10 @@ final class Agent implements ScoutApmAgent
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
+        }
+
+        if (extension_loaded('mongodb')) {
+            QueryTimeCollector::register($this);
         }
 
         $this->startNewRequest();

@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.3.0 - TBC
+
+### Added
+
+- [#224](https://github.com/scoutapp/scout-apm-php/pull/224) Integrated with MongoDB APM hook
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.2.0 - 2021-06-09
 
 ### Added

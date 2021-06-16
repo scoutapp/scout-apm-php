@@ -10,9 +10,12 @@ use Scoutapm\Connector\Connector;
 use function json_decode;
 use function json_encode;
 
+/**
+ * @psalm-type UnserializedCapturedMessagesList = list<array<string, array<string, mixed>>>
+ */
 final class MessageCapturingConnectorDelegator implements Connector
 {
-    /** @var array<array-key, mixed> */
+    /** @psalm-var UnserializedCapturedMessagesList */
     public $sentMessages = [];
 
     /** @var Connector */
@@ -35,6 +38,7 @@ final class MessageCapturingConnectorDelegator implements Connector
 
     public function sendCommand(Command $message): string
     {
+        /** @psalm-suppress MixedPropertyTypeCoercion */
         $this->sentMessages[] = json_decode(json_encode($message), true);
 
         return $this->delegate->sendCommand($message);

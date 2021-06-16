@@ -37,7 +37,8 @@
     },
     "suggest": {
         "composer-runtime-api": "Composer v2 is required for seeing version information in metadata",
-        "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions"
+        "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions",
+        "ext-mongodb": "Required for instrumentation of MongoDB"
     },
     "autoload": {
         "psr-4": {
