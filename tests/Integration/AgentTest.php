@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Scoutapm\IntegrationTests;
 
 use Exception;
+use MongoDB\Driver\BulkWrite;
+use MongoDB\Driver\Command;
+use MongoDB\Driver\Manager;
+use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
@@ -14,8 +18,10 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\MongoDB\QueryTimeCollector;
 
 use function assert;
+use function extension_loaded;
 use function file_get_contents;
 use function fopen;
 use function function_exists;
@@ -29,8 +35,12 @@ use function shell_exec;
 use function sleep;
 use function sprintf;
 use function str_repeat;
+use function uniqid;
 
-/** @coversNothing */
+/**
+ * @psalm-import-type UnserializedCapturedMessagesList from MessageCapturingConnectorDelegator
+ * @coversNothing
+ */
 final class AgentTest extends TestCase
 {
     private const APPLICATION_NAME = 'Agent Integration Test';
@@ -242,79 +252,149 @@ final class AgentTest extends TestCase
         TestHelper::assertUnserializedCommandContainsPayload(
             'BatchCommand',
             [
-                'commands' => static function (array $commands): bool {
-                    $requestId = TestHelper::assertUnserializedCommandContainsPayload(
-                        'StartRequest',
-                        [
-                            'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
-                        ],
-                        reset($commands),
-                        'request_id'
-                    );
+                'commands' =>
+                    /** @psalm-param UnserializedCapturedMessagesList $commands */
+                    static function (array $commands): bool {
+                        $requestId = TestHelper::assertUnserializedCommandContainsPayload(
+                            'StartRequest',
+                            [
+                                'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
+                            ],
+                            reset($commands),
+                            'request_id'
+                        );
 
-                    $controllerSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
+                        $controllerSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Yay'], next($commands), 'span_id');
 
-                    if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
-                    }
+                        if (TestHelper::scoutApmExtensionAvailable()) {
+                            $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        }
 
-                    $fooSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
+                        $fooSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/foo'], next($commands), 'span_id');
 
-                    if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
-                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
-                    }
+                        if (TestHelper::scoutApmExtensionAvailable()) {
+                            $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        }
 
-                    $barSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
+                        $barSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/bar'], next($commands), 'span_id');
 
-                    if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
-                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
-                    }
+                        if (TestHelper::scoutApmExtensionAvailable()) {
+                            $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        }
 
-                    TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
-                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $barSpanId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $barSpanId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
-                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack', 'span_id' => $fooSpanId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fooSpanId], next($commands), null);
 
-                    if (TestHelper::scoutApmExtensionAvailable()) {
-                        $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
-                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
-                    }
+                        if (TestHelper::scoutApmExtensionAvailable()) {
+                            $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
+                        }
 
-                    $dbSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
-                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
+                        $dbSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'DB/test'], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $dbSpanId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $controllerSpanId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'testtag', 'value' => '1.23', 'request_id' => $requestId], next($commands), null);
 
-                    $quxSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
-                    TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
+                        $quxSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Test/qux'], next($commands), 'span_id');
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $quxSpanId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [TestHelper::class, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
-                    TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta', 'value' => [TestHelper::class, 'assertValidMemoryUsage'], 'request_id' => $requestId], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path', 'value' => '/fake-path', 'request_id' => $requestId], next($commands), null);
 
-                    TestHelper::assertUnserializedCommandContainsPayload(
-                        'FinishRequest',
-                        [
-                            'request_id' => $requestId,
-                            'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
-                        ],
-                        next($commands),
-                        null
-                    );
+                        TestHelper::assertUnserializedCommandContainsPayload(
+                            'FinishRequest',
+                            [
+                                'request_id' => $requestId,
+                                'timestamp' => [TestHelper::class, 'assertValidTimestamp'],
+                            ],
+                            next($commands),
+                            null
+                        );
 
-                    return true;
-                },
+                        return true;
+                    },
             ],
             $batchCommand,
+            null
+        );
+    }
+
+    public function testMongoDbInstrumentation(): void
+    {
+        if (! extension_loaded('mongodb')) {
+            self::markTestSkipped('MongoDB extension required for this test - mongodb is not loaded');
+        }
+
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]));
+
+        $mongo = new Manager('mongodb://localhost:27017');
+        QueryTimeCollector::register($this->agent);
+
+        $db         = 'scout-apm-test-db';
+        $collection = uniqid('scout-apm-test-', true);
+        $helloValue = uniqid('helloValue', true);
+
+        $mongo->executeCommand($db, new Command(['create' => $collection]));
+
+        $write = new BulkWrite();
+        $write->insert(['_id' => 1, 'hello' => $helloValue]);
+        $mongo->executeBulkWrite($db . '.' . $collection, $write);
+
+        $cursor = $mongo->executeQuery($db . '.' . $collection, new Query(['_id' => 1]));
+        $cursor->rewind();
+        self::assertSame($helloValue, $cursor->current()->hello);
+
+        self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+
+        $unserialized = $this->connector->sentMessages;
+        reset($unserialized); // Skip Register event
+        next($unserialized); // Skip Metadata event
+
+        TestHelper::assertUnserializedCommandContainsPayload(
+            'BatchCommand',
+            [
+                'commands' =>
+                    /** @psalm-param UnserializedCapturedMessagesList $commands */
+                    static function (array $commands) use ($db): bool {
+                        TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Mongo/Query/create'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'db', 'value' => $db], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'operationId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'requestId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Mongo/Query/insert'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'db', 'value' => $db], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'operationId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'requestId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Mongo/Query/find'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'db', 'value' => $db], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'operationId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'requestId'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        return true;
+                    },
+            ],
+            next($unserialized),
             null
         );
     }
