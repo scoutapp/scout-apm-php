@@ -18,7 +18,6 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
-use Scoutapm\MongoDB\QueryTimeCollector;
 
 use function assert;
 use function extension_loaded;
@@ -343,7 +342,6 @@ final class AgentTest extends TestCase
         ]));
 
         $mongo = new Manager('mongodb://localhost:27017');
-        QueryTimeCollector::register($this->agent);
 
         $db         = 'scout-apm-test-db';
         $collection = uniqid('scout-apm-test-', true);
