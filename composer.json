@@ -18,7 +18,6 @@
         "webmozart/assert": "^1.0"
     },
     "require-dev": {
-        "ext-mongodb": "*",
         "composer-plugin-api": "^2.0",
         "doctrine/coding-standard": "^8.2",
         "laravel/framework": "^5.5.0|^6.0|^7.0|^8.0",
