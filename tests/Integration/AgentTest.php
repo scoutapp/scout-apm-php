@@ -7,6 +7,7 @@ namespace Scoutapm\IntegrationTests;
 use Exception;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Command;
+use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
@@ -342,6 +343,12 @@ final class AgentTest extends TestCase
         ]));
 
         $mongo = new Manager('mongodb://localhost:27017');
+
+        try {
+            $mongo->startSession();
+        } catch (ConnectionTimeoutException $timeoutException) {
+            self::markTestSkipped('Could not connect to mongodb server, is it running?');
+        }
 
         $db         = 'scout-apm-test-db';
         $collection = uniqid('scout-apm-test-', true);
