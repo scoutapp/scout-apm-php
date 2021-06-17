@@ -53,21 +53,8 @@ final class Version
 
     public function isOlderThan(self $otherVersion): bool
     {
-        if ($this->major > $otherVersion->major) {
-            return false;
-        }
-
-        if ($this->minor > $otherVersion->minor) {
-            return false;
-        }
-
-        if ($this->patch > $otherVersion->patch) {
-            return false;
-        }
-
-        return $otherVersion->major > $this->major
-            || $otherVersion->minor > $this->minor
-            || $otherVersion->patch > $this->patch;
+        return (($this->major * 1000000) + ($this->minor * 1000) + $this->patch)
+            < (($otherVersion->major * 1000000) + ($otherVersion->minor * 1000) + $otherVersion->patch);
     }
 
     public function toString(): string

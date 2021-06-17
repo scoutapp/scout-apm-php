@@ -27,6 +27,7 @@ final class VersionTest extends TestCase
             ['testVersion' => '1.0.0', 'isOlderThan' => '1.0.0', 'expectedResult' => false],
             ['testVersion' => '1.1.0', 'isOlderThan' => '1.1.0', 'expectedResult' => false],
             ['testVersion' => '1.1.1', 'isOlderThan' => '1.1.1', 'expectedResult' => false],
+            ['testVersion' => '1.3.0', 'isOlderThan' => '0.0.1', 'expectedResult' => false],
             ['testVersion' => '2.0.0', 'isOlderThan' => '1.0.2', 'expectedResult' => false],
             ['testVersion' => '2.0.0', 'isOlderThan' => '1.2.0', 'expectedResult' => false],
         ];
