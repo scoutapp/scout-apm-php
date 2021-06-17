@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- [#226](https://github.com/scoutapp/scout-apm-php/pull/226) Increased recommended extension version to 1.3.0
+- [#226](https://github.com/scoutapp/scout-apm-php/pull/226) Increased recommended extension version to 1.4.0
 
 ### Deprecated
 

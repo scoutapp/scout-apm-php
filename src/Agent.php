@@ -51,7 +51,7 @@ final class Agent implements ScoutApmAgent
 
     private const METADATA_CACHE_TTL_SECONDS = 600;
 
-    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.3.0';
+    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.4.0';
 
     /** @var Config */
     private $config;
