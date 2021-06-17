@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\Extension;
 
-interface ExtentionCapabilities
+use function class_alias;
+
+interface ExtensionCapabilities
 {
     /** @return RecordedCall[]|array<int, RecordedCall> */
     public function getCalls(): array;
@@ -13,3 +15,5 @@ interface ExtentionCapabilities
 
     public function version(): ?Version;
 }
+
+class_alias(ExtensionCapabilities::class, ExtentionCapabilities::class);

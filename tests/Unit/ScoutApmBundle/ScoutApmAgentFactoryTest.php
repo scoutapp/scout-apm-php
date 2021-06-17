@@ -10,7 +10,7 @@ use Psr\SimpleCache\CacheInterface;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Connector;
 use Scoutapm\Events\Metadata;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\ScoutApmBundle\ScoutApmAgentFactory;
 
 use function json_decode;
@@ -24,7 +24,7 @@ final class ScoutApmAgentFactoryTest extends TestCase
         $logger       = $this->createMock(LoggerInterface::class);
         $cache        = $this->createMock(CacheInterface::class);
         $connector    = $this->createMock(Connector::class);
-        $phpExtension = $this->createMock(ExtentionCapabilities::class);
+        $phpExtension = $this->createMock(ExtensionCapabilities::class);
 
         $connector->expects(self::at(3))
             ->method('sendCommand')

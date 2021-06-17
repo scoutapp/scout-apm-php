@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 6.3.0 - TBC
+## 6.3.0 - 2021-06-17
 
 ### Added
 
@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#226](https://github.com/scoutapp/scout-apm-php/pull/226) Increased recommended extension version to 1.4.0
 
 ### Deprecated
 

@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
 
@@ -40,7 +40,7 @@ final class Metadata implements Command
     private $timer;
     /** @var Config */
     private $config;
-    /** @var ExtentionCapabilities */
+    /** @var ExtensionCapabilities */
     private $phpExtension;
     /** @var LocateFileOrFolder */
     private $locateFileOrFolder;
@@ -48,7 +48,7 @@ final class Metadata implements Command
     public function __construct(
         DateTimeImmutable $now,
         Config $config,
-        ExtentionCapabilities $phpExtension,
+        ExtensionCapabilities $phpExtension,
         LocateFileOrFolder $locateFileOrFolder
     ) {
         // Construct and stop the timer to use its timestamp logic. This event

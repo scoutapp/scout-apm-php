@@ -9,7 +9,7 @@ use Psr\SimpleCache\CacheInterface;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Connector\Connector;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\ScoutApmAgent;
 use Symfony\Component\HttpKernel\Kernel;
 
@@ -25,7 +25,7 @@ final class ScoutApmAgentFactory
         LoggerInterface $logger,
         ?CacheInterface $cache,
         ?Connector $connector,
-        ?ExtentionCapabilities $extentionCapabilities,
+        ?ExtensionCapabilities $extensionCapabilities,
         array $agentConfiguration
     ): ScoutApmAgent {
         return Agent::fromConfig(
@@ -39,7 +39,7 @@ final class ScoutApmAgentFactory
             $logger,
             $cache,
             $connector,
-            $extentionCapabilities
+            $extensionCapabilities
         );
     }
 }

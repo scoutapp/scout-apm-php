@@ -29,7 +29,7 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
@@ -51,7 +51,7 @@ final class Agent implements ScoutApmAgent
 
     private const METADATA_CACHE_TTL_SECONDS = 600;
 
-    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.0.2';
+    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.4.0';
 
     /** @var Config */
     private $config;
@@ -65,7 +65,7 @@ final class Agent implements ScoutApmAgent
     private $ignoredEndpoints;
     /** @var bool If this request was marked as ignored*/
     private $isIgnored = false;
-    /** @var ExtentionCapabilities */
+    /** @var ExtensionCapabilities */
     private $phpExtension;
     /** @var CacheInterface */
     private $cache;
@@ -80,7 +80,7 @@ final class Agent implements ScoutApmAgent
         Config $configuration,
         Connector $connector,
         LoggerInterface $logger,
-        ExtentionCapabilities $phpExtension,
+        ExtensionCapabilities $phpExtension,
         CacheInterface $cache,
         LocateFileOrFolder $locateFileOrFolder
     ) {
@@ -136,14 +136,14 @@ final class Agent implements ScoutApmAgent
         LoggerInterface $logger,
         ?CacheInterface $cache = null,
         ?Connector $connector = null,
-        ?ExtentionCapabilities $extentionCapabilities = null,
+        ?ExtensionCapabilities $extensionCapabilities = null,
         ?LocateFileOrFolder $locateFileOrFolder = null
     ): self {
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
-            $extentionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
+            $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolder()
         );

@@ -12,8 +12,22 @@ use function function_exists;
 use function phpversion;
 use function scoutapm_get_calls;
 
-final class PotentiallyAvailableExtensionCapabilities implements ExtentionCapabilities
+final class PotentiallyAvailableExtensionCapabilities implements ExtensionCapabilities
 {
+    public function __construct()
+    {
+        if (! $this->extensionIsAvailable()) {
+            return;
+        }
+
+        // If the function doesn't exist, we're probably using an older `scoutapm` extension which doesn't need enabling
+        if (! function_exists('scoutapm_enable_instrumentation')) {
+            return;
+        }
+
+        scoutapm_enable_instrumentation(true);
+    }
+
     /**
      * @return RecordedCall[]
      *
