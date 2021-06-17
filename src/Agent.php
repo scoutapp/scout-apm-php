@@ -156,7 +156,7 @@ final class Agent implements ScoutApmAgent
         return $extensionVersion === null ? 'n/a' : $extensionVersion->toString();
     }
 
-    private function checkExtensionVersionAndEnable(): void
+    private function checkExtensionVersion(): void
     {
         $extensionVersion = $this->phpExtension->version();
 
@@ -175,8 +175,6 @@ final class Agent implements ScoutApmAgent
             $extensionVersion->toString(),
             $theMinimumRecommendedVersion->toString()
         ));
-
-        $this->phpExtension->enable();
     }
 
     public function connect(): void
@@ -189,7 +187,7 @@ final class Agent implements ScoutApmAgent
             return;
         }
 
-        $this->checkExtensionVersionAndEnable();
+        $this->checkExtensionVersion();
 
         if (! $this->connector->connected()) {
             $this->logger->info(sprintf(

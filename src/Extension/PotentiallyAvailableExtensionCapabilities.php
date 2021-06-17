@@ -14,7 +14,7 @@ use function scoutapm_get_calls;
 
 final class PotentiallyAvailableExtensionCapabilities implements ExtensionCapabilities
 {
-    public function enable(): void
+    public function __construct()
     {
         if (! $this->extensionIsAvailable()) {
             return;
