@@ -3,6 +3,22 @@
 /** @noinspection PhpIllegalPsrClassPathInspection */
 declare(strict_types=1);
 
+namespace {
+    function scoutapm_enable_instrumentation(bool $enabled): void
+    {
+    }
+
+    /** @psalm-return list<array{function:string, entered:float, exited: float, time_taken: float, argv: mixed[]}> */
+    function scoutapm_get_calls(): array
+    {
+    }
+
+    /** @return list<string> */
+    function scoutapm_list_instrumented_functions(): array
+    {
+    }
+}
+
 namespace Composer {
     class InstalledVersions {
         /**

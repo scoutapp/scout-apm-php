@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Timer;
@@ -33,7 +33,7 @@ use const PHP_VERSION;
  */
 final class MetadataTest extends TestCase
 {
-    /** @var ExtentionCapabilities&MockObject */
+    /** @var ExtensionCapabilities&MockObject */
     private $phpExtension;
     /** @var LocateFileOrFolder&MockObject */
     private $locateFileOrFolder;
@@ -44,7 +44,7 @@ final class MetadataTest extends TestCase
     {
         parent::setUp();
 
-        $this->phpExtension       = $this->createMock(ExtentionCapabilities::class);
+        $this->phpExtension       = $this->createMock(ExtensionCapabilities::class);
         $this->locateFileOrFolder = $this->createMock(LocateFileOrFolder::class);
 
         $this->time = new DateTimeImmutable('now', new DateTimeZone('UTC'));

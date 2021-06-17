@@ -28,7 +28,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
-use Scoutapm\Extension\ExtentionCapabilities;
+use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\RecordedCall;
 use Scoutapm\Extension\Version;
 use Scoutapm\IntegrationTests\TestHelper;
@@ -54,7 +54,7 @@ final class AgentTest extends TestCase
     /** @var Connector&MockObject */
     private $connector;
 
-    /** @var ExtentionCapabilities&MockObject */
+    /** @var ExtensionCapabilities&MockObject */
     private $phpExtension;
 
     public function setUp(): void
@@ -63,7 +63,7 @@ final class AgentTest extends TestCase
 
         $this->logger       = new TestLogger();
         $this->connector    = $this->createMock(Connector::class);
-        $this->phpExtension = $this->createMock(ExtentionCapabilities::class);
+        $this->phpExtension = $this->createMock(ExtensionCapabilities::class);
     }
 
     private function requestFromAgent(ScoutApmAgent $agent): ?Request

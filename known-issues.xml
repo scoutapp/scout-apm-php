@@ -138,17 +138,6 @@
       <code>$this-&gt;value</code>
     </MixedReturnStatement>
   </file>
-  <file src="src/Extension/PotentiallyAvailableExtensionCapabilities.php">
-    <MixedArgument occurrences="1">
-      <code>scoutapm_get_calls()</code>
-    </MixedArgument>
-    <MixedArgumentTypeCoercion occurrences="1">
-      <code>$call</code>
-    </MixedArgumentTypeCoercion>
-    <MixedReturnTypeCoercion occurrences="2">
-      <code>list&lt;RecordedCall&gt;</code>
-    </MixedReturnTypeCoercion>
-  </file>
   <file src="src/Helper/Backtrace.php">
     <MixedArgument occurrences="1">
       <code>$composerContent['config']</code>
