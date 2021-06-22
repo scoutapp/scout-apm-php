@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.4.0 - TBC
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#227](https://github.com/scoutapp/scout-apm-php/pull/227) Fixed "double logging" of SQL queries with new "leafNode" flag on spans
+
 ## 6.3.0 - 2021-06-17
 
 ### Added
