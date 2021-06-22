@@ -40,6 +40,9 @@ use function uniqid;
 /**
  * @psalm-import-type UnserializedCapturedMessagesList from MessageCapturingConnectorDelegator
  * @coversNothing
+ *
+ * Running these in separate process is required due to the way PHAR caches data internally
+ * @runTestsInSeparateProcesses
  */
 final class AgentTest extends TestCase
 {
@@ -98,7 +101,16 @@ final class AgentTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/fake-path';
 
         $this->agent = Agent::fromConfig($config, $this->logger, null, $this->connector);
-        $this->agent->connect();
+
+        $retryCount = 0;
+        while ($retryCount < 5 && ! $this->connector->connected()) {
+            $this->agent->connect();
+            sleep(1);
+        }
+
+        if (! $this->connector->connected()) {
+            self::fail('Could not connect to core agent in test harness. ' . $this->formatCapturedLogMessages());
+        }
 
         (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
     }
@@ -114,7 +126,6 @@ final class AgentTest extends TestCase
         return $return;
     }
 
-    /** @runInSeparateProcess */
     public function testForMemoryLeaksWhenHandlingJobQueues(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([
@@ -192,7 +203,6 @@ final class AgentTest extends TestCase
     /**
      * @throws Exception
      *
-     * @runInSeparateProcess
      * @dataProvider endToEndConfigurationProvider
      */
     public function testLoggingIsSentUsingConfiguration(Config $config): void
@@ -331,7 +341,6 @@ final class AgentTest extends TestCase
         );
     }
 
-    /** @runInSeparateProcess */
     public function testMongoDbInstrumentation(): void
     {
         if (! extension_loaded('mongodb')) {
@@ -405,7 +414,6 @@ final class AgentTest extends TestCase
         );
     }
 
-    /** @runInSeparateProcess */
     public function testLeafSpansDoNotHaveChildren(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([
