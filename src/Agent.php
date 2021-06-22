@@ -277,17 +277,17 @@ final class Agent implements ScoutApmAgent
     }
 
     /** {@inheritDoc} */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null): ?SpanReference
+    public function startSpan(string $operation, ?float $overrideTimestamp = null, bool $leafSpan = false): ?SpanReference
     {
         $this->addSpansFromExtension();
 
         $returnValue = $this->onlyRunIfBelowSpanLimit(
-            function () use ($operation, $overrideTimestamp): ?Span {
+            function () use ($operation, $overrideTimestamp, $leafSpan): ?Span {
                 if ($this->request === null) {
                     return null;
                 }
 
-                return $this->request->startSpan($operation, $overrideTimestamp);
+                return $this->request->startSpan($operation, $overrideTimestamp, $leafSpan);
             }
         );
 

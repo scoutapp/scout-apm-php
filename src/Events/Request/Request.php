@@ -183,7 +183,7 @@ class Request implements CommandWithChildren
      * @throws SpanLimitReached
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null): Span
+    public function startSpan(string $operation, ?float $overrideTimestamp = null, bool $leafSpan = false): Span
     {
         if ($this->spanCount >= self::MAX_COMPLETE_SPANS) {
             throw SpanLimitReached::forOperation($operation, self::MAX_COMPLETE_SPANS);
@@ -191,7 +191,7 @@ class Request implements CommandWithChildren
 
         $this->spanCount++;
 
-        $span = new Span($this->currentCommand, $operation, $this->id, $overrideTimestamp);
+        $span = new Span($this->currentCommand, $operation, $this->id, $overrideTimestamp, $leafSpan);
 
         $this->currentCommand->appendChild($span);
 
