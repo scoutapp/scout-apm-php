@@ -46,7 +46,7 @@ final class DoctrineSqlLogger implements SQLLogger
      */
     public function startQuery($sql, ?array $params = null, ?array $types = null)
     {
-        $this->currentSpan = $this->agent->startSpan('SQL/Query');
+        $this->currentSpan = $this->agent->startSpan('SQL/Query', null, true);
 
         if ($this->currentSpan === null) {
             return;

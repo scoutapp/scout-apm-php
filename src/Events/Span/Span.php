@@ -36,24 +36,21 @@ class Span implements CommandWithParent, CommandWithChildren
 
     /** @var SpanId */
     private $id;
-
     /** @var RequestId */
     private $requestId;
-
     /** @var CommandWithChildren */
     private $parent;
-
     /** @var Command[]|array<int, Command> */
     private $children = [];
-
     /** @var string */
     private $name;
-
     /** @var Timer */
     private $timer;
+    /** @var bool */
+    private $leafSpan;
 
     /** @throws Exception */
-    public function __construct(CommandWithChildren $parent, string $name, RequestId $requestId, ?float $override = null)
+    public function __construct(CommandWithChildren $parent, string $name, RequestId $requestId, ?float $override = null, bool $leafSpan = false)
     {
         $this->id = SpanId::new();
 
@@ -63,6 +60,8 @@ class Span implements CommandWithParent, CommandWithChildren
         $this->requestId = $requestId;
 
         $this->timer = new Timer($override);
+
+        $this->leafSpan = $leafSpan;
     }
 
     public function cleanUp(): void
@@ -187,6 +186,10 @@ class Span implements CommandWithParent, CommandWithChildren
         ];
 
         foreach ($this->children as $child) {
+            if ($this->leafSpan && $child instanceof Span) {
+                continue;
+            }
+
             foreach ($child->jsonSerialize() as $value) {
                 $commands[] = $value;
             }

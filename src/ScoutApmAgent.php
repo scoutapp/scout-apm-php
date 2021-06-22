@@ -28,10 +28,11 @@ interface ScoutApmAgent
      *
      * @param string $operation         The "name" of the span, something like "Controller/User" or "SQL/Query"
      * @param ?float $overrideTimestamp If you need to set the start time to something specific
+     * @param bool   $leafSpan          A leaf span will not have any child spans included on serialization (except tags)
      *
      * @throws Exception
      */
-    public function startSpan(string $operation, ?float $overrideTimestamp = null): ?SpanReference;
+    public function startSpan(string $operation, ?float $overrideTimestamp = null, bool $leafSpan = false): ?SpanReference;
 
     public function stopSpan(): void;
 
