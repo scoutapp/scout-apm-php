@@ -403,4 +403,53 @@ final class AgentTest extends TestCase
             null
         );
     }
+
+    public function testLeafSpansDoNotHaveChildren(): void
+    {
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]));
+
+        $leaf = $this->agent->startSpan('LeafOperation', null, true);
+        assert($leaf !== null);
+        $this->agent->startSpan('ShouldNotBeSerialized');
+        $this->agent->stopSpan();
+        $leaf->tag('LeafShouldBeTagged', 'something');
+        $this->agent->stopSpan();
+        $this->agent->startSpan('AnotherOperation');
+        $this->agent->stopSpan();
+        self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+
+        $unserialized = $this->connector->sentMessages;
+        reset($unserialized); // Skip Register event
+        next($unserialized); // Skip Metadata event
+
+        TestHelper::assertUnserializedCommandContainsPayload(
+            'BatchCommand',
+            [
+                'commands' =>
+                /** @psalm-param UnserializedCapturedMessagesList $commands */
+                    static function (array $commands): bool {
+                        TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'LeafOperation'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'LeafShouldBeTagged'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'AnotherOperation'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
+
+                        return true;
+                    },
+            ],
+            next($unserialized),
+            null
+        );
+    }
 }
