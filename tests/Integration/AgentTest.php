@@ -331,6 +331,7 @@ final class AgentTest extends TestCase
         );
     }
 
+    /** @runInSeparateProcess */
     public function testMongoDbInstrumentation(): void
     {
         if (! extension_loaded('mongodb')) {
@@ -404,6 +405,7 @@ final class AgentTest extends TestCase
         );
     }
 
+    /** @runInSeparateProcess */
     public function testLeafSpansDoNotHaveChildren(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([
