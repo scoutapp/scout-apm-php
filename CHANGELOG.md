@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#228](https://github.com/scoutapp/scout-apm-php/pull/228) Added configuration for URL Path and query parameter filtering
 
 ### Changed
 
