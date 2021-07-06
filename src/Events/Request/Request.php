@@ -15,6 +15,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\FetchRequestHeaders;
+use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Timer;
@@ -48,6 +49,16 @@ class Request implements CommandWithChildren
     private $requestUriOverride;
     /** @var int */
     private $spanCount = 0;
+    /**
+     * @psalm-var ConfigKey::URI_REPORTING_*
+     * @var string
+     */
+    private $uriReportingOption;
+    /**
+     * @psalm-var list<string>
+     * @var string[]
+     */
+    private $filteredParameters;
 
     /**
      * @deprecated Constructor will be made private in future, use {@see \Scoutapm\Events\Request\Request::fromConfigAndOverrideTime}
@@ -67,6 +78,9 @@ class Request implements CommandWithChildren
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
+
+        $this->uriReportingOption = $uriReportingOption;
+        $this->filteredParameters = $filteredParameters;
     }
 
     /** @psalm-return ConfigKey::URI_REPORTING_* */
@@ -234,7 +248,14 @@ class Request implements CommandWithChildren
         $this->timer->stop($overrideTimestamp);
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
-        $this->tag(Tag::TAG_REQUEST_PATH, $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal());
+        $this->tag(
+            Tag::TAG_REQUEST_PATH,
+            FormatUrlPathAndQuery::forUriReportingConfiguration(
+                $this->uriReportingOption,
+                $this->filteredParameters,
+                $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal()
+            )
+        );
 
         $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
     }
