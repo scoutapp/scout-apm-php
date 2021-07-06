@@ -6,6 +6,8 @@ namespace Scoutapm\Events\Request;
 
 use DateInterval;
 use Exception;
+use Scoutapm\Config;
+use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
@@ -19,6 +21,9 @@ use Scoutapm\Helper\Timer;
 
 use function array_key_exists;
 use function array_map;
+use function array_values;
+use function in_array;
+use function is_array;
 use function is_string;
 use function microtime;
 use function strpos;
@@ -44,8 +49,17 @@ class Request implements CommandWithChildren
     /** @var int */
     private $spanCount = 0;
 
-    /** @throws Exception */
-    public function __construct(?float $override = null)
+    /**
+     * @deprecated Constructor will be made private in future, use {@see \Scoutapm\Events\Request\Request::fromConfigAndOverrideTime}
+     *
+     * @param string[] $filteredParameters
+     *
+     * @throws Exception
+     *
+     * @psalm-param Config\ConfigKey::URI_REPORTING_* $uriReportingOption
+     * @psalm-param list<string> $filteredParameters
+     */
+    public function __construct(string $uriReportingOption, array $filteredParameters, ?float $override = null)
     {
         $this->id = RequestId::new();
 
@@ -53,6 +67,52 @@ class Request implements CommandWithChildren
         $this->startMemory = MemoryUsage::record();
 
         $this->currentCommand = $this;
+    }
+
+    /** @psalm-return ConfigKey::URI_REPORTING_* */
+    private static function requireValidUriReportingValue(Config $config): string
+    {
+        /** @var mixed $uriReportingConfiguration */
+        $uriReportingConfiguration = $config->get(ConfigKey::URI_REPORTING);
+
+        if (! in_array($uriReportingConfiguration, [ConfigKey::URI_REPORTING_PATH_ONLY, ConfigKey::URI_REPORTING_FULL_PATH, ConfigKey::URI_REPORTING_FILTERED], true)) {
+            $uriReportingConfiguration = (string) (new Config\Source\DefaultSource())->get(ConfigKey::URI_REPORTING);
+        }
+
+        /** @psalm-var ConfigKey::URI_REPORTING_* $uriReportingConfiguration */
+        return $uriReportingConfiguration;
+    }
+
+    /** @psalm-return list<string> */
+    private static function requireValidFilteredUriParameters(Config $config): array
+    {
+        /** @var mixed $uriFilteredParameters */
+        $uriFilteredParameters = $config->get(ConfigKey::URI_FILTERED_PARAMETERS);
+
+        /** @var list<string> $defaultFilteredParameters */
+        $defaultFilteredParameters = (new Config\Source\DefaultSource())->get(ConfigKey::URI_FILTERED_PARAMETERS);
+
+        if (! is_array($uriFilteredParameters)) {
+            return $defaultFilteredParameters;
+        }
+
+        foreach ($uriFilteredParameters as $filteredParameter) {
+            if (! is_string($filteredParameter)) {
+                return $defaultFilteredParameters;
+            }
+        }
+
+        /** @psalm-var array<array-key, string> $uriFilteredParameters */
+        return array_values($uriFilteredParameters);
+    }
+
+    public static function fromConfigAndOverrideTime(Config $config, ?float $override = null): self
+    {
+        return new self(
+            self::requireValidUriReportingValue($config),
+            self::requireValidFilteredUriParameters($config),
+            $override
+        );
     }
 
     public function cleanUp(): void

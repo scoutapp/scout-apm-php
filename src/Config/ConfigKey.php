@@ -37,8 +37,17 @@ abstract class ConfigKey
     public const CORE_AGENT_PERMISSIONS      = 'core_agent_permissions';
     public const FRAMEWORK                   = 'framework';
     public const FRAMEWORK_VERSION           = 'framework_version';
+    public const URI_REPORTING               = 'uri_reporting';
+    public const URI_FILTERED_PARAMETERS     = 'uri_filtered_params';
 
     private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
+
+    /** @internal */
+    public const URI_REPORTING_PATH_ONLY = 'path';
+    /** @internal */
+    public const URI_REPORTING_FULL_PATH = 'full_path';
+    /** @internal */
+    public const URI_REPORTING_FILTERED = 'filtered_params';
 
     /** @return string[] */
     public static function allConfigurationKeys(): array
@@ -68,6 +77,8 @@ abstract class ConfigKey
             self::CORE_AGENT_VERSION,
             self::CORE_AGENT_TRIPLE,
             self::CORE_AGENT_PERMISSIONS,
+            self::URI_REPORTING,
+            self::URI_FILTERED_PARAMETERS,
         ];
     }
 

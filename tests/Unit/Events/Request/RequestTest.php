@@ -6,12 +6,14 @@ namespace Scoutapm\UnitTests\Events\Request;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Config;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 
 use function array_key_exists;
+use function array_map;
 use function json_decode;
 use function json_encode;
 use function next;
@@ -26,9 +28,18 @@ final class RequestTest extends TestCase
 {
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
+    /** @psalm-param array<string, mixed> $configOverrides */
+    private function requestFromConfiguration(array $configOverrides = [], ?float $overrideTime = null): Request
+    {
+        return Request::fromConfigAndOverrideTime(
+            Config::fromArray($configOverrides),
+            $overrideTime
+        );
+    }
+
     public function testExceptionThrownWhenSpanLimitReached(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
 
         for ($i = 0; $i < 1500; $i++) {
             $request->startSpan(uniqid('test', true));
@@ -41,7 +52,7 @@ final class RequestTest extends TestCase
 
     public function testCanBeStopped(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
 
         self::assertNull(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
 
@@ -52,7 +63,7 @@ final class RequestTest extends TestCase
 
     public function testRequestIsStoppedIfRunning(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
 
         self::assertNull(json_decode(json_encode($request), true)['BatchCommand']['commands'][1]['FinishRequest']['timestamp']);
 
@@ -63,7 +74,7 @@ final class RequestTest extends TestCase
 
     public function testRequestFinishTimestampIsNotChangedWhenStopIfRunningIsCalledOnAStoppedRequest(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->stop(time() - 100.0);
         $originalStopTime = json_decode(json_encode($request), true)['BatchCommand']['commands'][3]['FinishRequest']['timestamp'];
 
@@ -74,7 +85,7 @@ final class RequestTest extends TestCase
 
     public function testMemoryUsageIsTaggedWhenRequestStopped(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
 
         /** @noinspection PhpUnusedLocalVariableInspection */
         $block = str_repeat('a', 1000000);
@@ -87,11 +98,11 @@ final class RequestTest extends TestCase
         self::assertGreaterThan(0, $tagRequest['value']);
     }
 
-    public function testRequestUriFromServerGlobalIsTaggedWhenRequestStopped(): void
+    public function testRequestUriFromServerGlobalIsTaggedWhenRequestStoppedWithParametersRemovedByDefault(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server';
+        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
 
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
 
         $tagRequest = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['TagRequest'];
@@ -105,7 +116,7 @@ final class RequestTest extends TestCase
         $_SERVER['REQUEST_URI']    = null;
         $_SERVER['ORIG_PATH_INFO'] = '/orig-path-info-from-server';
 
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
 
         $tagRequest = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['TagRequest'];
@@ -116,9 +127,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriFromOverrideIsTaggedWhenRequestStopped(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server';
+        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
 
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->overrideRequestUri('/overridden-request-uri');
         $request->stopIfRunning();
 
@@ -128,10 +139,97 @@ final class RequestTest extends TestCase
         self::assertSame('/overridden-request-uri', $tagRequest['value']);
     }
 
+    public function testRequestUriQueryParametersAreNotRemovedWhenFullPathUriReportingIsUsed(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+
+        $request = $this->requestFromConfiguration([
+            Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FULL_PATH,
+        ]);
+        $request->stopIfRunning();
+
+        $tagRequest = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['TagRequest'];
+
+        self::assertSame('path', $tagRequest['tag']);
+        self::assertSame('/request-uri-from-server?a=1&b=2', $tagRequest['value']);
+    }
+
+    /**
+     * @return string[][]
+     *
+     * @psalm-return list<array{0: string}>
+     */
+    public function defaultFilteredParameterNamesProvider(): array
+    {
+        return array_map(
+            static function (string $item): array {
+                return [$item];
+            },
+            [
+                'access',
+                'access_token',
+                'api_key',
+                'apikey',
+                'auth',
+                'auth_token',
+                'card[number]',
+                'certificate',
+                'credentials',
+                'crypt',
+                'key',
+                'mysql_pwd',
+                'otp',
+                'passwd',
+                'password',
+                'private',
+                'protected',
+                'salt',
+                'secret',
+                'ssn',
+                'stripetoken',
+                'token',
+            ]
+        );
+    }
+
+    /**
+     * @dataProvider defaultFilteredParameterNamesProvider
+     */
+    public function testRequestUriDefaultQueryParametersAreFilteredWhenFilteringEnabled(string $parameterName): void
+    {
+        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?' . $parameterName . '=someValue';
+
+        $request = $this->requestFromConfiguration([
+            Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,
+        ]);
+        $request->stopIfRunning();
+
+        $tagRequest = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['TagRequest'];
+
+        self::assertSame('path', $tagRequest['tag']);
+        self::assertSame('/request-uri-from-server', $tagRequest['value']);
+    }
+
+    public function testRequestUriCustomQueryParametersAreFilteredWhenFilteringEnabled(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?aFilteredParam=someValue&notFiltered=anotherValue';
+
+        $request = $this->requestFromConfiguration([
+            Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,
+            Config\ConfigKey::URI_FILTERED_PARAMETERS => ['aFilteredParam'],
+        ]);
+        $request->stopIfRunning();
+
+        $tagRequest = json_decode(json_encode($request), true)['BatchCommand']['commands'][2]['TagRequest'];
+
+        self::assertSame('path', $tagRequest['tag']);
+        self::assertSame('/request-uri-from-server?notFiltered=anotherValue', $tagRequest['value']);
+    }
+
     public function testJsonSerializes(): void
     {
         // Make a request with some interesting content.
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->tag('t', 'v');
         $span = $request->startSpan('foo');
         $span->tag('spantag', 'spanvalue');
@@ -160,7 +258,7 @@ final class RequestTest extends TestCase
     /** @throws Exception */
     public function testSpansCanBeCounted(): void
     {
-        $request = new Request();
+        $request = $this->requestFromConfiguration();
         $request->tag('t', 'v');
         $span = $request->startSpan('foo');
         $span->tag('spantag', 'spanvalue');
@@ -225,7 +323,7 @@ final class RequestTest extends TestCase
         $_SERVER[$headerName] = $headerValue;
 
         // 0.005 = 5ms after epoch
-        $request = new Request(self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
+        $request = $this->requestFromConfiguration([], self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
         $request->stop(null, self::FIXED_POINT_UNIX_EPOCH_SECONDS);
 
         $f = $request->jsonSerialize();

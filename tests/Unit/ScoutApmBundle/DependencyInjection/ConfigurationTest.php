@@ -40,6 +40,8 @@ final class ConfigurationTest extends TestCase
                     'core_agent_permissions' => null,
                     'disabled_instruments' => null,
                     'log_payload_content' => null,
+                    'uri_reporting' => null,
+                    'uri_filtered_params' => null,
                 ],
             ],
             (new Processor())->processConfiguration(
