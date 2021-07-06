@@ -67,7 +67,7 @@ final class DefaultSource implements ConfigSource
                 'apikey',
                 'auth',
                 'auth_token',
-                'card[number]',
+                'card', // Note, the Python agent only filters card[number] but it is simpler to filter all card[] details - hopefully a reasonable trade-off
                 'certificate',
                 'credentials',
                 'crypt',
