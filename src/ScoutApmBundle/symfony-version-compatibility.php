@@ -11,3 +11,20 @@ namespace Symfony\Component\HttpKernel\Event
         }
     }
 }
+
+namespace Scoutapm\ScoutApmBundle\Twig
+{
+    use Twig\Environment as Twig;
+
+    if (class_exists(Twig::class)) {
+        /**
+         * @psalm-suppress RedundantCondition
+         * @psalm-suppress TypeDoesNotContainType
+         */
+        if (Twig::MAJOR_VERSION === 2) {
+            require_once __DIR__ . '/../../stub/TwigMethods-Twig2.php';
+        } else {
+            require_once __DIR__ . '/../../stub/TwigMethods-Twig3.php';
+        }
+    }
+}

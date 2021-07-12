@@ -1,8 +1,4 @@
-<?php // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
-/**
- * @noinspection PhpInternalEntityUsedInspection
- * @noinspection TransitiveDependenciesUsageInspection
- */
+<?php
 
 declare(strict_types=1);
 
@@ -12,16 +8,6 @@ use Closure;
 use Scoutapm\ScoutApmAgent;
 use Twig\Environment as Twig;
 use Twig\TemplateWrapper;
-
-/**
- * @psalm-suppress RedundantCondition
- * @psalm-suppress TypeDoesNotContainType
- */
-if (Twig::MAJOR_VERSION === 2) {
-    require_once __DIR__ . '/TwigMethods-Twig2.php';
-} else {
-    require_once __DIR__ . '/TwigMethods-Twig3.php';
-}
 
 class TwigDecorator extends Twig
 {
