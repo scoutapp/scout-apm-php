@@ -7,6 +7,7 @@ namespace Scoutapm\UnitTests\Events\Span;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Config;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
@@ -123,7 +124,7 @@ final class SpanTest extends TestCase
      */
     public function testStackTracesAreOnlyAddedForAppropriateSpans(string $spanName, float $startTime, float $endTime, int $expectedTagCount): void
     {
-        $request = new Request();
+        $request = Request::fromConfigAndOverrideTime(Config::fromArray([]));
 
         $span = new Span($request, $spanName, RequestId::new(), $startTime);
         $span->stop($endTime);

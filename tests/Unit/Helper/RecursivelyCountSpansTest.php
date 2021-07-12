@@ -6,6 +6,7 @@ namespace Scoutapm\UnitTests\Helper;
 
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Scoutapm\Config;
 use Scoutapm\Connector\Command;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
@@ -29,14 +30,17 @@ final class RecursivelyCountSpansTest extends TestCase
      */
     public function commandAndExpectedSpansCountProvider(): array
     {
-        $spanWithChildren = new Span(new Request(), uniqid('span', true), RequestId::new());
-        $spanWithChildren->appendChild(new Span(new Request(), uniqid('span', true), RequestId::new()));
+        $newRequest       = static function (): Request {
+            return Request::fromConfigAndOverrideTime(Config::fromArray([]));
+        };
+        $spanWithChildren = new Span($newRequest(), uniqid('span', true), RequestId::new());
+        $spanWithChildren->appendChild(new Span($newRequest(), uniqid('span', true), RequestId::new()));
         $spanWithChildren->tag(uniqid('tag', true), uniqid('value', true));
 
         return [
             [
                 'commands' => [
-                    new Span(new Request(), uniqid('span', true), RequestId::new()),
+                    new Span($newRequest(), uniqid('span', true), RequestId::new()),
                 ],
                 'expectedSpans' => 1,
             ],
@@ -48,14 +52,14 @@ final class RecursivelyCountSpansTest extends TestCase
                 'commands' => [
                     new TagSpan(uniqid('tag', true), uniqid('value', true), RequestId::new(), SpanId::new()),
                     new TagRequest(uniqid('tag', true), uniqid('value', true), RequestId::new()),
-                    new Span(new Request(), uniqid('span', true), RequestId::new()),
+                    new Span($newRequest(), uniqid('span', true), RequestId::new()),
                 ],
                 'expectedSpans' => 1,
             ],
             [
                 'commands' => [
-                    new Span(new Request(), uniqid('span', true), RequestId::new()),
-                    new Span(new Request(), uniqid('span', true), RequestId::new()),
+                    new Span($newRequest(), uniqid('span', true), RequestId::new()),
+                    new Span($newRequest(), uniqid('span', true), RequestId::new()),
                 ],
                 'expectedSpans' => 2,
             ],

@@ -58,6 +58,32 @@ final class DefaultSource implements ConfigSource
             ConfigKey::IGNORED_ENDPOINTS => [],
             ConfigKey::LOG_LEVEL => Config::DEFAULT_LOG_LEVEL,
             ConfigKey::LOG_PAYLOAD_CONTENT => false,
+            ConfigKey::URI_REPORTING => ConfigKey::URI_REPORTING_PATH_ONLY,
+            /** @link https://github.com/scoutapp/scout_apm_python/blob/ee3c4fe47e6d841b243935628bb21191ee59da4b/src/scout_apm/core/web_requests.py#L15-L40 */
+            ConfigKey::URI_FILTERED_PARAMETERS => [
+                'access',
+                'access_token',
+                'api_key',
+                'apikey',
+                'auth',
+                'auth_token',
+                'card', // Note, the Python agent only filters card[number] but it is simpler to filter all card[] details - hopefully a reasonable trade-off
+                'certificate',
+                'credentials',
+                'crypt',
+                'key',
+                'mysql_pwd',
+                'otp',
+                'passwd',
+                'password',
+                'private',
+                'protected',
+                'salt',
+                'secret',
+                'ssn',
+                'stripetoken',
+                'token',
+            ],
         ];
     }
 }

@@ -486,7 +486,7 @@ final class Agent implements ScoutApmAgent
             $this->request->cleanUp();
         }
 
-        $this->request = new Request();
+        $this->request = Request::fromConfigAndOverrideTime($this->config);
     }
 
     private function registerIfRequired(): void

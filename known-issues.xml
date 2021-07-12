@@ -103,7 +103,6 @@
     </MixedAssignment>
     <MixedInferredReturnType occurrences="1">
       <code>string</code>
-      <code>string</code>
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1">
       <code>$_SERVER['DOCUMENT_ROOT']</code>
@@ -332,17 +331,26 @@
     <MixedArrayAccess occurrences="1"/>
   </file>
   <file src="tests/Unit/Events/Request/RequestTest.php">
-    <MixedArrayAccess occurrences="20">
+    <MixedArrayAccess occurrences="29">
       <code>$command['TagRequest']['tag']</code>
       <code>$command['TagRequest']['value']</code>
       <code>$tagRequest['tag']</code>
       <code>$tagRequest['tag']</code>
       <code>$tagRequest['tag']</code>
       <code>$tagRequest['tag']</code>
+      <code>$tagRequest['tag']</code>
+      <code>$tagRequest['tag']</code>
+      <code>$tagRequest['tag']</code>
       <code>$tagRequest['value']</code>
       <code>$tagRequest['value']</code>
       <code>$tagRequest['value']</code>
       <code>$tagRequest['value']</code>
+      <code>$tagRequest['value']</code>
+      <code>$tagRequest['value']</code>
+      <code>$tagRequest['value']</code>
+      <code>json_decode(json_encode($request), true)['BatchCommand']</code>
+      <code>json_decode(json_encode($request), true)['BatchCommand']</code>
+      <code>json_decode(json_encode($request), true)['BatchCommand']</code>
       <code>json_decode(json_encode($request), true)['BatchCommand']</code>
       <code>json_decode(json_encode($request), true)['BatchCommand']</code>
       <code>json_decode(json_encode($request), true)['BatchCommand']</code>
@@ -354,8 +362,11 @@
       <code>json_decode(json_encode($request), true)['BatchCommand']</code>
       <code>json_decode(json_encode($request), true)['BatchCommand']</code>
     </MixedArrayAccess>
-    <MixedAssignment occurrences="5">
+    <MixedAssignment occurrences="8">
       <code>$originalStopTime</code>
+      <code>$tagRequest</code>
+      <code>$tagRequest</code>
+      <code>$tagRequest</code>
       <code>$tagRequest</code>
       <code>$tagRequest</code>
       <code>$tagRequest</code>
