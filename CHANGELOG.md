@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Fixed
 
+- [#229](https://github.com/scoutapp/scout-apm-php/pull/229) Updated `scoutapm.stub.php` stub to match latest extension version
 - [#227](https://github.com/scoutapp/scout-apm-php/pull/227) Fixed "double logging" of SQL queries with new "leafNode" flag on spans
 
 ## 6.3.0 - 2021-06-17
