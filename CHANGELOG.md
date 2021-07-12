@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file, in reverse 
 ### Fixed
 
 - [#227](https://github.com/scoutapp/scout-apm-php/pull/227) Fixed "double logging" of SQL queries with new "leafNode" flag on spans
+- [#231](https://github.com/scoutapp/scout-apm-php/pull/231) Fixed how TwigMethods traits are included to work with Composer optimised autoloader properly
 
 ## 6.3.0 - 2021-06-17
 

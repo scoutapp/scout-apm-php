@@ -11,8 +11,8 @@
         <directory name="tests" />
         <ignoreFiles>
             <directory name="vendor" />
-            <file name="src/ScoutApmBundle/Twig/TwigMethods-Twig2.php" />
-            <file name="src/ScoutApmBundle/Twig/TwigMethods-Twig3.php" />
+            <file name="stub/TwigMethods-Twig2.php" />
+            <file name="stub/TwigMethods-Twig3.php" />
             <file name="tests/psalm-stubs.php" />
         </ignoreFiles>
     </projectFiles>
