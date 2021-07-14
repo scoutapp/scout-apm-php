@@ -67,6 +67,17 @@ final class ConfigTest extends TestCase
         self::assertSame([], (new Config())->get(ConfigKey::IGNORED_ENDPOINTS));
     }
 
+    public function testFilteredParamsAreParsedToArrayFromJson(): void
+    {
+        $config = new Config();
+
+        putenv('SCOUT_URI_FILTERED_PARAMS=["a","b"]');
+
+        self::assertEquals(['a', 'b'], $config->get(ConfigKey::URI_FILTERED_PARAMETERS));
+
+        putenv('SCOUT_URI_FILTERED_PARAMS');
+    }
+
     public function testAsArray(): void
     {
         $configArray = Config::fromArray([

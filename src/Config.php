@@ -55,6 +55,7 @@ class Config
             ConfigKey::IGNORED_ENDPOINTS => new CoerceJson(),
             ConfigKey::DISABLED_INSTRUMENTS => new CoerceJson(),
             ConfigKey::LOG_PAYLOAD_CONTENT => new CoerceBoolean(),
+            ConfigKey::URI_FILTERED_PARAMETERS => new CoerceJson(),
         ];
     }
 
