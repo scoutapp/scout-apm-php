@@ -102,6 +102,8 @@ jobs:
           php artisan serve &
           sleep 2
           wget http://localhost:8000
+          cat index.html
+          ps -ax
       - name: "Check logs for successful payload send"
         run: |
           cd test-app

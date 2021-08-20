@@ -108,6 +108,8 @@ jobs:
           LOG_CHANNEL=single php -S localhost:8000 -t public/ &
           sleep 2
           wget http://localhost:8000
+          cat index.html
+          ps -ax
       - name: "Check logs for successful payload send"
         run: |
           cd test-app
