@@ -27,7 +27,7 @@ use function array_map;
 class Config
 {
     /** @internal */
-    public const DEFAULT_LOG_LEVEL = LogLevel::WARNING;
+    public const DEFAULT_LOG_LEVEL = LogLevel::DEBUG;
 
     /** @var array<int, (EnvSource|UserSettingsSource|DerivedSource|DefaultSource|NullSource)> */
     private $sources;

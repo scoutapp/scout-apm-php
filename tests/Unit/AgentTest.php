@@ -167,7 +167,7 @@ final class AgentTest extends TestCase
         self::assertFalse($this->logger->hasDebugRecords());
     }
 
-    public function testNoLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
+    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My Application',
@@ -177,7 +177,8 @@ final class AgentTest extends TestCase
 
         $agent->connect();
 
-        self::assertEquals([], $this->logger->records);
+        self::assertTrue($this->logger->hasDebugThatContains('Configuration'));
+        self::assertTrue($this->logger->hasDebugThatContains('Connection skipped, since monitoring is disabled'));
     }
 
     /** @throws Exception */

@@ -52,8 +52,9 @@ final class FilteredLogLevelDecorator implements LoggerInterface
                 self::LOG_LEVEL_ORDER,
                 strtolower($minimumLogLevel),
                 sprintf(
-                    'Log level %s was not a valid PSR-3 compatible log level. Should be one of: %s',
+                    'Log level %s was not a valid PSR-3 compatible log level, defaulting to %s. Should be one of: %s',
                     $minimumLogLevel,
+                    Config::DEFAULT_LOG_LEVEL,
                     implode(', ', array_keys(self::LOG_LEVEL_ORDER))
                 )
             );

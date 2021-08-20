@@ -35,7 +35,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
             ->method('log')
             ->with(
                 LogLevel::ERROR,
-                'Log level foo was not a valid PSR-3 compatible log level. '
+                'Log level foo was not a valid PSR-3 compatible log level, defaulting to debug. '
                 . 'Should be one of: debug, info, notice, warning, error, critical, alert, emergency',
                 self::anything()
             );
@@ -118,7 +118,7 @@ final class FilteredLogLevelDecoratorTest extends TestCase
     }
 
     /** @dataProvider invalidLogLevelProvider */
-    public function testInvalidLogLevelsDefaultToWarning(string $invalidLogLevel): void
+    public function testInvalidLogLevelsPassedStillLogThings(string $invalidLogLevel): void
     {
         $decorator = new FilteredLogLevelDecorator($this->decoratedLogger, $invalidLogLevel);
 
