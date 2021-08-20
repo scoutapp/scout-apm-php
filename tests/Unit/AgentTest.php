@@ -48,6 +48,8 @@ use function uniqid;
 /** @covers \Scoutapm\Agent */
 final class AgentTest extends TestCase
 {
+    private const EXPECTED_SPAN_LIMIT = 3000;
+
     /** @var TestLogger */
     private $logger;
 
@@ -165,7 +167,7 @@ final class AgentTest extends TestCase
         self::assertFalse($this->logger->hasDebugRecords());
     }
 
-    public function testNoLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
+    public function testLogMessagesAreLoggedWhenUsingDefaultConfiguration(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My Application',
@@ -175,7 +177,8 @@ final class AgentTest extends TestCase
 
         $agent->connect();
 
-        self::assertEquals([], $this->logger->records);
+        self::assertTrue($this->logger->hasDebugThatContains('Configuration'));
+        self::assertTrue($this->logger->hasDebugThatContains('Connection skipped, since monitoring is disabled'));
     }
 
     /** @throws Exception */
@@ -911,7 +914,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testNumberOfSpansIsLimitedAndNoticeIsLogged(): void
+    public function testNumberOfSpansIsLimitedAndLogged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -921,7 +924,7 @@ final class AgentTest extends TestCase
         ]);
 
         // Even if we randomise the number of spans over the limit, the number of spans actually sent should remain fixed
-        $maxSpansToStart = random_int(1500, 1600);
+        $maxSpansToStart = random_int(self::EXPECTED_SPAN_LIMIT, self::EXPECTED_SPAN_LIMIT + 100);
 
         for ($i = 0; $i <= $maxSpansToStart; $i++) {
             $agent->startSpan(sprintf('span %d', $i));
@@ -949,15 +952,15 @@ final class AgentTest extends TestCase
                     [
                         'commands' => static function (array $commands): bool {
                             // StartRequest
-                            // 1500 * 2 for Start/StopSpans
+                            // span limit * 2 for Start/StopSpans
                             // TagRequest for limit
                             // Tag for memory,
-                            self::assertCount(3005, $commands);
+                            self::assertCount((self::EXPECTED_SPAN_LIMIT * 2) + 5, $commands);
                             TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], $commands[0], null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'scout.reached_span_cap', 'value' => true], $commands[3001], null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], $commands[3002], null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], $commands[3003], null);
-                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], $commands[3004], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'scout.reached_span_cap', 'value' => true], $commands[(self::EXPECTED_SPAN_LIMIT * 2) + 1], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], $commands[(self::EXPECTED_SPAN_LIMIT * 2) + 2], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], $commands[(self::EXPECTED_SPAN_LIMIT * 2) + 3], null);
+                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], $commands[(self::EXPECTED_SPAN_LIMIT * 2) + 4], null);
 
                             return true;
                         },
@@ -972,7 +975,7 @@ final class AgentTest extends TestCase
 
         self::assertTrue($agent->send());
 
-        self::assertTrue($this->logger->hasNoticeThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
+        self::assertTrue($this->logger->hasInfoThatContains(sprintf('Span limit of %d has been reached trying to start span for "span %d"', self::EXPECTED_SPAN_LIMIT, self::EXPECTED_SPAN_LIMIT)));
     }
 
     public function testMetadataIsNotSentIfCached(): void

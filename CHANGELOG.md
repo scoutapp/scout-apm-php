@@ -10,7 +10,10 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Changed
 
-- Nothing.
+- [#233](https://github.com/scoutapp/scout-apm-php/pull/233) Adjusted log levels
+  - Default log level is `debug` again to assist in support enquiries
+  - Reduced log level of span limit being reached to `info`
+  - Increased span limit to 3000
 
 ### Deprecated
 
