@@ -106,7 +106,11 @@ jobs:
           cd test-app
           cat .env
           LOG_CHANNEL=single php -S localhost:8000 -t public/ &
+          # Give Lumen a chance to start...
           sleep 2
+          # Very occasionally in GH Actions, core-agent didn't quite start in time - so load the page twice
+          wget -O /dev/null http://localhost:8000
+          sleep 1
           wget http://localhost:8000
           cat index.html
           ps -ax
