@@ -296,11 +296,11 @@
       <code>self::at(6)</code>
     </DeprecatedMethod>
     <MixedArgument occurrences="19">
+      <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 1]</code>
+      <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 2]</code>
+      <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 3]</code>
+      <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 4]</code>
       <code>$commands[0]</code>
-      <code>$commands[3001]</code>
-      <code>$commands[3002]</code>
-      <code>$commands[3003]</code>
-      <code>$commands[3004]</code>
       <code>next($commands)</code>
       <code>next($commands)</code>
       <code>next($commands)</code>

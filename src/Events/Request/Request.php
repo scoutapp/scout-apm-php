@@ -33,7 +33,7 @@ use function substr;
 /** @internal */
 class Request implements CommandWithChildren
 {
-    private const MAX_COMPLETE_SPANS = 1500;
+    private const MAX_COMPLETE_SPANS = 3000;
 
     /** @var Timer */
     private $timer;

@@ -26,6 +26,8 @@ use function uniqid;
 /** @covers \Scoutapm\Events\Request\Request */
 final class RequestTest extends TestCase
 {
+    private const EXPECTED_SPAN_LIMIT = 3000;
+
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
     /** @psalm-param array<string, mixed> $configOverrides */
@@ -41,7 +43,7 @@ final class RequestTest extends TestCase
     {
         $request = $this->requestFromConfiguration();
 
-        for ($i = 0; $i < 1500; $i++) {
+        for ($i = 0; $i < self::EXPECTED_SPAN_LIMIT; $i++) {
             $request->startSpan(uniqid('test', true));
         }
 
