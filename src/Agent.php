@@ -270,7 +270,7 @@ final class Agent implements ScoutApmAgent
                 $this->request->tag(Tag::TAG_REACHED_SPAN_CAP, true);
             }
 
-            $this->logger->notice($spanLimitReached->getMessage(), ['exception' => $spanLimitReached]);
+            $this->logger->info($spanLimitReached->getMessage(), ['exception' => $spanLimitReached]);
 
             return null;
         }

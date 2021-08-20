@@ -911,7 +911,7 @@ final class AgentTest extends TestCase
     }
 
     /** @throws Exception */
-    public function testNumberOfSpansIsLimitedAndNoticeIsLogged(): void
+    public function testNumberOfSpansIsLimitedAndLogged(): void
     {
         $agent = $this->agentFromConfigArray([
             ConfigKey::APPLICATION_NAME => 'My test app',
@@ -972,7 +972,7 @@ final class AgentTest extends TestCase
 
         self::assertTrue($agent->send());
 
-        self::assertTrue($this->logger->hasNoticeThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
+        self::assertTrue($this->logger->hasInfoThatContains('Span limit of 1500 has been reached trying to start span for "span 1500"'));
     }
 
     public function testMetadataIsNotSentIfCached(): void
