@@ -26,6 +26,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         exclude:
           - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
           - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
@@ -74,6 +75,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         exclude:
           - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
           - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+

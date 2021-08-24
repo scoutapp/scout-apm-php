@@ -27,6 +27,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         exclude:
           - { php-version: "7.1", symfony-version: "5.*", "twig-version": "2.*" } # Symfony 5 (with Twig 2) requires 7.2+
           - { php-version: "7.1", symfony-version: "5.*", "twig-version": "3.*" } # Symfony 5 (with Twig 3) requires 7.2+

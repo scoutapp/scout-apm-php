@@ -26,6 +26,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         exclude:
           - {php-version: "7.1", laravel-version: "6.*"} # Laravel 6 requires 7.2+
           - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
@@ -70,6 +71,7 @@ jobs:
           - "7.3"
           - "7.4"
           - "8.0"
+          - "8.1"
         exclude:
           - {php-version: "7.1", laravel-version: "6.*"} # Laravel 6 requires 7.2+
           - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
