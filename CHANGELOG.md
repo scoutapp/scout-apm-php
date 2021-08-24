@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.5.0 - TBC
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#236](https://github.com/scoutapp/scout-apm-php/pull/236) Replace `doctrine/cache` with `cache/array-adapter` in tests
+  - Note - this change only affects our internal tests, the `Agent` still depends on *any* PSR-16 compatible cache (including `doctrine/cache`)
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.4.0 - 2021-08-20
 
 ### Added
