@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
-use Doctrine\Common\Cache\ArrayCache;
+use Cache\Adapter\PHPArray\ArrayCachePool;
 use Exception;
 use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\Test\TestLogger;
-use Roave\DoctrineSimpleCache\SimpleCacheAdapter;
 use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
@@ -987,7 +986,7 @@ final class AgentTest extends TestCase
                 ConfigKey::MONITORING_ENABLED => true,
             ]),
             $this->logger,
-            new SimpleCacheAdapter(new ArrayCache()),
+            new ArrayCachePool(),
             $this->connector,
             $this->phpExtension
         );
