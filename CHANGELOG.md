@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 - [#236](https://github.com/scoutapp/scout-apm-php/pull/236) Replace `doctrine/cache` with `cache/array-adapter` in tests
   - Note - this change only affects our internal tests, the `Agent` still depends on *any* PSR-16 compatible cache (including `doctrine/cache`)
+- [#237](https://github.com/scoutapp/scout-apm-php/pull/237) Made 'leaf span' recording more efficient so child spans are not recorded at all
 
 ### Deprecated
 

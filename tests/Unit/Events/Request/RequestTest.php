@@ -11,9 +11,11 @@ use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\UnitTests\TestHelper;
 
 use function array_key_exists;
 use function array_map;
+use function assert;
 use function json_decode;
 use function json_encode;
 use function next;
@@ -344,5 +346,32 @@ final class RequestTest extends TestCase
         self::assertTrue($foundTag, 'Could not find queue time tag');
 
         unset($_SERVER[$headerName]);
+    }
+
+    public function testSpansAreNotRecordedBelowLeafSpans(): void
+    {
+        $request = $this->requestFromConfiguration();
+
+        $request->startSpan('Foo', null, true);
+        $request->startSpan('ShouldNotBeRecorded1');
+        $request->startSpan('ShouldNotBeRecorded2');
+        $request->startSpan('ShouldNotBeRecorded3');
+        $request->stopSpan();
+        $request->stopSpan();
+        $request->startSpan('ShouldNotBeRecorded4');
+        $request->stopSpan();
+        $request->stopSpan();
+        $request->startSpan('ShouldNotBeRecorded5');
+        $request->stopSpan();
+        $request->stopSpan();
+
+        self::assertSame(1, $request->collectedSpans());
+
+        $firstSpan = TestHelper::firstChildForCommand($request);
+        assert($firstSpan instanceof Span);
+        self::assertSame('Foo', $firstSpan->getName());
+
+        $children = TestHelper::childrenForCommand($firstSpan);
+        self::assertCount(0, $children);
     }
 }

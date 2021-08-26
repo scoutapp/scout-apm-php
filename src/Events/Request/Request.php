@@ -49,6 +49,8 @@ class Request implements CommandWithChildren
     private $requestUriOverride;
     /** @var int */
     private $spanCount = 0;
+    /** @var int */
+    private $leafNodeDepth = 0;
     /**
      * @psalm-var ConfigKey::URI_REPORTING_*
      * @var string
@@ -270,6 +272,12 @@ class Request implements CommandWithChildren
             throw SpanLimitReached::forOperation($operation, self::MAX_COMPLETE_SPANS);
         }
 
+        if ($this->currentCommand instanceof Span && $this->currentCommand->isLeaf()) {
+            $this->leafNodeDepth++;
+
+            return $this->currentCommand;
+        }
+
         $this->spanCount++;
 
         $span = new Span($this->currentCommand, $operation, $this->id, $overrideTimestamp, $leafSpan);
@@ -295,6 +303,12 @@ class Request implements CommandWithChildren
         $command = $this->currentCommand;
         if (! $command instanceof Span) {
             $this->stopIfRunning($overrideTimestamp);
+
+            return;
+        }
+
+        if ($command->isLeaf() && $this->leafNodeDepth > 0) {
+            $this->leafNodeDepth--;
 
             return;
         }
