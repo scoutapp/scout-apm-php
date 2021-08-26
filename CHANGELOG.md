@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file, in reverse 
 
 ### Added
 
-- Nothing.
+- [#238](https://github.com/scoutapp/scout-apm-php/pull/238) Add scheduled CI run every month to ensure compatibility with dependency updates
 
 ### Changed
 
