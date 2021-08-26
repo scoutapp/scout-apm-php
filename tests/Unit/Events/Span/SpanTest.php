@@ -33,6 +33,12 @@ final class SpanTest extends TestCase
         self::assertNull($span->getStopTime());
     }
 
+    public function testThatASpanKnowsItIsALeafNode(): void
+    {
+        $span = new Span($this->mockParent, 'name', RequestId::new(), null, true);
+        self::assertTrue($span->isLeaf());
+    }
+
     /** @throws Exception */
     public function testCanBeStopped(): void
     {

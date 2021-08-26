@@ -85,6 +85,11 @@ class Span implements CommandWithParent, CommandWithChildren
         return $this->parent;
     }
 
+    public function isLeaf(): bool
+    {
+        return $this->leafSpan;
+    }
+
     /**
      * Do not call this directly - use Request#stopSpan() or Agent#stopSpan() to correctly handle bookkeeping
      *
@@ -186,10 +191,6 @@ class Span implements CommandWithParent, CommandWithChildren
         ];
 
         foreach ($this->children as $child) {
-            if ($this->leafSpan && $child instanceof Span) {
-                continue;
-            }
-
             foreach ($child->jsonSerialize() as $value) {
                 $commands[] = $value;
             }
