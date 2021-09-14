@@ -17,7 +17,7 @@ use function get_class;
  *      message: non-empty-string,
  *      request_id: string,
  *      request_uri: non-empty-string,
- *      request_params?: array<string,string>,
+ *      request_params?: array<string,string|array<array-key,string|array<array-key,string|array<array-key,string>>>>,
  *      request_session?: array<string,string>,
  *      environment?: array<string,string>,
  *      trace: array,
@@ -73,20 +73,20 @@ final class ErrorEvent
             'message' => $this->message,
             'request_id' => $this->requestId->toString(),
             'request_uri' => 'https://mysite.com/path/to/thething',
-            'request_params' => ['param1' => 'param2'],
+            'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
             'request_session' => ['sess1' => 'sess2'],
             'environment' => ['env1' => 'env2'],
             'trace' => [ // @todo find out trace format
-                'test1.php:123:in myFunc()',
-                'test2.php:234:in MyNs\\MyClass::myFunc()',
-                'test3.php:345:in MyClass_Foo::myFunc()',
-                'test4.php:456:in Woo::myFunc',
-                'test5.php:567:in myFuncB',
+                'test1.php:123:in `myFunc()`',
+                'test2.php:234:in `MyNs\\MyClass->myFunc()`',
+                'test3.php:345:in `MyClass_Foo->myFunc()`',
+                'test4.php:456:in `Woo->myFunc`',
+                'test5.php:567:in `myFuncB`',
             ],
             'request_components' => [
                 'module' => 'myModule', // @todo Seems ignored by Dashboard?
                 'controller' => 'myController',
-                'action' => 'myAction3',
+                'action' => 'myAction8',
             ],
             'context' => ['ctx1' => 'ctx2'], // @todo what is this?
             'host' => 'zabba1', // @todo populate from metadata
