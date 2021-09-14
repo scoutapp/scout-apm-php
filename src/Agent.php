@@ -556,15 +556,6 @@ final class Agent implements ScoutApmAgent
         $this->cache->set(self::CACHE_KEY_METADATA_SENT, true, self::METADATA_CACHE_TTL_SECONDS);
     }
 
-    public function requestId(): ?RequestId
-    {
-        if ($this->request === null) {
-            return null;
-        }
-
-        return $this->request->id();
-    }
-
     /**
      * {@inheritDoc}
      *

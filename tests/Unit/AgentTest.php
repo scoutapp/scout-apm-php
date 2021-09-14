@@ -152,12 +152,6 @@ final class AgentTest extends TestCase
         );
     }
 
-    public function testRequestIdCanBeRetrieved(): void
-    {
-        $agent = $this->agentFromConfigArray();
-        self::assertInstanceOf(RequestId::class, $agent->requestId());
-    }
-
     public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages(): void
     {
         $agent = $this->agentFromConfigArray([

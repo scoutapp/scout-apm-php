@@ -125,9 +125,6 @@ interface ScoutApmAgent
      */
     public function startNewRequest(): void;
 
-    /** Returns the current request ID, or null if there is no active request */
-    public function requestId(): ?RequestId;
-
     /**
      * You probably don't need this, it's useful in testing
      *
