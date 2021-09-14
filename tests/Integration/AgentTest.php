@@ -18,7 +18,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
-use Scoutapm\Errors\ErrorHandling;
+use Scoutapm\Errors\ScoutErrorHandling;
 use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
 use Scoutapm\Events\Span\SpanReference;
@@ -148,17 +148,8 @@ final class AgentTest extends TestCase
         ]);
         $this->setUpWithConfiguration($config);
 
-        $errorHandling = new ErrorHandling(
-            $this->agent,
-            new GuzzleErrorReportingClient(
-                new GuzzleClient(),
-                new CompressPayload(),
-                $config,
-                $this->logger
-            )
-        );
+        $errorHandling = ScoutErrorHandling::factory($config, $this->logger);
         $errorHandling->handleException(new RuntimeException('Oh no'));
-
         $errorHandling->sendCollectedErrors();
     }
 

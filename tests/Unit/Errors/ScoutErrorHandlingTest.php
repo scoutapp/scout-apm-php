@@ -6,8 +6,8 @@ namespace Scoutapm\UnitTests\Errors;
 
 use PHPUnit\Framework\TestCase;
 
-/** @covers \Scoutapm\Errors\ErrorHandling */
-final class ErrorHandlingTest extends TestCase
+/** @covers \Scoutapm\Errors\ScoutErrorHandling */
+final class ScoutErrorHandlingTest extends TestCase
 {
     public function testErrorHandling(): void
     {

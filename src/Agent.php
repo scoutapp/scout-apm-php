@@ -22,11 +22,12 @@ use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
 use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\CoreAgent\Verifier;
+use Scoutapm\Errors\ErrorHandling;
+use Scoutapm\Errors\ScoutErrorHandling;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
@@ -76,6 +77,8 @@ final class Agent implements ScoutApmAgent
     private $spanLimitReached = false;
     /** @var LocateFileOrFolder */
     private $locateFileOrFolder;
+    /** @var ErrorHandling */
+    private $errorHandling;
 
     private function __construct(
         Config $configuration,
@@ -83,7 +86,8 @@ final class Agent implements ScoutApmAgent
         LoggerInterface $logger,
         ExtensionCapabilities $phpExtension,
         CacheInterface $cache,
-        LocateFileOrFolder $locateFileOrFolder
+        LocateFileOrFolder $locateFileOrFolder,
+        ErrorHandling $errorHandling
     ) {
         $this->config             = $configuration;
         $this->connector          = $connector;
@@ -91,6 +95,7 @@ final class Agent implements ScoutApmAgent
         $this->phpExtension       = $phpExtension;
         $this->cache              = $cache;
         $this->locateFileOrFolder = $locateFileOrFolder;
+        $this->errorHandling      = $errorHandling;
 
         if (! $this->logger instanceof FilteredLogLevelDecorator) {
             $this->logger = new FilteredLogLevelDecorator(
@@ -138,7 +143,8 @@ final class Agent implements ScoutApmAgent
         ?CacheInterface $cache = null,
         ?Connector $connector = null,
         ?ExtensionCapabilities $extensionCapabilities = null,
-        ?LocateFileOrFolder $locateFileOrFolder = null
+        ?LocateFileOrFolder $locateFileOrFolder = null,
+        ?ErrorHandling $errorHandling = null
     ): self {
         return new self(
             $config,
@@ -146,7 +152,8 @@ final class Agent implements ScoutApmAgent
             $logger,
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
-            $locateFileOrFolder ?? new LocateFileOrFolder()
+            $locateFileOrFolder ?? new LocateFileOrFolder(),
+            $errorHandling ?? ScoutErrorHandling::factory($config, $logger)
         );
     }
 
@@ -497,6 +504,8 @@ final class Agent implements ScoutApmAgent
         }
 
         $this->request = Request::fromConfigAndOverrideTime($this->config);
+
+        $this->errorHandling->changeCurrentRequestId($this->request->id());
     }
 
     private function registerIfRequired(): void
