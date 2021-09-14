@@ -15,7 +15,7 @@ use function get_class;
  * @psalm-type ErrorEventJsonableArray = array{
  *      exception_class: class-string,
  *      message: non-empty-string,
- *      request_id: string,
+ *      request_id: string|null,
  *      request_uri: non-empty-string,
  *      request_params?: array<string,string|array<array-key,string|array<array-key,string|array<array-key,string>>>>,
  *      request_session?: array<string,string>,
@@ -33,7 +33,7 @@ use function get_class;
  */
 final class ErrorEvent
 {
-    /** @var RequestId */
+    /** @var ?RequestId */
     private $requestId;
     /** @var class-string */
     private $exceptionClass;
@@ -43,7 +43,7 @@ final class ErrorEvent
     /**
      * @psalm-param class-string $exceptionClass
      */
-    private function __construct(RequestId $requestId, string $exceptionClass, string $message)
+    private function __construct(?RequestId $requestId, string $exceptionClass, string $message)
     {
         if ($message === '') {
             $message = 'Oh dear - Scout could not find a message for this error or exception';
@@ -54,7 +54,7 @@ final class ErrorEvent
         $this->message        = $message;
     }
 
-    public static function fromThrowable(RequestId $requestId, Throwable $throwable): self
+    public static function fromThrowable(?RequestId $requestId, Throwable $throwable): self
     {
         return new self(
             $requestId,
@@ -71,7 +71,7 @@ final class ErrorEvent
         return [
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
-            'request_id' => $this->requestId->toString(),
+            'request_id' => $this->requestId ? $this->requestId->toString() : null,
             'request_uri' => 'https://mysite.com/path/to/thething',
             'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
             'request_session' => ['sess1' => 'sess2'],

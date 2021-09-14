@@ -12,7 +12,6 @@ use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
 use Scoutapm\Events\Request\RequestId;
-use Scoutapm\ScoutApmAgent;
 use Throwable;
 
 use function error_get_last;
@@ -38,7 +37,7 @@ final class ScoutErrorHandling implements ErrorHandling
     private $errorEvents = [];
     /** @var callable|null */
     private $oldExceptionHandler;
-    /** @var RequestId|null */
+    /** @var ?RequestId */
     private $requestId;
 
     public function __construct(ErrorReportingClient $reportingClient)
@@ -78,9 +77,7 @@ final class ScoutErrorHandling implements ErrorHandling
 
     public function handleException(Throwable $throwable): void
     {
-        if ($this->requestId !== null) { // @todo only if we shouldn't ignore it
-            $this->errorEvents[] = ErrorEvent::fromThrowable($this->requestId, $throwable);
-        }
+        $this->errorEvents[] = ErrorEvent::fromThrowable($this->requestId, $throwable);
 
         if (! $this->oldExceptionHandler) {
             return;

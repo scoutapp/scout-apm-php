@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Scoutapm\IntegrationTests;
 
 use Exception;
-use GuzzleHttp\Client as GuzzleClient;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Command;
 use MongoDB\Driver\Exception\ConnectionTimeoutException;
@@ -19,8 +18,6 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Errors\ScoutErrorHandling;
-use Scoutapm\Errors\ScoutClient\CompressPayload;
-use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\UnitTests\TestLogger;

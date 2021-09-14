@@ -6,7 +6,6 @@ namespace Scoutapm;
 
 use Exception;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanReference;
 
 interface ScoutApmAgent
