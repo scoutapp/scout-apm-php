@@ -10,7 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\Timer;
 
 use function array_key_exists;
@@ -41,21 +41,21 @@ final class Metadata implements Command
     private $config;
     /** @var ExtensionCapabilities */
     private $phpExtension;
-    /** @var LocateFileOrFolder */
-    private $locateFileOrFolder;
+    /** @var FindApplicationRoot */
+    private $findApplicationRoot;
 
     public function __construct(
         DateTimeImmutable $now,
         Config $config,
         ExtensionCapabilities $phpExtension,
-        LocateFileOrFolder $locateFileOrFolder
+        FindApplicationRoot $findApplicationRoot
     ) {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer              = new Timer((float) $now->format('U.u'));
-        $this->config             = $config;
-        $this->phpExtension       = $phpExtension;
-        $this->locateFileOrFolder = $locateFileOrFolder;
+        $this->timer               = new Timer((float) $now->format('U.u'));
+        $this->config              = $config;
+        $this->phpExtension        = $phpExtension;
+        $this->findApplicationRoot = $findApplicationRoot;
     }
 
     public function cleanUp(): void
@@ -83,29 +83,10 @@ final class Metadata implements Command
             'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',
             'libraries' => $this->getLibraries(),
             'paas' => '',
-            'application_root' => $this->applicationRoot(),
+            'application_root' => ($this->findApplicationRoot)(),
             'scm_subdirectory' => $this->scmSubdirectory(),
             'git_sha' => $this->rootPackageGitSha(),
         ];
-    }
-
-    private function applicationRoot(): string
-    {
-        $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
-        if (is_string($applicationRootConfiguration) && $applicationRootConfiguration !== '') {
-            return $applicationRootConfiguration;
-        }
-
-        $composerJsonLocation = $this->locateFileOrFolder->__invoke('composer.json');
-        if ($composerJsonLocation !== null) {
-            return $composerJsonLocation;
-        }
-
-        if (! array_key_exists('DOCUMENT_ROOT', $_SERVER)) {
-            return '';
-        }
-
-        return $_SERVER['DOCUMENT_ROOT'];
     }
 
     private function scmSubdirectory(): string

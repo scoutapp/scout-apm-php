@@ -34,6 +34,7 @@ use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\MongoDB\QueryTimeCollector;
@@ -539,7 +540,7 @@ final class Agent implements ScoutApmAgent
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config,
                 $this->phpExtension,
-                $this->locateFileOrFolder
+                new FindApplicationRoot($this->locateFileOrFolder, $this->config)
             ));
 
             $this->markMetadataSent();

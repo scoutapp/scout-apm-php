@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
+use Scoutapm\Helper\FindApplicationRoot;
 
 use function array_map;
 use function count;
@@ -35,13 +36,21 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
     private $config;
     /** @var LoggerInterface */
     private $logger;
+    /** @var FindApplicationRoot */
+    private $findApplicationRoot;
 
-    public function __construct(ClientInterface $client, CompressPayload $compressPayload, Config $config, LoggerInterface $logger)
-    {
-        $this->client          = $client;
-        $this->compressPayload = $compressPayload;
-        $this->config          = $config;
-        $this->logger          = $logger;
+    public function __construct(
+        ClientInterface $client,
+        CompressPayload $compressPayload,
+        Config $config,
+        LoggerInterface $logger,
+        FindApplicationRoot $findApplicationRoot
+    ) {
+        $this->client              = $client;
+        $this->compressPayload     = $compressPayload;
+        $this->config              = $config;
+        $this->logger              = $logger;
+        $this->findApplicationRoot = $findApplicationRoot;
     }
 
     public function sendErrorToScout(ErrorEvent $errorEvent): void // @todo check if we want to bulk send them - probably
@@ -95,8 +104,8 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
             ],
             ($this->compressPayload)(json_encode([
                 'notifier' => 'scout_apm_php',
-                'environment' => '', // @todo metadata
-                'root' => 'root', // @todo application root already comes from metadata
+                'environment' => 'juststring', // @todo metadata
+                'root' => ($this->findApplicationRoot)(),
                 'problems' => array_map(
                     static function (ErrorEvent $errorEvent): array {
                         return $errorEvent->toJsonableArrayWithMetadata();

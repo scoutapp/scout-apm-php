@@ -12,6 +12,8 @@ use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
 use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\LocateFileOrFolder;
 use Throwable;
 
 use function error_get_last;
@@ -52,7 +54,8 @@ final class ScoutErrorHandling implements ErrorHandling
                 new GuzzleClient(),
                 new CompressPayload(),
                 $config,
-                $logger
+                $logger,
+                new FindApplicationRoot(new LocateFileOrFolder(), $config)
             )
         );
     }

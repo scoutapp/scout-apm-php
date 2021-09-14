@@ -15,7 +15,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\Version;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\Timer;
 
 use function gethostname;
@@ -33,10 +33,12 @@ use const PHP_VERSION;
  */
 final class MetadataTest extends TestCase
 {
+    private const FAKE_APPLICATION_ROOT = '/fake/path/to/app';
+
     /** @var ExtensionCapabilities&MockObject */
     private $phpExtension;
-    /** @var LocateFileOrFolder&MockObject */
-    private $locateFileOrFolder;
+    /** @var FindApplicationRoot&MockObject */
+    private $findApplicationRoot;
     /** @var DateTimeImmutable */
     private $time;
 
@@ -44,8 +46,12 @@ final class MetadataTest extends TestCase
     {
         parent::setUp();
 
-        $this->phpExtension       = $this->createMock(ExtensionCapabilities::class);
-        $this->locateFileOrFolder = $this->createMock(LocateFileOrFolder::class);
+        $this->phpExtension        = $this->createMock(ExtensionCapabilities::class);
+        $this->findApplicationRoot = $this->createMock(FindApplicationRoot::class);
+
+        $this->findApplicationRoot
+            ->method('__invoke')
+            ->willReturn(self::FAKE_APPLICATION_ROOT);
 
         $this->time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
     }
@@ -84,7 +90,6 @@ final class MetadataTest extends TestCase
             ->willReturn(Version::fromString('1.2.3'));
 
         $config = Config::fromArray([
-            ConfigKey::APPLICATION_ROOT => '/fake/app/root',
             ConfigKey::SCM_SUBDIRECTORY => '/fake/scm/subdirectory',
             ConfigKey::APPLICATION_NAME => 'My amazing application',
             ConfigKey::REVISION_SHA => 'abc123',
@@ -112,7 +117,7 @@ final class MetadataTest extends TestCase
                         'application_name' => 'My amazing application',
                         'libraries' => $this->installedVersions('1.2.3'),
                         'paas' => '',
-                        'application_root' => '/fake/app/root',
+                        'application_root' => self::FAKE_APPLICATION_ROOT,
                         'scm_subdirectory' => '/fake/scm/subdirectory',
                         'git_sha' => 'abc123',
                     ],
@@ -120,7 +125,7 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
+            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->findApplicationRoot)), true)
         );
     }
 
@@ -132,8 +137,6 @@ final class MetadataTest extends TestCase
             ->willReturn(null);
 
         $config = Config::fromArray([]);
-
-        $_SERVER['DOCUMENT_ROOT'] = '/fake/document/root';
 
         self::assertEquals(
             [
@@ -154,7 +157,7 @@ final class MetadataTest extends TestCase
                         'application_name' => '',
                         'libraries' => $this->installedVersions('not installed'),
                         'paas' => '',
-                        'application_root' => '/fake/document/root',
+                        'application_root' => self::FAKE_APPLICATION_ROOT,
                         'scm_subdirectory' => '',
                         'git_sha' => InstalledVersions::getRootPackage()['reference'],
                     ],
@@ -162,7 +165,7 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
+            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->findApplicationRoot)), true)
         );
     }
 
@@ -179,7 +182,7 @@ final class MetadataTest extends TestCase
                 $this->time,
                 Config::fromArray([]),
                 $this->phpExtension,
-                $this->locateFileOrFolder
+                $this->findApplicationRoot
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 
