@@ -41,6 +41,14 @@ final class RequestTest extends TestCase
         );
     }
 
+    public function testRequestHasDifferentId(): void
+    {
+        self::assertNotEquals(
+            $this->requestFromConfiguration()->id(),
+            $this->requestFromConfiguration()->id()
+        );
+    }
+
     public function testExceptionThrownWhenSpanLimitReached(): void
     {
         $request = $this->requestFromConfiguration();

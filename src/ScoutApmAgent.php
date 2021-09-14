@@ -6,6 +6,7 @@ namespace Scoutapm;
 
 use Exception;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\SpanReference;
 
 interface ScoutApmAgent
@@ -123,6 +124,9 @@ interface ScoutApmAgent
      * Clears any currently recorded request data/spans, and start a new request.
      */
     public function startNewRequest(): void;
+
+    /** Returns the current request ID, or null if there is no active request */
+    public function requestId(): ?RequestId;
 
     /**
      * You probably don't need this, it's useful in testing

@@ -22,6 +22,7 @@ use Scoutapm\Connector\Exception\NotConnected;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
@@ -149,6 +150,12 @@ final class AgentTest extends TestCase
             },
             $missingKeys
         );
+    }
+
+    public function testRequestIdCanBeRetrieved(): void
+    {
+        $agent = $this->agentFromConfigArray();
+        self::assertInstanceOf(RequestId::class, $agent->requestId());
     }
 
     public function testMinimumLogLevelCanBeSetOnConfigurationToSquelchNoisyLogMessages(): void

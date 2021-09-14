@@ -26,6 +26,7 @@ use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
@@ -553,6 +554,15 @@ final class Agent implements ScoutApmAgent
         }
 
         $this->cache->set(self::CACHE_KEY_METADATA_SENT, true, self::METADATA_CACHE_TTL_SECONDS);
+    }
+
+    public function requestId(): ?RequestId
+    {
+        if ($this->request === null) {
+            return null;
+        }
+
+        return $this->request->id();
     }
 
     /**

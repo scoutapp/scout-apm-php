@@ -131,6 +131,11 @@ class Request implements CommandWithChildren
         );
     }
 
+    public function id(): RequestId
+    {
+        return $this->id;
+    }
+
     public function cleanUp(): void
     {
         array_map(
