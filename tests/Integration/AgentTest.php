@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace Scoutapm\IntegrationTests;
 
 use Exception;
+use GuzzleHttp\Client as GuzzleClient;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Command;
 use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
+use Scoutapm\Errors\ErrorHandling;
+use Scoutapm\Errors\ScoutClient\CompressPayload;
+use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\UnitTests\TestLogger;
@@ -133,6 +138,28 @@ final class AgentTest extends TestCase
         }
 
         return $return;
+    }
+
+    public function testErrorHandling(): void
+    {
+        $config = Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]);
+        $this->setUpWithConfiguration($config);
+
+        $errorHandling = new ErrorHandling(
+            $this->agent,
+            new GuzzleErrorReportingClient(
+                new GuzzleClient(),
+                new CompressPayload(),
+                $config,
+                $this->logger
+            )
+        );
+        $errorHandling->handleException(new RuntimeException('Oh no'));
+
+        $errorHandling->sendCollectedErrors();
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void
