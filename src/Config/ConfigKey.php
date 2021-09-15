@@ -39,6 +39,10 @@ abstract class ConfigKey
     public const FRAMEWORK_VERSION           = 'framework_version';
     public const URI_REPORTING               = 'uri_reporting';
     public const URI_FILTERED_PARAMETERS     = 'uri_filtered_params';
+    public const ERRORS_ENABLED              = 'errors_enabled';
+    public const ERRORS_IGNORED_EXCEPTIONS   = 'errors_ignored_exceptions';
+    public const ERRORS_HOST                 = 'errors_host';
+    public const ERRORS_BATCH_SIZE           = 'errors_batch_size';
 
     private const SECRET_CONFIGURATIONS = [self::APPLICATION_KEY];
 

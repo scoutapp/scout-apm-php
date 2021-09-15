@@ -58,6 +58,10 @@ final class DefaultSource implements ConfigSource
             ConfigKey::IGNORED_ENDPOINTS => [],
             ConfigKey::LOG_LEVEL => Config::DEFAULT_LOG_LEVEL,
             ConfigKey::LOG_PAYLOAD_CONTENT => false,
+            ConfigKey::ERRORS_ENABLED => false,
+            ConfigKey::ERRORS_HOST => 'https://errors.scoutapm.com',
+            ConfigKey::ERRORS_IGNORED_EXCEPTIONS => [],
+            ConfigKey::ERRORS_BATCH_SIZE => 5,
             ConfigKey::URI_REPORTING => ConfigKey::URI_REPORTING_PATH_ONLY,
             /** @link https://github.com/scoutapp/scout_apm_python/blob/ee3c4fe47e6d841b243935628bb21191ee59da4b/src/scout_apm/core/web_requests.py#L15-L40 */
             ConfigKey::URI_FILTERED_PARAMETERS => [

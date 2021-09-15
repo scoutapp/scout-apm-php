@@ -20,11 +20,12 @@ use function count;
 use function gethostname;
 use function http_build_query;
 use function json_encode;
+use function rtrim;
 use function sprintf;
 
 final class GuzzleErrorReportingClient implements ErrorReportingClient
 {
-    private const SCOUT_REPORTING_URL = 'https://errors.scoutapm.com/apps/error.scout';
+    private const SCOUT_REPORTING_PATH = '/apps/error.scout';
 
     private const SCOUT_ACCEPTED_STATUS_CODE = 202;
 
@@ -38,6 +39,8 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
     private $logger;
     /** @var FindApplicationRoot */
     private $findApplicationRoot;
+    /** @var string|null */
+    private $memoizedErrorsUrl;
 
     public function __construct(
         ClientInterface $client,
@@ -84,6 +87,15 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
             ->wait();
     }
 
+    private function memoizedErrorsUrl(): string
+    {
+        if ($this->memoizedErrorsUrl === null) {
+            $this->memoizedErrorsUrl = rtrim((string) $this->config->get(ConfigKey::ERRORS_HOST), '/') . self::SCOUT_REPORTING_PATH;
+        }
+
+        return $this->memoizedErrorsUrl;
+    }
+
     /**
      * @param list<ErrorEvent> $errorEvent
      * // @todo Type check this to require at least one errorEvent
@@ -92,7 +104,7 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
     {
         return new Request(
             'POST',
-            self::SCOUT_REPORTING_URL . '?' . http_build_query([
+            $this->memoizedErrorsUrl() . '?' . http_build_query([
                 'key' => $this->config->get(ConfigKey::APPLICATION_KEY),
                 'name' => $this->config->get(ConfigKey::APPLICATION_NAME),
             ]),

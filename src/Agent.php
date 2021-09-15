@@ -114,6 +114,8 @@ final class Agent implements ScoutApmAgent
             QueryTimeCollector::register($this);
         }
 
+        $this->errorHandling->registerListeners();
+
         $this->startNewRequest();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
