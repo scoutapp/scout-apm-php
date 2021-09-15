@@ -7,7 +7,12 @@ namespace Scoutapm\Errors;
 use Scoutapm\Events\Request\RequestId;
 use Throwable;
 
+use function array_key_exists;
+use function array_map;
+use function array_values;
 use function get_class;
+use function sprintf;
+use function str_replace;
 
 /**
  * @internal This is not covered by BC promise
@@ -20,7 +25,7 @@ use function get_class;
  *      request_params?: array<string,string|array<array-key,string|array<array-key,string|array<array-key,string>>>>,
  *      request_session?: array<string,string>,
  *      environment?: array<string,string>,
- *      trace: array,
+ *      trace: list<string>,
  *      request_components?: array{
  *          module: string,
  *          controller: string,
@@ -39,11 +44,14 @@ final class ErrorEvent
     private $exceptionClass;
     /** @var non-empty-string */
     private $message;
+    /** @var list<string> */
+    private $formattedTrace;
 
     /**
      * @psalm-param class-string $exceptionClass
+     * @psalm-param list<string> $formattedTrace
      */
-    private function __construct(?RequestId $requestId, string $exceptionClass, string $message)
+    private function __construct(?RequestId $requestId, string $exceptionClass, string $message, array $formattedTrace)
     {
         if ($message === '') {
             $message = 'Oh dear - Scout could not find a message for this error or exception';
@@ -52,6 +60,7 @@ final class ErrorEvent
         $this->requestId      = $requestId;
         $this->exceptionClass = $exceptionClass;
         $this->message        = $message;
+        $this->formattedTrace = $formattedTrace;
     }
 
     public static function fromThrowable(?RequestId $requestId, Throwable $throwable): self
@@ -59,7 +68,26 @@ final class ErrorEvent
         return new self(
             $requestId,
             get_class($throwable),
-            $throwable->getMessage()
+            $throwable->getMessage(),
+            array_values(array_map(
+                /** @psalm-param array{function: string, line: int, file: string, class?: string, type?: '->'|'::'} $trace */
+                static function (array $trace): string {
+                    return sprintf(
+                        '%s:%d:in `%s`',
+                        $trace['file'],
+                        $trace['line'],
+                        array_key_exists('class', $trace) && array_key_exists('type', $trace)
+                            ? sprintf(
+                                '%s%s%s',
+                                $trace['class'],
+                                str_replace($trace['type'], '::', '#'),
+                                $trace['function']
+                            )
+                            : $trace['function']
+                    );
+                },
+                $throwable->getTrace()
+            ))
         );
     }
 
@@ -76,13 +104,7 @@ final class ErrorEvent
             'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
             'request_session' => ['sess1' => 'sess2'],
             'environment' => ['env1' => 'env2'],
-            'trace' => [ // @todo find out trace format
-                'test1.php:123:in `myFunc()`',
-                'test2.php:234:in `MyNs\\MyClass->myFunc()`',
-                'test3.php:345:in `MyClass_Foo->myFunc()`',
-                'test4.php:456:in `Woo->myFunc`',
-                'test5.php:567:in `myFuncB`',
-            ],
+            'trace' => $this->formattedTrace,
             'request_components' => [
                 'module' => 'myModule', // @todo Seems ignored by Dashboard?
                 'controller' => 'myController',
