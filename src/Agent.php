@@ -429,6 +429,8 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function send(): bool
     {
+        $this->errorHandling->sendCollectedErrors();
+
         // Don't send if the agent is not enabled.
         if (! $this->enabled()) {
             $this->logger->debug('Not sending payload, monitoring is not enabled');

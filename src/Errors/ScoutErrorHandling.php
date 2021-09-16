@@ -23,6 +23,7 @@ use function in_array;
 use function is_array;
 use function register_shutdown_function;
 use function set_exception_handler;
+use function sprintf;
 
 use const E_COMPILE_ERROR;
 use const E_CORE_ERROR;
@@ -45,11 +46,14 @@ final class ScoutErrorHandling implements ErrorHandling
     private $oldExceptionHandler;
     /** @var ?RequestId */
     private $requestId;
+    /** @var LoggerInterface */
+    private $logger;
 
-    public function __construct(ErrorReportingClient $reportingClient, Config $config)
+    public function __construct(ErrorReportingClient $reportingClient, Config $config, LoggerInterface $logger)
     {
         $this->reportingClient = $reportingClient;
         $this->config          = $config;
+        $this->logger          = $logger;
     }
 
     public static function factory(Config $config, LoggerInterface $logger): self
@@ -62,7 +66,8 @@ final class ScoutErrorHandling implements ErrorHandling
                 $logger,
                 new FindApplicationRoot(new LocateFileOrFolder(), $config)
             ),
-            $config
+            $config,
+            $logger
         );
     }
 
@@ -102,6 +107,8 @@ final class ScoutErrorHandling implements ErrorHandling
     public function registerListeners(): void
     {
         if (! $this->errorsEnabled()) {
+            $this->logger->debug('Error handling is not enabled, skipping registering listeners');
+
             return;
         }
 
@@ -115,19 +122,20 @@ final class ScoutErrorHandling implements ErrorHandling
             return;
         }
 
+        $eventCount = count($this->errorEvents);
         foreach ($this->errorEvents as $errorEvent) {
             $this->reportingClient->sendErrorToScout($errorEvent);
         }
+
+        $this->logger->debug(sprintf('Sent %d collected error event%s', $eventCount, $eventCount === 1 ? '' : 's'));
+        $this->errorEvents = [];
     }
 
     public function handleException(Throwable $throwable): void
     {
         if ($this->errorsEnabled() && ! $this->isIgnoredException($throwable)) {
             $this->errorEvents[] = ErrorEvent::fromThrowable($this->requestId, $throwable);
-
-            if (count($this->errorEvents) >= $this->batchSendSize()) {
-                $this->sendCollectedErrors();
-            }
+            $this->sendCollectedErrors();
         }
 
         if (! $this->oldExceptionHandler) {
