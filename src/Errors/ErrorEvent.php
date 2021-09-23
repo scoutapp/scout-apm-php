@@ -6,6 +6,7 @@ namespace Scoutapm\Errors;
 
 use Scoutapm\Config;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
 use Throwable;
 
@@ -118,7 +119,7 @@ final class ErrorEvent
                 'action' => 'myAction8',
             ],
             'context' => ['ctx1' => 'ctx2'], // @todo what is this?
-            'host' => 'zabba1', // @todo populate from metadata
+            'host' => DetermineHostname::withConfig($config),
             'revision_sha' => 'abcabc', // @todo populate from metadata
         ];
     }

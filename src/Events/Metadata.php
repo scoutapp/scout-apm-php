@@ -10,6 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
+use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\Timer;
 
@@ -18,7 +19,6 @@ use function array_map;
 use function array_merge;
 use function class_exists;
 use function getenv;
-use function gethostname;
 use function is_array;
 use function is_string;
 use function method_exists;
@@ -77,7 +77,7 @@ final class Metadata implements Command
             'framework_version' => $this->config->get(ConfigKey::FRAMEWORK_VERSION) ?? '',
             'environment' => '',
             'app_server' => '',
-            'hostname' => $this->config->get(ConfigKey::HOSTNAME) ?? gethostname(),
+            'hostname' => DetermineHostname::withConfig($this->config),
             'database_engine' => '',
             'database_adapter' => '',
             'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',

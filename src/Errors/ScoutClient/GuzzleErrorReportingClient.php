@@ -13,11 +13,11 @@ use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
+use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
 
 use function array_map;
 use function count;
-use function gethostname;
 use function http_build_query;
 use function json_encode;
 use function rtrim;
@@ -109,7 +109,7 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
                 'name' => $this->config->get(ConfigKey::APPLICATION_NAME),
             ]),
             [
-                'Agent-Hostname' => (string) ($this->config->get(ConfigKey::HOSTNAME) ?? gethostname()),
+                'Agent-Hostname' => DetermineHostname::withConfig($this->config),
                 'Content-Encoding' => 'gzip', // Must be gzipped
                 'Content-Type' => 'application/json',
                 'X-Error-Count' => (string) count($errorEvent),
