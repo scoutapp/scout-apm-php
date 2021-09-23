@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\Errors;
 
+use Scoutapm\Config;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Helper\FilterParameters;
 use Throwable;
 
 use function array_key_exists;
@@ -92,18 +94,23 @@ final class ErrorEvent
     }
 
     /**
+     * @param array<array-key, mixed> $session
+     * @param array<array-key, mixed> $env
+     *
      * @psalm-return ErrorEventJsonableArray
      */
-    public function toJsonableArrayWithMetadata(/** @todo pass metadata source */): array
+    public function toJsonableArray(Config $config, array $session, array $env): array
     {
+        $filteredParameters = Config\Helper\RequireValidFilteredUriParameters::fromConfig($config);
+
         return [
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
             'request_id' => $this->request ? $this->request->id()->toString() : null,
             'request_uri' => $this->request ? $this->request->requestPath() : 'Unable to detect URL, no request set',
             'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
-            'request_session' => ['sess1' => 'sess2'],
-            'environment' => ['env1' => 'env2'],
+            'request_session' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $session),
+            'environment' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $env),
             'trace' => $this->formattedTrace,
             'request_components' => [
                 'module' => 'myModule', // @todo Seems ignored by Dashboard?

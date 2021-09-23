@@ -22,9 +22,7 @@ use Scoutapm\Helper\Timer;
 
 use function array_key_exists;
 use function array_map;
-use function array_values;
 use function in_array;
-use function is_array;
 use function is_string;
 use function microtime;
 use function strpos;
@@ -99,34 +97,11 @@ class Request implements CommandWithChildren
         return $uriReportingConfiguration;
     }
 
-    /** @psalm-return list<string> */
-    private static function requireValidFilteredUriParameters(Config $config): array
-    {
-        /** @var mixed $uriFilteredParameters */
-        $uriFilteredParameters = $config->get(ConfigKey::URI_FILTERED_PARAMETERS);
-
-        /** @var list<string> $defaultFilteredParameters */
-        $defaultFilteredParameters = (new Config\Source\DefaultSource())->get(ConfigKey::URI_FILTERED_PARAMETERS);
-
-        if (! is_array($uriFilteredParameters)) {
-            return $defaultFilteredParameters;
-        }
-
-        foreach ($uriFilteredParameters as $filteredParameter) {
-            if (! is_string($filteredParameter)) {
-                return $defaultFilteredParameters;
-            }
-        }
-
-        /** @psalm-var array<array-key, string> $uriFilteredParameters */
-        return array_values($uriFilteredParameters);
-    }
-
     public static function fromConfigAndOverrideTime(Config $config, ?float $override = null): self
     {
         return new self(
             self::requireValidUriReportingValue($config),
-            self::requireValidFilteredUriParameters($config),
+            Config\Helper\RequireValidFilteredUriParameters::fromConfig($config),
             $override
         );
     }

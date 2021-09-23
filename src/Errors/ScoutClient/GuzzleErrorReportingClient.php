@@ -116,11 +116,11 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
             ],
             ($this->compressPayload)(json_encode([
                 'notifier' => 'scout_apm_php',
-                'environment' => 'juststring', // @todo metadata
+                'environment' => '',
                 'root' => ($this->findApplicationRoot)(),
                 'problems' => array_map(
-                    static function (ErrorEvent $errorEvent): array {
-                        return $errorEvent->toJsonableArrayWithMetadata();
+                    function (ErrorEvent $errorEvent): array {
+                        return $errorEvent->toJsonableArray($this->config, $_SESSION, $_ENV); // @todo probably inject session/env
                     },
                     $errorEvent
                 ),

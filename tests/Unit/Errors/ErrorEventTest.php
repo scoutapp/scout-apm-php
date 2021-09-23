@@ -24,7 +24,7 @@ final class ErrorEventTest extends TestCase
         $request          = Request::fromConfigAndOverrideTime(Config::fromArray([]));
         $request->overrideRequestUri('/path/to/thething');
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
-            ->toJsonableArrayWithMetadata();
+            ->toJsonableArray(Config::fromArray([]), ['sessionKey' => 'sessionValue'], ['envKey' => 'envValue']);
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);
         self::assertSame($exceptionMessage, $jsonableArrayForEvent['message']);
@@ -41,12 +41,12 @@ final class ErrorEventTest extends TestCase
         );
         self::assertTrue(array_key_exists('request_session', $jsonableArrayForEvent));
         self::assertEquals(
-            ['sess1' => 'sess2'],
+            ['sessionKey' => 'sessionValue'],
             $jsonableArrayForEvent['request_session']
         );
         self::assertTrue(array_key_exists('environment', $jsonableArrayForEvent));
         self::assertEquals(
-            ['env1' => 'env2'],
+            ['envKey' => 'envValue'],
             $jsonableArrayForEvent['environment']
         );
         self::assertTrue(array_key_exists('trace', $jsonableArrayForEvent));
