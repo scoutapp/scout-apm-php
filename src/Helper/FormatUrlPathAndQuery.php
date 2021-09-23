@@ -6,17 +6,13 @@ namespace Scoutapm\Helper;
 
 use Scoutapm\Config\ConfigKey;
 
-use function array_filter;
 use function array_key_exists;
 use function count;
 use function http_build_query;
-use function in_array;
 use function is_string;
 use function parse_str;
 use function parse_url;
 use function urldecode;
-
-use const ARRAY_FILTER_USE_KEY;
 
 /** @internal */
 abstract class FormatUrlPathAndQuery
@@ -45,13 +41,7 @@ abstract class FormatUrlPathAndQuery
         /** @psalm-suppress ImpureFunctionCall - when called with second param, this should be a pure function call */
         parse_str($queryString, $queryParts);
 
-        $filteredQuery = array_filter(
-            $queryParts,
-            static function (string $key) use ($filteredParameters): bool {
-                return ! in_array($key, $filteredParameters, true);
-            },
-            ARRAY_FILTER_USE_KEY
-        );
+        $filteredQuery = FilterParameters::forUriReportingConfiguration($filteredParameters, $queryParts);
 
         if (! count($filteredQuery)) {
             return $path . $fragment;
