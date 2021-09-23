@@ -8,6 +8,7 @@ use Scoutapm\Config;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
+use Scoutapm\Helper\RootPackageGitSha;
 use Throwable;
 
 use function array_key_exists;
@@ -120,7 +121,7 @@ final class ErrorEvent
             ],
             'context' => ['ctx1' => 'ctx2'], // @todo what is this?
             'host' => DetermineHostname::withConfig($config),
-            'revision_sha' => 'abcabc', // @todo populate from metadata
+            'revision_sha' => RootPackageGitSha::find($config),
         ];
     }
 }

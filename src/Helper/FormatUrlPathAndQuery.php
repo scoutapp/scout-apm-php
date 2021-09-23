@@ -15,7 +15,7 @@ use function parse_url;
 use function urldecode;
 
 /** @internal */
-abstract class FormatUrlPathAndQuery
+final class FormatUrlPathAndQuery
 {
     /**
      * @psalm-pure

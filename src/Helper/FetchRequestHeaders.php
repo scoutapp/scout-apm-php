@@ -18,7 +18,7 @@ use function ucwords;
 use const ARRAY_FILTER_USE_BOTH;
 
 /** @internal */
-abstract class FetchRequestHeaders
+final class FetchRequestHeaders
 {
     /**
      * @internal

@@ -12,16 +12,13 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\RootPackageGitSha;
 use Scoutapm\Helper\Timer;
 
-use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function class_exists;
-use function getenv;
-use function is_array;
 use function is_string;
-use function method_exists;
 use function sprintf;
 
 use const PHP_VERSION;
@@ -85,7 +82,7 @@ final class Metadata implements Command
             'paas' => '',
             'application_root' => ($this->findApplicationRoot)(),
             'scm_subdirectory' => $this->scmSubdirectory(),
-            'git_sha' => $this->rootPackageGitSha(),
+            'git_sha' => RootPackageGitSha::find($this->config),
         ];
     }
 
@@ -94,29 +91,6 @@ final class Metadata implements Command
         $scmSubdirectoryConfiguration = $this->config->get(ConfigKey::SCM_SUBDIRECTORY);
         if (is_string($scmSubdirectoryConfiguration) && $scmSubdirectoryConfiguration !== '') {
             return $scmSubdirectoryConfiguration;
-        }
-
-        return '';
-    }
-
-    private function rootPackageGitSha(): string
-    {
-        $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
-        if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
-            return $revisionShaConfiguration;
-        }
-
-        $herokuSlugCommit = getenv('HEROKU_SLUG_COMMIT');
-        if (is_string($herokuSlugCommit) && $herokuSlugCommit !== '') {
-            return $herokuSlugCommit;
-        }
-
-        if (class_exists(InstalledVersions::class) && method_exists(InstalledVersions::class, 'getRootPackage')) {
-            /** @var mixed $rootPackage */
-            $rootPackage = InstalledVersions::getRootPackage();
-            if (is_array($rootPackage) && array_key_exists('reference', $rootPackage) && is_string($rootPackage['reference'])) {
-                return $rootPackage['reference'];
-            }
         }
 
         return '';
