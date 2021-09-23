@@ -6,8 +6,9 @@ namespace Scoutapm\UnitTests\Errors;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
-use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Request\Request;
 
 use function array_key_exists;
 use function get_class;
@@ -18,16 +19,17 @@ final class ErrorEventTest extends TestCase
 {
     public function testToJsonableArrayWithMetadata(): void
     {
-        $exceptionMessage      = uniqid('the exception message', true);
-        $exception             = new RuntimeException($exceptionMessage);
-        $requestId             = RequestId::new();
-        $jsonableArrayForEvent = ErrorEvent::fromThrowable($requestId, $exception)
+        $exceptionMessage = uniqid('the exception message', true);
+        $exception        = new RuntimeException($exceptionMessage);
+        $request          = Request::fromConfigAndOverrideTime(Config::fromArray([]));
+        $request->overrideRequestUri('/path/to/thething');
+        $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
             ->toJsonableArrayWithMetadata();
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);
         self::assertSame($exceptionMessage, $jsonableArrayForEvent['message']);
-        self::assertSame($requestId->toString(), $jsonableArrayForEvent['request_id']);
-        self::assertSame('https://mysite.com/path/to/thething', $jsonableArrayForEvent['request_uri']);
+        self::assertSame($request->id()->toString(), $jsonableArrayForEvent['request_id']);
+        self::assertSame('/path/to/thething', $jsonableArrayForEvent['request_uri']);
         self::assertTrue(array_key_exists('request_params', $jsonableArrayForEvent));
         self::assertEquals(
             [

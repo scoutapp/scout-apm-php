@@ -255,16 +255,25 @@ class Request implements CommandWithChildren
         $this->timer->stop($overrideTimestamp);
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
-        $this->tag(
-            Tag::TAG_REQUEST_PATH,
-            FormatUrlPathAndQuery::forUriReportingConfiguration(
-                $this->uriReportingOption,
-                $this->filteredParameters,
-                $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal()
-            )
-        );
+        $this->tag(Tag::TAG_REQUEST_PATH, $this->requestPath());
 
         $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
+    }
+
+    /** @return non-empty-string */
+    public function requestPath(): string
+    {
+        $uriPathAndQuery = FormatUrlPathAndQuery::forUriReportingConfiguration(
+            $this->uriReportingOption,
+            $this->filteredParameters,
+            $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal()
+        );
+
+        if ($uriPathAndQuery === '') {
+            return 'Unable to detect URL for request';
+        }
+
+        return $uriPathAndQuery;
     }
 
     /**

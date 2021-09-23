@@ -510,7 +510,7 @@ final class Agent implements ScoutApmAgent
 
         $this->request = Request::fromConfigAndOverrideTime($this->config);
 
-        $this->errorHandling->changeCurrentRequestId($this->request->id());
+        $this->errorHandling->changeCurrentRequest($this->request);
     }
 
     private function registerIfRequired(): void

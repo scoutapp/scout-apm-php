@@ -11,7 +11,7 @@ use Scoutapm\Config;
 use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
-use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Throwable;
@@ -44,8 +44,8 @@ final class ScoutErrorHandling implements ErrorHandling
     private $errorEvents = [];
     /** @var callable|null */
     private $oldExceptionHandler;
-    /** @var ?RequestId */
-    private $requestId;
+    /** @var ?Request */
+    private $request;
     /** @var LoggerInterface */
     private $logger;
 
@@ -99,9 +99,9 @@ final class ScoutErrorHandling implements ErrorHandling
         return $batchSize;
     }
 
-    public function changeCurrentRequestId(RequestId $requestId): void
+    public function changeCurrentRequest(Request $request): void
     {
-        $this->requestId = $requestId;
+        $this->request = $request;
     }
 
     public function registerListeners(): void
@@ -134,7 +134,7 @@ final class ScoutErrorHandling implements ErrorHandling
     public function handleException(Throwable $throwable): void
     {
         if ($this->errorsEnabled() && ! $this->isIgnoredException($throwable)) {
-            $this->errorEvents[] = ErrorEvent::fromThrowable($this->requestId, $throwable);
+            $this->errorEvents[] = ErrorEvent::fromThrowable($this->request, $throwable);
             $this->sendCollectedErrors();
         }
 

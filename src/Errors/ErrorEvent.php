@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Errors;
 
-use Scoutapm\Events\Request\RequestId;
+use Scoutapm\Events\Request\Request;
 use Throwable;
 
 use function array_key_exists;
@@ -38,8 +38,8 @@ use function str_replace;
  */
 final class ErrorEvent
 {
-    /** @var ?RequestId */
-    private $requestId;
+    /** @var ?Request */
+    private $request;
     /** @var class-string */
     private $exceptionClass;
     /** @var non-empty-string */
@@ -51,22 +51,22 @@ final class ErrorEvent
      * @psalm-param class-string $exceptionClass
      * @psalm-param list<string> $formattedTrace
      */
-    private function __construct(?RequestId $requestId, string $exceptionClass, string $message, array $formattedTrace)
+    private function __construct(?Request $request, string $exceptionClass, string $message, array $formattedTrace)
     {
         if ($message === '') {
             $message = 'Oh dear - Scout could not find a message for this error or exception';
         }
 
-        $this->requestId      = $requestId;
+        $this->request        = $request;
         $this->exceptionClass = $exceptionClass;
         $this->message        = $message;
         $this->formattedTrace = $formattedTrace;
     }
 
-    public static function fromThrowable(?RequestId $requestId, Throwable $throwable): self
+    public static function fromThrowable(?Request $request, Throwable $throwable): self
     {
         return new self(
-            $requestId,
+            $request,
             get_class($throwable),
             $throwable->getMessage(),
             array_values(array_map(
@@ -99,8 +99,8 @@ final class ErrorEvent
         return [
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
-            'request_id' => $this->requestId ? $this->requestId->toString() : null,
-            'request_uri' => 'https://mysite.com/path/to/thething',
+            'request_id' => $this->request ? $this->request->id()->toString() : null,
+            'request_uri' => $this->request ? $this->request->requestPath() : 'Unable to detect URL, no request set',
             'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
             'request_session' => ['sess1' => 'sess2'],
             'environment' => ['env1' => 'env2'],
