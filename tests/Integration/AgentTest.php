@@ -11,22 +11,23 @@ use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
-use Scoutapm\Errors\ScoutErrorHandling;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\UnitTests\TestLogger;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
 
 use function assert;
 use function curl_exec;
 use function curl_init;
 use function curl_setopt;
 use function extension_loaded;
+use function file_exists;
 use function file_get_contents;
 use function fopen;
 use function function_exists;
@@ -41,7 +42,9 @@ use function sleep;
 use function sprintf;
 use function str_repeat;
 use function stream_context_create;
+use function trim;
 use function uniqid;
+use function unlink;
 
 use const CURLOPT_CUSTOMREQUEST;
 use const CURLOPT_POST;
@@ -137,18 +140,33 @@ final class AgentTest extends TestCase
         return $return;
     }
 
-    public function testErrorHandling(): void
+    /**
+     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
+     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
+     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
+     */
+    public function testUncaughtErrorsAreCapturedAndSentToScout(): void
     {
-        $config = Config::fromArray([
-            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
-            ConfigKey::MONITORING_ENABLED => true,
-            ConfigKey::ERRORS_ENABLED => true,
-        ]);
-        $this->setUpWithConfiguration($config);
+        $phpBinary = (new PhpExecutableFinder())->find();
 
-        $errorHandling = ScoutErrorHandling::factory($config, $this->logger);
-        $errorHandling->handleException(new RuntimeException('Oh no'));
-        $errorHandling->sendCollectedErrors();
+        $process = new Process([
+            $phpBinary,
+            __DIR__ . '/../isolated-error-capture-test.php',
+        ]);
+        $process->mustRun();
+
+        $logFileGeneratedByTestScript = trim($process->getOutput());
+
+        $logContents = file_get_contents($logFileGeneratedByTestScript);
+
+        self::assertStringContainsString('Sent an error payload to Scout Error Reporting', $logContents);
+        self::assertStringContainsString('Sent 1 collected error event', $logContents);
+
+        if (! file_exists($logFileGeneratedByTestScript)) {
+            return;
+        }
+
+        unlink($logFileGeneratedByTestScript);
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void
