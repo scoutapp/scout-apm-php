@@ -15,6 +15,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\Superglobals;
 
 use function array_map;
 use function count;
@@ -120,7 +121,11 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
                 'root' => ($this->findApplicationRoot)(),
                 'problems' => array_map(
                     function (ErrorEvent $errorEvent): array {
-                        return $errorEvent->toJsonableArray($this->config, $_SESSION, $_ENV); // @todo probably inject session/env
+                        return $errorEvent->toJsonableArray(
+                            $this->config,
+                            Superglobals::session(), // @todo probably inject session/env
+                            Superglobals::env() // @todo probably inject session/env
+                        );
                     },
                     $errorEvent
                 ),
