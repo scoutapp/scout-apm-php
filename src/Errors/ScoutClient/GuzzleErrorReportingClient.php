@@ -124,7 +124,8 @@ final class GuzzleErrorReportingClient implements ErrorReportingClient
                         return $errorEvent->toJsonableArray(
                             $this->config,
                             Superglobals::session(), // @todo probably inject session/env
-                            Superglobals::env() // @todo probably inject session/env
+                            Superglobals::env(), // @todo probably inject session/env
+                            Superglobals::request() // @todo probably inject session/env
                         );
                     },
                     $errorEvent

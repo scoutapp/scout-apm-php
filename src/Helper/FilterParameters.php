@@ -11,6 +11,7 @@ use function array_map;
 use function get_class;
 use function gettype;
 use function in_array;
+use function is_array;
 use function is_object;
 use function is_scalar;
 use function sprintf;
@@ -39,13 +40,32 @@ final class FilterParameters
     }
 
     /**
-     * @return array<string, string>
+     * @return string[]
      *
      * @psalm-pure
+     * @psalm-template T as int
      * @psalm-param list<string> $parameterKeysToBeFiltered
      * @psalm-param array<array-key, mixed> $parameters
+     * @psalm-param T $depth
+     * @psalm-return (
+     *      T is 1
+     *      ? array<string,string>
+     *      : (
+     *          T is 2
+     *          ? array<string,string|array<string,string>>
+     *          : (
+     *              T is 3
+     *              ? array<string,string|array<string,string|array<string,string>>>
+     *              : (
+     *                  T is 4
+     *                  ? array<string,string|array<string,string|array<string,string|array<string,string>>>>
+     *                  : array
+     *              )
+     *          )
+     *      )
+     * )
      */
-    public static function flattenedForUriReportingConfiguration(array $parameterKeysToBeFiltered, array $parameters): array
+    public static function flattenedForUriReportingConfiguration(array $parameterKeysToBeFiltered, array $parameters, int $depth = 1): array
     {
         $filteredParameters = self::forUriReportingConfiguration($parameterKeysToBeFiltered, $parameters);
 
@@ -57,7 +77,11 @@ final class FilterParameters
                 array_keys($filteredParameters)
             ),
             array_map(
-                static function ($value): string {
+                static function ($value) use ($parameterKeysToBeFiltered, $depth) {
+                    if (is_array($value) && $depth > 1) {
+                        return self::flattenedForUriReportingConfiguration($parameterKeysToBeFiltered, $value, (int) ($depth) - 1);
+                    }
+
                     if (is_scalar($value)) {
                         return (string) $value;
                     }

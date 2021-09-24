@@ -19,23 +19,40 @@ final class ErrorEventTest extends TestCase
 {
     public function testToJsonableArrayWithMetadata(): void
     {
+        $_SERVER['HTTPS']     = 'on';
+        $_SERVER['HTTP_HOST'] = 'the-great-website';
+
+        $config = Config::fromArray([
+            Config\ConfigKey::HOSTNAME => 'zappa1',
+            Config\ConfigKey::REVISION_SHA => 'abcabc',
+        ]);
+
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
-        $request          = Request::fromConfigAndOverrideTime(Config::fromArray([]));
+        $request          = Request::fromConfigAndOverrideTime($config);
         $request->overrideRequestUri('/path/to/thething');
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
-            ->toJsonableArray(Config::fromArray([]), ['sessionKey' => 'sessionValue'], ['envKey' => 'envValue']);
+            ->toJsonableArray(
+                $config,
+                ['sessionKey' => 'sessionValue'],
+                ['envKey' => 'envValue'],
+                [
+                    'paramKey' => 'paramValue',
+                    'paramList' => ['paramListItem1', 'paramListItem2'],
+                    'paramDict' => ['paramDictKey' => 'paramDictValue'],
+                ]
+            );
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);
         self::assertSame($exceptionMessage, $jsonableArrayForEvent['message']);
         self::assertSame($request->id()->toString(), $jsonableArrayForEvent['request_id']);
-        self::assertSame('/path/to/thething', $jsonableArrayForEvent['request_uri']);
+        self::assertSame('https://the-great-website/path/to/thething', $jsonableArrayForEvent['request_uri']);
         self::assertTrue(array_key_exists('request_params', $jsonableArrayForEvent));
         self::assertEquals(
             [
-                'param1' => 'param2',
-                'param3' => ['a', 'b'],
-                'param4' => ['z1' => 'z2', 'z2' => 'z3'],
+                'paramKey' => 'paramValue',
+                'paramList' => ['paramListItem1', 'paramListItem2'],
+                'paramDict' => ['paramDictKey' => 'paramDictValue'],
             ],
             $jsonableArrayForEvent['request_params']
         );
@@ -68,7 +85,7 @@ final class ErrorEventTest extends TestCase
             ['ctx1' => 'ctx2'],
             $jsonableArrayForEvent['context']
         );
-        self::assertSame('zabba1', $jsonableArrayForEvent['host']);
+        self::assertSame('zappa1', $jsonableArrayForEvent['host']);
         self::assertSame('abcabc', $jsonableArrayForEvent['revision_sha']);
     }
 }
