@@ -27,7 +27,7 @@ final class FetchRequestHeaders
      */
     public static function fromServerGlobal(): array
     {
-        return self::fromArray($_SERVER);
+        return self::fromArray(Superglobals::server());
     }
 
     /**

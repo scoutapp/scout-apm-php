@@ -44,4 +44,9 @@ $agent = Agent::fromConfig($config, $logger);
 
 $agent->connect();
 
+$_SERVER['HTTP_HOST']   = 'my-test-site';
+$_SERVER['SERVER_PORT'] = '443';
+$_SERVER['HTTPS']       = 'on';
+$_SERVER['REQUEST_URI'] = '/path/to/my/app';
+
 throw new LogicException('Something went wrong');

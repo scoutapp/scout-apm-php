@@ -18,6 +18,7 @@ use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
+use Scoutapm\Helper\Superglobals;
 use Scoutapm\Helper\Timer;
 
 use function array_key_exists;
@@ -137,13 +138,15 @@ class Request implements CommandWithChildren
 
     private function determineRequestPathFromServerGlobal(): string
     {
-        $requestUri = $_SERVER['REQUEST_URI'] ?? null;
+        $server = Superglobals::server();
+
+        $requestUri = $server['REQUEST_URI'] ?? null;
 
         if (is_string($requestUri)) {
             return $requestUri;
         }
 
-        $origPathInfo = $_SERVER['ORIG_PATH_INFO'] ?? null;
+        $origPathInfo = $server['ORIG_PATH_INFO'] ?? null;
 
         if (is_string($origPathInfo)) {
             return $origPathInfo;

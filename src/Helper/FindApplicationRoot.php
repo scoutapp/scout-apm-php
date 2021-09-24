@@ -39,10 +39,11 @@ class FindApplicationRoot
             return $composerJsonLocation;
         }
 
-        if (! array_key_exists('DOCUMENT_ROOT', $_SERVER) || ! is_string($_SERVER['DOCUMENT_ROOT'])) {
+        $server = Superglobals::server();
+        if (! array_key_exists('DOCUMENT_ROOT', $server)) {
             return '';
         }
 
-        return $_SERVER['DOCUMENT_ROOT'];
+        return $server['DOCUMENT_ROOT'];
     }
 }

@@ -9,11 +9,13 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
 use Scoutapm\Helper\RootPackageGitSha;
+use Scoutapm\Helper\Superglobals;
 use Throwable;
 
 use function array_key_exists;
 use function array_map;
 use function array_values;
+use function assert;
 use function get_class;
 use function sprintf;
 use function str_replace;
@@ -95,6 +97,27 @@ final class ErrorEvent
         );
     }
 
+    /** @return non-empty-string */
+    private function buildRequestUri(): string
+    {
+        $server  = Superglobals::server();
+        $isHttps = array_key_exists('HTTPS', $server) && $server['HTTPS'] === 'on';
+        $port    = (int) $server['SERVER_PORT'];
+
+        // phpcs:disable SlevomatCodingStandard.PHP.UselessParentheses.UselessParentheses
+        $builtUrl = sprintf(
+            '%s://%s%s%s',
+            $isHttps ? 'https' : 'http',
+            array_key_exists('HTTP_HOST', $server) ? $server['HTTP_HOST'] : $server['SERVER_NAME'],
+            ((! $isHttps && $port === 80) || ($isHttps && $port === 443)) ? '' : (':' . $port),
+            $this->request ? $this->request->requestPath() : $server['REQUEST_URI']
+        );
+        assert($builtUrl !== '');
+        // phpcs:enable
+
+        return $builtUrl;
+    }
+
     /**
      * @param array<array-key, mixed> $session
      * @param array<array-key, mixed> $env
@@ -109,7 +132,7 @@ final class ErrorEvent
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
             'request_id' => $this->request ? $this->request->id()->toString() : null,
-            'request_uri' => $this->request ? $this->request->requestPath() : 'Unable to detect URL, no request set',
+            'request_uri' => $this->buildRequestUri(),
             'request_params' => ['param1' => 'param2', 'param3' => ['a', 'b'], 'param4' => ['z1' => 'z2', 'z2' => 'z3']],
             'request_session' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $session),
             'environment' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $env),
