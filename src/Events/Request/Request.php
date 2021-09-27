@@ -12,6 +12,7 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Helper\FetchRequestHeaders;
@@ -25,9 +26,12 @@ use function array_combine;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function count;
 use function in_array;
 use function is_string;
 use function microtime;
+use function reset;
+use function stripos;
 use function strpos;
 use function substr;
 
@@ -346,6 +350,31 @@ class Request implements CommandWithChildren
                 $tagCommands
             )
         );
+    }
+
+    public function controllerOrJobName(): ?string
+    {
+        $controllerOrJobSpanNames = array_map(
+            static function (Span $span): string {
+                return $span->getName();
+            },
+            array_filter(
+                $this->children,
+                static function (Command $command): bool {
+                    return $command instanceof Span && (
+                        stripos($command->getName(), SpanReference::INSTRUMENT_CONTROLLER) === 0
+                        || stripos($command->getName(), SpanReference::INSTRUMENT_JOB) === 0
+                    );
+                }
+            )
+        );
+
+        if (! count($controllerOrJobSpanNames)) {
+            return null;
+        }
+
+        // Ideally there is only ever one...
+        return reset($controllerOrJobSpanNames);
     }
 
     /**

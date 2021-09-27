@@ -51,4 +51,6 @@ $_SERVER['SERVER_PORT'] = '443';
 $_SERVER['HTTPS']       = 'on';
 $_SERVER['REQUEST_URI'] = '/path/to/my/app';
 
-throw new LogicException('Something went wrong');
+$agent->webTransaction('MyWebTransaction', static function (): void {
+    throw new LogicException('Something went wrong');
+});

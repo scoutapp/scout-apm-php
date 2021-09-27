@@ -16,6 +16,7 @@ use function array_key_exists;
 use function array_map;
 use function array_values;
 use function assert;
+use function explode;
 use function get_class;
 use function sprintf;
 use function str_replace;
@@ -131,6 +132,14 @@ final class ErrorEvent
     {
         $filteredParameters = Config\Helper\RequireValidFilteredUriParameters::fromConfig($config);
 
+        $controllerName = explode(
+            '/',
+            $this->request
+                ? ($this->request->controllerOrJobName() ?? 'UnknownController/UnknownAction')
+                : 'UnknownController/UnknownAction',
+            2
+        );
+
         return [
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
@@ -141,9 +150,9 @@ final class ErrorEvent
             'environment' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $env),
             'trace' => $this->formattedTrace,
             'request_components' => [
-                'module' => 'myModule', // @todo Seems ignored by Dashboard?
-                'controller' => 'myController',
-                'action' => 'myAction8',
+                'module' => 'UnknownModule',
+                'controller' => $controllerName[0],
+                'action' => $controllerName[1],
             ],
             'context' => $this->request ? $this->request->tags() : [],
             'host' => DetermineHostname::withConfig($config),

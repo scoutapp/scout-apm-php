@@ -400,4 +400,42 @@ final class RequestTest extends TestCase
             $request->tags()
         );
     }
+
+    /**
+     * @psalm-return list<array{0: list<string>, 1: ?string}>
+     */
+    public function controllerNameProvider(): array
+    {
+        return [
+            [['Controller/Foo'], 'Controller/Foo'],
+            [['Interesting/Span', 'Controller/Foo'], 'Controller/Foo'],
+            [['Job/Bar'], 'Job/Bar'],
+            [['Interesting/Span', 'Job/Bar'], 'Job/Bar'],
+            // Whichever Controller/Job comes first is the one that is picked
+            [['Controller/Foo', 'Job/Bar'], 'Controller/Foo'],
+            [['Interesting/Span', 'Controller/Foo', 'Job/Bar'], 'Controller/Foo'],
+            [['Job/Bar', 'Controller/Foo'], 'Job/Bar'],
+            [['Interesting/Span', 'Job/Bar', 'Controller/Foo'], 'Job/Bar'],
+            [['Middleware/Baz'], null],
+            [['Interesting/Span', 'Middleware/Baz'], null],
+            [[], null],
+        ];
+    }
+
+    /**
+     * @param list<string> $spans
+     *
+     * @dataProvider controllerNameProvider
+     */
+    public function testControllerNameIsDetermined(array $spans, ?string $expectedName): void
+    {
+        $request = $this->requestFromConfiguration();
+
+        foreach ($spans as $span) {
+            $request->startSpan($span);
+            $request->stopSpan();
+        }
+
+        self::assertSame($expectedName, $request->controllerOrJobName());
+    }
 }
