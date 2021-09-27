@@ -44,6 +44,8 @@ $agent = Agent::fromConfig($config, $logger);
 
 $agent->connect();
 
+$agent->tagRequest('myTag', 'myTagValue');
+
 $_SERVER['HTTP_HOST']   = 'my-test-site';
 $_SERVER['SERVER_PORT'] = '443';
 $_SERVER['HTTPS']       = 'on';

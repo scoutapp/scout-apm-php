@@ -145,7 +145,7 @@ final class ErrorEvent
                 'controller' => 'myController',
                 'action' => 'myAction8',
             ],
-            'context' => ['ctx1' => 'ctx2'], // @todo what is this?
+            'context' => $this->request ? $this->request->tags() : [],
             'host' => DetermineHostname::withConfig($config),
             'revision_sha' => RootPackageGitSha::find($config),
         ];

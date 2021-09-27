@@ -382,4 +382,22 @@ final class RequestTest extends TestCase
         $children = TestHelper::childrenForCommand($firstSpan);
         self::assertCount(0, $children);
     }
+
+    public function testTagsCanBeRetrieved(): void
+    {
+        $request = $this->requestFromConfiguration();
+
+        $request->startSpan('Foo');
+        $request->tag('a', 'a');
+        $request->tag('b', 'b');
+        $request->stopSpan();
+
+        self::assertEquals(
+            [
+                'a' => 'a',
+                'b' => 'b',
+            ],
+            $request->tags()
+        );
+    }
 }

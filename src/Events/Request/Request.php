@@ -21,6 +21,8 @@ use Scoutapm\Helper\RecursivelyCountSpans;
 use Scoutapm\Helper\Superglobals;
 use Scoutapm\Helper\Timer;
 
+use function array_combine;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function in_array;
@@ -318,6 +320,32 @@ class Request implements CommandWithChildren
     public function tag(string $tagName, $value): void
     {
         $this->appendChild(new TagRequest($tagName, $value, $this->id));
+    }
+
+    /** @return array<string, string> */
+    public function tags(): array
+    {
+        $tagCommands = array_filter(
+            $this->children,
+            static function (Command $command): bool {
+                return $command instanceof Tag;
+            }
+        );
+
+        return array_combine(
+            array_map(
+                static function (Tag $tag): string {
+                    return $tag->getTag();
+                },
+                $tagCommands
+            ),
+            array_map(
+                static function (Tag $tag): string {
+                    return $tag->getValue();
+                },
+                $tagCommands
+            )
+        );
     }
 
     /**
