@@ -15,6 +15,7 @@ use function is_array;
 use function is_object;
 use function is_scalar;
 use function sprintf;
+use function strtolower;
 
 use const ARRAY_FILTER_USE_KEY;
 
@@ -30,10 +31,12 @@ final class FilterParameters
      */
     public static function forUriReportingConfiguration(array $parameterKeysToBeFiltered, array $parameters): array
     {
+        $lowercasedParameterKeysToBeFiltered = array_map('strtolower', $parameterKeysToBeFiltered);
+
         return array_filter(
             $parameters,
-            static function (string $key) use ($parameterKeysToBeFiltered): bool {
-                return ! in_array($key, $parameterKeysToBeFiltered, true);
+            static function (string $key) use ($lowercasedParameterKeysToBeFiltered): bool {
+                return ! in_array(strtolower($key), $lowercasedParameterKeysToBeFiltered, true);
             },
             ARRAY_FILTER_USE_KEY
         );

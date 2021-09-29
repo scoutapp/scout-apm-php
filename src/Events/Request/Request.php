@@ -108,7 +108,7 @@ class Request implements CommandWithChildren
     {
         return new self(
             self::requireValidUriReportingValue($config),
-            Config\Helper\RequireValidFilteredUriParameters::fromConfig($config),
+            Config\Helper\RequireValidFilteredParameters::fromConfigForUris($config),
             $override
         );
     }

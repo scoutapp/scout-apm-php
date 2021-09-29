@@ -58,6 +58,7 @@ class Config
             ConfigKey::URI_FILTERED_PARAMETERS => new CoerceJson(),
             ConfigKey::ERRORS_ENABLED => new CoerceBoolean(),
             ConfigKey::ERRORS_IGNORED_EXCEPTIONS => new CoerceJson(),
+            ConfigKey::ERRORS_FILTERED_PARAMETERS => new CoerceJson(),
         ];
     }
 

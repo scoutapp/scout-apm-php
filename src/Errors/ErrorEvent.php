@@ -130,7 +130,7 @@ final class ErrorEvent
      */
     public function toJsonableArray(Config $config, array $session, array $env, array $request): array
     {
-        $filteredParameters = Config\Helper\RequireValidFilteredUriParameters::fromConfig($config);
+        $filteredParameters = Config\Helper\RequireValidFilteredParameters::fromConfigForErrors($config);
 
         $controllerName = explode(
             '/',
