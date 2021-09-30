@@ -17,7 +17,7 @@ use function uniqid;
 /** @covers \Scoutapm\Errors\ErrorEvent */
 final class ErrorEventTest extends TestCase
 {
-    public function testToJsonableArrayWithMetadata(): void
+    public function testToJsonableArray(): void
     {
         $_SERVER['HTTPS']     = 'on';
         $_SERVER['HTTP_HOST'] = 'the-great-website';
@@ -29,8 +29,13 @@ final class ErrorEventTest extends TestCase
 
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
-        $request          = Request::fromConfigAndOverrideTime($config);
+
+        $request = Request::fromConfigAndOverrideTime($config);
+        $request->startSpan('Controller/MyGreatController');
+        $request->stopSpan();
+        $request->tag('ContextTag', 'ContextValue');
         $request->overrideRequestUri('/path/to/thething');
+
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
             ->toJsonableArray(
                 $config,
@@ -74,15 +79,15 @@ final class ErrorEventTest extends TestCase
         self::assertTrue(array_key_exists('request_components', $jsonableArrayForEvent));
         self::assertEquals(
             [
-                'module' => 'myModule',
-                'controller' => 'myController',
-                'action' => 'myAction8',
+                'module' => 'UnknownModule',
+                'controller' => 'Controller',
+                'action' => 'MyGreatController',
             ],
             $jsonableArrayForEvent['request_components']
         );
         self::assertTrue(array_key_exists('context', $jsonableArrayForEvent));
         self::assertEquals(
-            ['ctx1' => 'ctx2'],
+            ['ContextTag' => 'ContextValue'],
             $jsonableArrayForEvent['context']
         );
         self::assertSame('zappa1', $jsonableArrayForEvent['host']);

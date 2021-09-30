@@ -148,13 +148,13 @@ class Request implements CommandWithChildren
 
         $requestUri = $server['REQUEST_URI'] ?? null;
 
-        if (is_string($requestUri)) {
+        if (is_string($requestUri) && $requestUri !== '') {
             return $requestUri;
         }
 
         $origPathInfo = $server['ORIG_PATH_INFO'] ?? null;
 
-        if (is_string($origPathInfo)) {
+        if (is_string($origPathInfo) && $origPathInfo !== '') {
             return $origPathInfo;
         }
 

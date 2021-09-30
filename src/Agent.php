@@ -62,7 +62,7 @@ final class Agent implements ScoutApmAgent
     private $request;
     /** @var Connector */
     private $connector;
-    /** @var LoggerInterface */
+    /** @var FilteredLogLevelDecorator */
     private $logger;
     /** @var IgnoredEndpoints Class that helps check incoming http paths vs. the configured ignore list*/
     private $ignoredEndpoints;
@@ -84,7 +84,7 @@ final class Agent implements ScoutApmAgent
     private function __construct(
         Config $configuration,
         Connector $connector,
-        LoggerInterface $logger,
+        FilteredLogLevelDecorator $logger,
         ExtensionCapabilities $phpExtension,
         CacheInterface $cache,
         LocateFileOrFolder $locateFileOrFolder,
@@ -97,13 +97,6 @@ final class Agent implements ScoutApmAgent
         $this->cache              = $cache;
         $this->locateFileOrFolder = $locateFileOrFolder;
         $this->errorHandling      = $errorHandling;
-
-        if (! $this->logger instanceof FilteredLogLevelDecorator) {
-            $this->logger = new FilteredLogLevelDecorator(
-                $this->logger,
-                $this->config->get(ConfigKey::LOG_LEVEL)
-            );
-        }
 
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
@@ -149,6 +142,13 @@ final class Agent implements ScoutApmAgent
         ?LocateFileOrFolder $locateFileOrFolder = null,
         ?ErrorHandling $errorHandling = null
     ): self {
+        if (! $logger instanceof FilteredLogLevelDecorator) {
+            $logger = new FilteredLogLevelDecorator(
+                $logger,
+                (string) $config->get(ConfigKey::LOG_LEVEL)
+            );
+        }
+
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),

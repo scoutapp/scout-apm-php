@@ -7,10 +7,10 @@ namespace Scoutapm\UnitTests\Errors\ScoutClient;
 use PHPUnit\Framework\TestCase;
 
 /** @covers \Scoutapm\Errors\ScoutClient\HttpErrorReportingClient */
-final class HttpErrorReportingClient extends TestCase
+final class HttpErrorReportingClientTest extends TestCase
 {
-    public function testSendErrorToScout(): void
+    public function testSendingErrorToScout(): void
     {
-        self::markTestIncomplete(__METHOD__); // @todo to be implemented
+        self::markTestIncomplete(__METHOD__); // @todo tests needed
     }
 }

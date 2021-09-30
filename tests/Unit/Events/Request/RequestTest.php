@@ -438,4 +438,9 @@ final class RequestTest extends TestCase
 
         self::assertSame($expectedName, $request->controllerOrJobName());
     }
+
+    public function testRequestPathCanBeDetermined(): void
+    {
+        self::markTestIncomplete(__METHOD__); // @todo needs tests
+    }
 }

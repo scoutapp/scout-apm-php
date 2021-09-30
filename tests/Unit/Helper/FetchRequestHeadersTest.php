@@ -10,7 +10,7 @@ use Scoutapm\Helper\FetchRequestHeaders;
 /** @covers \Scoutapm\Helper\FetchRequestHeaders */
 final class FetchRequestHeadersTest extends TestCase
 {
-    public function testFromArray(): void
+    public function testFromServerGlobal(): void
     {
         $oldServer = $_SERVER;
         $_SERVER   = [

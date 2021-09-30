@@ -90,6 +90,8 @@ final class ScoutErrorHandling implements ErrorHandling
         return in_array(get_class($exception), $ignoredExceptions, true);
     }
 
+    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
+
     private function batchSendSize(): int
     {
         $batchSize = (int) $this->config->get(Config\ConfigKey::ERRORS_BATCH_SIZE);
@@ -101,6 +103,8 @@ final class ScoutErrorHandling implements ErrorHandling
         // @todo Should there be a max batch size, e.g. 20?
         return $batchSize;
     }
+
+    // phpcs:enable
 
     public function changeCurrentRequest(Request $request): void
     {
