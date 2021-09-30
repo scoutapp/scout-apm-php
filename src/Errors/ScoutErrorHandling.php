@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Scoutapm\Errors;
 
 use ErrorException;
-use GuzzleHttp\Client as GuzzleClient;
+use Http\Discovery\Psr17FactoryDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
-use Scoutapm\Errors\ScoutClient\GuzzleErrorReportingClient;
+use Scoutapm\Errors\ScoutClient\HttpErrorReportingClient;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
@@ -59,8 +60,10 @@ final class ScoutErrorHandling implements ErrorHandling
     public static function factory(Config $config, LoggerInterface $logger): self
     {
         return new self(
-            new GuzzleErrorReportingClient(
-                new GuzzleClient(),
+            new HttpErrorReportingClient(
+                Psr18ClientDiscovery::find(),
+                Psr17FactoryDiscovery::findRequestFactory(),
+                Psr17FactoryDiscovery::findStreamFactory(),
                 new CompressPayload(),
                 $config,
                 $logger,
