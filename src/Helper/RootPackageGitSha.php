@@ -18,6 +18,7 @@ use function method_exists;
 /** @internal */
 final class RootPackageGitSha
 {
+    /** @todo refactor to an injectable service */
     public static function find(Config $config): string
     {
         /** @var mixed $revisionShaConfiguration */

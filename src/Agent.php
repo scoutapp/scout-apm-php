@@ -36,6 +36,8 @@ use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\Superglobals\Superglobals;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\MongoDB\QueryTimeCollector;
 use Throwable;
@@ -80,6 +82,8 @@ final class Agent implements ScoutApmAgent
     private $locateFileOrFolder;
     /** @var ErrorHandling */
     private $errorHandling;
+    /** @var Superglobals */
+    private $superglobals;
 
     private function __construct(
         Config $configuration,
@@ -88,7 +92,8 @@ final class Agent implements ScoutApmAgent
         ExtensionCapabilities $phpExtension,
         CacheInterface $cache,
         LocateFileOrFolder $locateFileOrFolder,
-        ErrorHandling $errorHandling
+        ErrorHandling $errorHandling,
+        Superglobals $superglobals
     ) {
         $this->config             = $configuration;
         $this->connector          = $connector;
@@ -97,6 +102,7 @@ final class Agent implements ScoutApmAgent
         $this->cache              = $cache;
         $this->locateFileOrFolder = $locateFileOrFolder;
         $this->errorHandling      = $errorHandling;
+        $this->superglobals       = $superglobals;
 
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
@@ -149,6 +155,8 @@ final class Agent implements ScoutApmAgent
             );
         }
 
+        $superglobals = SuperglobalsArrays::fromGlobalState();
+
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
@@ -156,7 +164,8 @@ final class Agent implements ScoutApmAgent
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolder(),
-            $errorHandling ?? ScoutErrorHandling::factory($config, $logger)
+            $errorHandling ?? ScoutErrorHandling::factory($config, $logger, $superglobals),
+            $superglobals
         );
     }
 
@@ -544,7 +553,7 @@ final class Agent implements ScoutApmAgent
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config,
                 $this->phpExtension,
-                new FindApplicationRoot($this->locateFileOrFolder, $this->config)
+                new FindApplicationRoot($this->locateFileOrFolder, $this->config, $this->superglobals)
             ));
 
             $this->markMetadataSent();

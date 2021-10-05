@@ -9,7 +9,7 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
 use Scoutapm\Helper\RootPackageGitSha;
-use Scoutapm\Helper\Superglobals;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Throwable;
 
 use function array_key_exists;
@@ -99,9 +99,9 @@ final class ErrorEvent
     }
 
     /** @return non-empty-string */
-    private function buildRequestUri(): string
+    private function buildRequestUri(Superglobals $superglobals): string
     {
-        $server  = Superglobals::server();
+        $server  = $superglobals->server();
         $isHttps = array_key_exists('HTTPS', $server) && $server['HTTPS'] === 'on';
         $port    = array_key_exists('SERVER_PORT', $server) ? (int) $server['SERVER_PORT'] : 0;
 
@@ -121,14 +121,8 @@ final class ErrorEvent
         return $builtUrl;
     }
 
-    /**
-     * @param array<array-key, mixed> $session
-     * @param array<array-key, mixed> $env
-     * @param array<array-key, mixed> $request
-     *
-     * @psalm-return ErrorEventJsonableArray
-     */
-    public function toJsonableArray(Config $config, array $session, array $env, array $request): array
+    /** @psalm-return ErrorEventJsonableArray */
+    public function toJsonableArray(Config $config, Superglobals $superglobals): array
     {
         $filteredParameters = Config\Helper\RequireValidFilteredParameters::fromConfigForErrors($config);
 
@@ -144,10 +138,10 @@ final class ErrorEvent
             'exception_class' => $this->exceptionClass,
             'message' => $this->message,
             'request_id' => $this->request ? $this->request->id()->toString() : null,
-            'request_uri' => $this->buildRequestUri(),
-            'request_params' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $request, 4),
-            'request_session' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $session),
-            'environment' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $env),
+            'request_uri' => $this->buildRequestUri($superglobals),
+            'request_params' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $superglobals->request(), 4),
+            'request_session' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $superglobals->session()),
+            'environment' => FilterParameters::flattenedForUriReportingConfiguration($filteredParameters, $superglobals->env()),
             'trace' => $this->formattedTrace,
             'request_components' => [
                 'module' => 'UnknownModule',

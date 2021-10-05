@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Helper;
+namespace Scoutapm\Helper\Superglobals;
 
 use function array_combine;
 use function array_filter;
@@ -12,8 +12,44 @@ use function is_object;
 use function is_scalar;
 use function method_exists;
 
-final class Superglobals
+/**
+ * @internal This is not covered by BC promise
+ */
+final class SuperglobalsArrays implements Superglobals
 {
+    /** @var array<array-key, mixed> */
+    private $session;
+    /** @var array<array-key, mixed> */
+    private $request;
+    /** @var array<string, string> */
+    private $env;
+    /** @var array<string, string> */
+    private $server;
+
+    /**
+     * @param array<array-key, mixed> $session
+     * @param array<array-key, mixed> $request
+     * @param array<string, string>   $env
+     * @param array<string, string>   $server
+     */
+    public function __construct(array $session, array $request, array $env, array $server)
+    {
+        $this->session = $session;
+        $this->request = $request;
+        $this->env     = $env;
+        $this->server  = $server;
+    }
+
+    public static function fromGlobalState(): self
+    {
+        return new self(
+            $_SESSION ?? [],
+            $_REQUEST,
+            self::convertKeysAndValuesToStrings($_ENV),
+            self::convertKeysAndValuesToStrings($_SERVER)
+        );
+    }
+
     /**
      * @param array<array-key, mixed> $mixedArray
      *
@@ -46,26 +82,26 @@ final class Superglobals
     }
 
     /** @return array<array-key, mixed> */
-    public static function session(): array
+    public function session(): array
     {
-        return $_SESSION ?? [];
+        return $this->session;
     }
 
     /** @return array<array-key, mixed> */
-    public static function request(): array
+    public function request(): array
     {
-        return $_REQUEST;
+        return $this->request;
     }
 
     /** @return array<string, string> */
-    public static function env(): array
+    public function env(): array
     {
-        return self::convertKeysAndValuesToStrings($_ENV);
+        return $this->env;
     }
 
     /** @return array<string, string> */
-    public static function server(): array
+    public function server(): array
     {
-        return self::convertKeysAndValuesToStrings($_SERVER);
+        return $this->server;
     }
 }

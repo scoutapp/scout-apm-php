@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
+use Scoutapm\Helper\Superglobals\Superglobals;
+
 use function array_combine;
 use function array_filter;
 use function array_keys;
@@ -24,10 +26,12 @@ final class FetchRequestHeaders
      * @internal
      *
      * @return array<string, string>
+     *
+     * @todo refactor to an injectable service
      */
-    public static function fromServerGlobal(): array
+    public static function fromServerGlobal(Superglobals $superglobals): array
     {
-        return self::fromArray(Superglobals::server());
+        return self::fromArray($superglobals->server());
     }
 
     /**

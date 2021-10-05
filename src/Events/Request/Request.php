@@ -19,7 +19,7 @@ use Scoutapm\Helper\FetchRequestHeaders;
 use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
-use Scoutapm\Helper\Superglobals;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Helper\Timer;
 
 use function array_combine;
@@ -144,7 +144,8 @@ class Request implements CommandWithChildren
 
     private function determineRequestPathFromServerGlobal(): string
     {
-        $server = Superglobals::server();
+        /** @todo this should be injected! */
+        $server = SuperglobalsArrays::fromGlobalState()->server();
 
         $requestUri = $server['REQUEST_URI'] ?? null;
 
@@ -198,7 +199,8 @@ class Request implements CommandWithChildren
     /** @throws Exception */
     private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds): void
     {
-        $headers = FetchRequestHeaders::fromServerGlobal();
+        /** @todo this should be injected! */
+        $headers = FetchRequestHeaders::fromServerGlobal(SuperglobalsArrays::fromGlobalState());
 
         foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
             if (! array_key_exists($headerToCheck, $headers)) {

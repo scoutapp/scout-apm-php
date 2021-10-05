@@ -15,6 +15,7 @@ use Scoutapm\Errors\ScoutClient\HttpErrorReportingClient;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Throwable;
 
 use function count;
@@ -57,7 +58,7 @@ final class ScoutErrorHandling implements ErrorHandling
         $this->logger          = $logger;
     }
 
-    public static function factory(Config $config, LoggerInterface $logger): self
+    public static function factory(Config $config, LoggerInterface $logger, Superglobals $superglobals): self
     {
         return new self(
             new HttpErrorReportingClient(
@@ -67,7 +68,8 @@ final class ScoutErrorHandling implements ErrorHandling
                 new CompressPayload(),
                 $config,
                 $logger,
-                new FindApplicationRoot(new LocateFileOrFolder(), $config)
+                new FindApplicationRoot(new LocateFileOrFolder(), $config, $superglobals),
+                $superglobals
             ),
             $config,
             $logger

@@ -9,6 +9,7 @@ use RuntimeException;
 use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 use function array_key_exists;
 use function get_class;
@@ -19,9 +20,6 @@ final class ErrorEventTest extends TestCase
 {
     public function testToJsonableArray(): void
     {
-        $_SERVER['HTTPS']     = 'on';
-        $_SERVER['HTTP_HOST'] = 'the-great-website';
-
         $config = Config::fromArray([
             Config\ConfigKey::HOSTNAME => 'zappa1',
             Config\ConfigKey::REVISION_SHA => 'abcabc',
@@ -39,13 +37,19 @@ final class ErrorEventTest extends TestCase
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
             ->toJsonableArray(
                 $config,
-                ['sessionKey' => 'sessionValue'],
-                ['envKey' => 'envValue'],
-                [
-                    'paramKey' => 'paramValue',
-                    'paramList' => ['paramListItem1', 'paramListItem2'],
-                    'paramDict' => ['paramDictKey' => 'paramDictValue'],
-                ]
+                new SuperglobalsArrays(
+                    ['sessionKey' => 'sessionValue'],
+                    [
+                        'paramKey' => 'paramValue',
+                        'paramList' => ['paramListItem1', 'paramListItem2'],
+                        'paramDict' => ['paramDictKey' => 'paramDictValue'],
+                    ],
+                    ['envKey' => 'envValue'],
+                    [
+                        'HTTPS' => 'on',
+                        'HTTP_HOST' => 'the-great-website',
+                    ]
+                )
             );
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);

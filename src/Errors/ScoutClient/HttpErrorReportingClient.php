@@ -15,7 +15,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Helper\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
-use Scoutapm\Helper\Superglobals;
+use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_map;
 use function count;
@@ -46,6 +46,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
     private $findApplicationRoot;
     /** @var string|null */
     private $memoizedErrorsUrl;
+    /** @var Superglobals */
+    private $superglobals;
 
     public function __construct(
         ClientInterface $client,
@@ -54,7 +56,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         CompressPayload $compressPayload,
         Config $config,
         LoggerInterface $logger,
-        FindApplicationRoot $findApplicationRoot
+        FindApplicationRoot $findApplicationRoot,
+        Superglobals $superglobals
     ) {
         $this->client              = $client;
         $this->requestFactory      = $requestFactory;
@@ -63,6 +66,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         $this->config              = $config;
         $this->logger              = $logger;
         $this->findApplicationRoot = $findApplicationRoot;
+        $this->superglobals        = $superglobals;
     }
 
     public function sendErrorToScout(ErrorEvent $errorEvent): void // @todo check if we want to bulk send them - probably
@@ -128,9 +132,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
                         function (ErrorEvent $errorEvent): array {
                             return $errorEvent->toJsonableArray(
                                 $this->config,
-                                Superglobals::session(), // @todo probably inject session/env
-                                Superglobals::env(), // @todo probably inject session/env
-                                Superglobals::request() // @todo probably inject session/env
+                                $this->superglobals
                             );
                         },
                         $errorEvent

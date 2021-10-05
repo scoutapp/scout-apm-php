@@ -6,12 +6,15 @@ namespace Scoutapm\Helper;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_key_exists;
 use function is_string;
 
 /**
  * @internal This is not covered by BC promise
+ *
+ * @todo define an interface here
  */
 class FindApplicationRoot
 {
@@ -19,11 +22,14 @@ class FindApplicationRoot
     private $locateFileOrFolder;
     /** @var Config */
     private $config;
+    /** @var Superglobals */
+    private $superglobals;
 
-    public function __construct(LocateFileOrFolder $locateFileOrFolder, Config $config)
+    public function __construct(LocateFileOrFolder $locateFileOrFolder, Config $config, Superglobals $superglobals)
     {
         $this->locateFileOrFolder = $locateFileOrFolder;
         $this->config             = $config;
+        $this->superglobals       = $superglobals;
     }
 
     public function __invoke(): string
@@ -39,7 +45,7 @@ class FindApplicationRoot
             return $composerJsonLocation;
         }
 
-        $server = Superglobals::server();
+        $server = $this->superglobals->server();
         if (! array_key_exists('DOCUMENT_ROOT', $server)) {
             return '';
         }

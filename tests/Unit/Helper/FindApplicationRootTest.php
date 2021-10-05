@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 /** @covers \Scoutapm\Helper\FindApplicationRoot */
 final class FindApplicationRootTest extends TestCase
@@ -25,14 +26,22 @@ final class FindApplicationRootTest extends TestCase
 
     public function testConfigurationOverridesApplicationRoot(): void
     {
-        $findApplicationRoot = new FindApplicationRoot($this->locateFileOrFolder, Config::fromArray([Config\ConfigKey::APPLICATION_ROOT => '/my/configured/app/root']));
+        $findApplicationRoot = new FindApplicationRoot(
+            $this->locateFileOrFolder,
+            Config::fromArray([Config\ConfigKey::APPLICATION_ROOT => '/my/configured/app/root']),
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+        );
 
         self::assertSame('/my/configured/app/root', ($findApplicationRoot)());
     }
 
     public function testComposerJsonLocationCanBeUsedAsApplicationRoot(): void
     {
-        $findApplicationRoot = new FindApplicationRoot($this->locateFileOrFolder, Config::fromArray([]));
+        $findApplicationRoot = new FindApplicationRoot(
+            $this->locateFileOrFolder,
+            Config::fromArray([]),
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+        );
 
         $this->locateFileOrFolder
             ->expects(self::once())
@@ -45,15 +54,21 @@ final class FindApplicationRootTest extends TestCase
 
     public function testMissingDocumentRootInServerWillReturnEmptyString(): void
     {
-        unset($_SERVER['DOCUMENT_ROOT']);
-        $findApplicationRoot = new FindApplicationRoot($this->locateFileOrFolder, Config::fromArray([]));
+        $findApplicationRoot = new FindApplicationRoot(
+            $this->locateFileOrFolder,
+            Config::fromArray([]),
+            new SuperglobalsArrays([], [], [], [])
+        );
         self::assertSame('', ($findApplicationRoot)());
     }
 
     public function testDocumentRootIsReturned(): void
     {
-        $_SERVER['DOCUMENT_ROOT'] = '/my/document/root/path';
-        $findApplicationRoot      = new FindApplicationRoot($this->locateFileOrFolder, Config::fromArray([]));
+        $findApplicationRoot = new FindApplicationRoot(
+            $this->locateFileOrFolder,
+            Config::fromArray([]),
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+        );
         self::assertSame('/my/document/root/path', ($findApplicationRoot)());
     }
 }

@@ -12,6 +12,7 @@ use function gethostname;
 /** @internal */
 final class DetermineHostname
 {
+    /** @todo refactor to an injectable service */
     public static function withConfig(Config $config): string
     {
         return (string) ($config->get(ConfigKey::HOSTNAME) ?? gethostname());

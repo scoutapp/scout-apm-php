@@ -9,6 +9,11 @@ use function file_exists;
 use function is_readable;
 use function realpath;
 
+/**
+ * @internal Not covered by BC promise
+ *
+ * @todo define an interface here
+ */
 class LocateFileOrFolder
 {
     /**
