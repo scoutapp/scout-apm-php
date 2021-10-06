@@ -2,19 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Helper;
+namespace Scoutapm\Helper\LocateFileOrFolder;
 
-use function dirname;
-use function file_exists;
-use function is_readable;
-use function realpath;
-
-/**
- * @internal Not covered by BC promise
- *
- * @todo define an interface here
- */
-class LocateFileOrFolder
+/** @internal This is not covered by BC promise */
+interface LocateFileOrFolder
 {
     /**
      * Try to locate a file or folder in any parent directory (upwards of this library itself)
@@ -38,33 +29,8 @@ class LocateFileOrFolder
      *  - /home/user/composer.json (Fail, doesn't exist)
      *  - /home/composer.json (Fail, doesn't exist)
      *  - /composer.json (Fail, doesn't exist, reached "root", so return `null`)
+     *
+     * @internal This is not covered by BC promise
      */
-    public function __invoke(string $fileOrFolder, int $skipLevels = 3): ?string
-    {
-        $dir = __DIR__;
-
-        // Starting 3 levels up will avoid finding scout-apm-php's own contents, speeding up the process
-        if ($skipLevels > 0) {
-            $dir = dirname(__DIR__, $skipLevels);
-        }
-
-        $rootOrHome = '/';
-
-        while (dirname($dir) !== $dir && $dir !== $rootOrHome) {
-            $fileOrFolderAttempted = $dir . '/' . $fileOrFolder;
-            if (file_exists($fileOrFolderAttempted) && is_readable($fileOrFolderAttempted)) {
-                $realPath = realpath($dir);
-
-                if ($realPath === false) {
-                    return null;
-                }
-
-                return $realPath;
-            }
-
-            $dir = dirname($dir);
-        }
-
-        return null;
-    }
+    public function __invoke(string $fileOrFolder, int $skipLevels = 3): ?string;
 }

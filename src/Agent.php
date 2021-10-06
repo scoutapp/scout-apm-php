@@ -38,7 +38,8 @@ use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
 use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
@@ -170,7 +171,7 @@ final class Agent implements ScoutApmAgent
             $logger,
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
-            $locateFileOrFolder ?? new LocateFileOrFolder(),
+            $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
             $errorHandling ?? ScoutErrorHandling::factory($config, $logger, $superglobals),
             $superglobals
         );

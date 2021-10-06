@@ -8,7 +8,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 /** @covers \Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride */

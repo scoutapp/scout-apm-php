@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
 
 use function realpath;
 
-/** @covers \Scoutapm\Helper\LocateFileOrFolder */
+/** @covers \Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem */
 final class LocateFileOrFolderTest extends TestCase
 {
     public function testInvokeFindsComposerPathCorrectly(): void
     {
-        $composerLocation = (new LocateFileOrFolder())->__invoke('composer.json', 0);
+        $composerLocation = (new LocateFileOrFolderUsingFilesystem())->__invoke('composer.json', 0);
         self::assertSame(
             realpath(__DIR__ . '/../../../'),
             $composerLocation
