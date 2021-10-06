@@ -14,6 +14,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanId;
 use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Events\Tag\TagSpan;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\RecursivelyCountSpans;
 
 use function uniqid;
@@ -30,8 +31,8 @@ final class RecursivelyCountSpansTest extends TestCase
      */
     public function commandAndExpectedSpansCountProvider(): array
     {
-        $newRequest       = static function (): Request {
-            return Request::fromConfigAndOverrideTime(Config::fromArray([]));
+        $newRequest       = function (): Request {
+            return Request::fromConfigAndOverrideTime(Config::fromArray([]), $this->createMock(FindRequestHeaders::class));
         };
         $spanWithChildren = new Span($newRequest(), uniqid('span', true), RequestId::new());
         $spanWithChildren->appendChild(new Span($newRequest(), uniqid('span', true), RequestId::new()));

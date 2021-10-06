@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
-use Scoutapm\Helper\FetchRequestHeaders;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
-/** @covers \Scoutapm\Helper\FetchRequestHeaders */
-final class FetchRequestHeadersTest extends TestCase
+/** @covers \Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal */
+final class FindRequestHeadersUsingServerGlobalTest extends TestCase
 {
     public function testFromServerGlobal(): void
     {
@@ -23,7 +23,7 @@ final class FetchRequestHeadersTest extends TestCase
                 'Accept' => '*/*',
                 'X-Something-Custom' => 'Something custom',
             ],
-            FetchRequestHeaders::fromServerGlobal(new SuperglobalsArrays(
+            (new FindRequestHeadersUsingServerGlobal(new SuperglobalsArrays(
                 [],
                 [],
                 [],
@@ -37,7 +37,7 @@ final class FetchRequestHeadersTest extends TestCase
                     'HTTP_X_SOMETHING_EMPTY' => '',
                     'HTTP_X_SOMETHING_CUSTOM' => 'Something custom',
                 ]
-            ))
+            )))->__invoke()
         );
     }
 }

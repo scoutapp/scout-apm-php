@@ -10,6 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
@@ -27,7 +28,7 @@ final class ErrorEventTest extends TestCase
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
 
-        $request = Request::fromConfigAndOverrideTime($config);
+        $request = Request::fromConfigAndOverrideTime($config, $this->createMock(FindRequestHeaders::class));
         $request->startSpan('Controller/MyGreatController');
         $request->stopSpan();
         $request->tag('ContextTag', 'ContextValue');

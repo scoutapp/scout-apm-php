@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Events\Request;
 
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\UnitTests\TestHelper;
 
 use function array_key_exists;
@@ -32,11 +35,22 @@ final class RequestTest extends TestCase
 
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
+    /** @var Superglobals&MockObject */
+    private $superglobals;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->superglobals = $this->createMock(Superglobals::class);
+    }
+
     /** @psalm-param array<string, mixed> $configOverrides */
     private function requestFromConfiguration(array $configOverrides = [], ?float $overrideTime = null): Request
     {
         return Request::fromConfigAndOverrideTime(
             Config::fromArray($configOverrides),
+            new FindRequestHeadersUsingServerGlobal($this->superglobals),
             $overrideTime
         );
     }
@@ -332,7 +346,7 @@ final class RequestTest extends TestCase
     public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue): void
     {
         // 2 = 2ms after epoch
-        $_SERVER[$headerName] = $headerValue;
+        $this->superglobals->method('server')->willReturn([$headerName => $headerValue]);
 
         // 0.005 = 5ms after epoch
         $request = $this->requestFromConfiguration([], self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
@@ -352,8 +366,6 @@ final class RequestTest extends TestCase
         }
 
         self::assertTrue($foundTag, 'Could not find queue time tag');
-
-        unset($_SERVER[$headerName]);
     }
 
     public function testSpansAreNotRecordedBelowLeafSpans(): void

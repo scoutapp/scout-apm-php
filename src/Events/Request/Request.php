@@ -15,7 +15,7 @@ use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
-use Scoutapm\Helper\FetchRequestHeaders;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
@@ -66,10 +66,10 @@ class Request implements CommandWithChildren
      * @var string[]
      */
     private $filteredParameters;
+    /** @var FindRequestHeaders */
+    private $findRequestHeaders;
 
     /**
-     * @deprecated Constructor will be made private in future, use {@see \Scoutapm\Events\Request\Request::fromConfigAndOverrideTime}
-     *
      * @param string[] $filteredParameters
      *
      * @throws Exception
@@ -77,7 +77,7 @@ class Request implements CommandWithChildren
      * @psalm-param Config\ConfigKey::URI_REPORTING_* $uriReportingOption
      * @psalm-param list<string> $filteredParameters
      */
-    public function __construct(string $uriReportingOption, array $filteredParameters, ?float $override = null)
+    private function __construct(FindRequestHeaders $findRequestHeaders, string $uriReportingOption, array $filteredParameters, ?float $override = null)
     {
         $this->id = RequestId::new();
 
@@ -86,6 +86,7 @@ class Request implements CommandWithChildren
 
         $this->currentCommand = $this;
 
+        $this->findRequestHeaders = $findRequestHeaders;
         $this->uriReportingOption = $uriReportingOption;
         $this->filteredParameters = $filteredParameters;
     }
@@ -104,9 +105,10 @@ class Request implements CommandWithChildren
         return $uriReportingConfiguration;
     }
 
-    public static function fromConfigAndOverrideTime(Config $config, ?float $override = null): self
+    public static function fromConfigAndOverrideTime(Config $config, FindRequestHeaders $findRequestHeaders, ?float $override = null): self
     {
         return new self(
+            $findRequestHeaders,
             self::requireValidUriReportingValue($config),
             Config\Helper\RequireValidFilteredParameters::fromConfigForUris($config),
             $override
@@ -133,7 +135,11 @@ class Request implements CommandWithChildren
             $this->id,
             $this->startMemory,
             $this->requestUriOverride,
-            $this->spanCount
+            $this->spanCount,
+            $this->leafNodeDepth,
+            $this->uriReportingOption,
+            $this->filteredParameters,
+            $this->findRequestHeaders
         );
     }
 
@@ -199,8 +205,7 @@ class Request implements CommandWithChildren
     /** @throws Exception */
     private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds): void
     {
-        /** @todo this should be injected! */
-        $headers = FetchRequestHeaders::fromServerGlobal(SuperglobalsArrays::fromGlobalState());
+        $headers = ($this->findRequestHeaders)();
 
         foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
             if (! array_key_exists($headerToCheck, $headers)) {

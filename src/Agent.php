@@ -36,6 +36,8 @@ use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Superglobals\Superglobals;
@@ -86,6 +88,8 @@ final class Agent implements ScoutApmAgent
     private $errorHandling;
     /** @var Superglobals */
     private $superglobals;
+    /** @var FindRequestHeaders */
+    private $findRequestHeaders;
 
     private function __construct(
         Config $configuration,
@@ -105,6 +109,7 @@ final class Agent implements ScoutApmAgent
         $this->locateFileOrFolder = $locateFileOrFolder;
         $this->errorHandling      = $errorHandling;
         $this->superglobals       = $superglobals;
+        $this->findRequestHeaders = new FindRequestHeadersUsingServerGlobal($superglobals);
 
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
@@ -519,7 +524,7 @@ final class Agent implements ScoutApmAgent
             $this->request->cleanUp();
         }
 
-        $this->request = Request::fromConfigAndOverrideTime($this->config);
+        $this->request = Request::fromConfigAndOverrideTime($this->config, $this->findRequestHeaders);
 
         $this->errorHandling->changeCurrentRequest($this->request);
     }
