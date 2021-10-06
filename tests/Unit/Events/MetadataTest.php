@@ -17,7 +17,7 @@ use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\Version;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
-use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Timer;

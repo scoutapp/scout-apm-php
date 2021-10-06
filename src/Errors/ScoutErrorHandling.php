@@ -14,7 +14,7 @@ use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutClient\HttpErrorReportingClient;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
-use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Superglobals\Superglobals;
@@ -70,7 +70,7 @@ final class ScoutErrorHandling implements ErrorHandling
                 new CompressPayload(),
                 $config,
                 $logger,
-                new FindApplicationRoot(new LocateFileOrFolder(), $config, $superglobals),
+                new FindApplicationRootWithConfigOverride(new LocateFileOrFolder(), $config, $superglobals),
                 $superglobals,
                 new DetermineHostnameWithConfigOverride($config),
                 new FindRootPackageGitShaWithHerokuAndConfigOverride($config)

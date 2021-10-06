@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Helper;
+namespace Scoutapm\UnitTests\Helper\FindApplicationRoot;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
-use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
-/** @covers \Scoutapm\Helper\FindApplicationRoot */
-final class FindApplicationRootTest extends TestCase
+/** @covers \Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride */
+final class FindApplicationRootWithConfigOverrideTest extends TestCase
 {
     /** @var LocateFileOrFolder&MockObject */
     private $locateFileOrFolder;
@@ -26,7 +26,7 @@ final class FindApplicationRootTest extends TestCase
 
     public function testConfigurationOverridesApplicationRoot(): void
     {
-        $findApplicationRoot = new FindApplicationRoot(
+        $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([Config\ConfigKey::APPLICATION_ROOT => '/my/configured/app/root']),
             new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
@@ -37,7 +37,7 @@ final class FindApplicationRootTest extends TestCase
 
     public function testComposerJsonLocationCanBeUsedAsApplicationRoot(): void
     {
-        $findApplicationRoot = new FindApplicationRoot(
+        $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
             new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
@@ -54,7 +54,7 @@ final class FindApplicationRootTest extends TestCase
 
     public function testMissingDocumentRootInServerWillReturnEmptyString(): void
     {
-        $findApplicationRoot = new FindApplicationRoot(
+        $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
             new SuperglobalsArrays([], [], [], [])
@@ -64,7 +64,7 @@ final class FindApplicationRootTest extends TestCase
 
     public function testDocumentRootIsReturned(): void
     {
-        $findApplicationRoot = new FindApplicationRoot(
+        $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
             new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])

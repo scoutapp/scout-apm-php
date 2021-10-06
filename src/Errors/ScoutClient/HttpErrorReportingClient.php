@@ -14,7 +14,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
-use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\Superglobals;
 

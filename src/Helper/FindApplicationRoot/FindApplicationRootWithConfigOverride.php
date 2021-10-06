@@ -2,21 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Helper;
+namespace Scoutapm\Helper\FindApplicationRoot;
 
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_key_exists;
 use function is_string;
 
-/**
- * @internal This is not covered by BC promise
- *
- * @todo define an interface here
- */
-class FindApplicationRoot
+/** @internal This is not covered by BC promise */
+class FindApplicationRootWithConfigOverride implements FindApplicationRoot
 {
     /** @var LocateFileOrFolder */
     private $locateFileOrFolder;

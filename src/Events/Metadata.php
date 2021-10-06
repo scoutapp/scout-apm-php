@@ -11,7 +11,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
-use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Timer;
 
