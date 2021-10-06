@@ -13,6 +13,7 @@ use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutClient\HttpErrorReportingClient;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
 use Scoutapm\Helper\Superglobals\Superglobals;
@@ -69,7 +70,8 @@ final class ScoutErrorHandling implements ErrorHandling
                 $config,
                 $logger,
                 new FindApplicationRoot(new LocateFileOrFolder(), $config, $superglobals),
-                $superglobals
+                $superglobals,
+                new DetermineHostnameWithConfigOverride($config)
             ),
             $config,
             $logger

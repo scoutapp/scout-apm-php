@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\UnitTests\Helper;
+namespace Scoutapm\UnitTests\Helper\DetermineHostname;
 
 use PHPUnit\Framework\TestCase;
 
-/** @covers \Scoutapm\Helper\DetermineHostname */
-final class DetermineHostnameTest extends TestCase
+/** @covers \Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride */
+final class DetermineHostnameWithConfigOverrideTest extends TestCase
 {
     public function testHostnameWhenConfiguredExplicitly(): void
     {

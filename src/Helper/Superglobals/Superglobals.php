@@ -9,15 +9,31 @@ namespace Scoutapm\Helper\Superglobals;
  */
 interface Superglobals
 {
-    /** @return array<array-key, mixed> */
+    /**
+     * @internal This is not covered by BC promise
+     *
+     * @return array<array-key, mixed>
+     */
     public function session(): array;
 
-    /** @return array<array-key, mixed> */
+    /**
+     * @internal This is not covered by BC promise
+     *
+     * @return array<array-key, mixed>
+     */
     public function request(): array;
 
-    /** @return array<string, string> */
+    /**
+     * @internal This is not covered by BC promise
+     *
+     * @return array<string, string>
+     */
     public function env(): array;
 
-    /** @return array<string, string> */
+    /**
+     * @internal This is not covered by BC promise
+     *
+     * @return array<string, string>
+     */
     public function server(): array;
 }

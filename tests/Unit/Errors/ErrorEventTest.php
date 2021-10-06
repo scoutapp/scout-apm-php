@@ -9,6 +9,7 @@ use RuntimeException;
 use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Events\Request\Request;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 use function array_key_exists;
@@ -20,10 +21,7 @@ final class ErrorEventTest extends TestCase
 {
     public function testToJsonableArray(): void
     {
-        $config = Config::fromArray([
-            Config\ConfigKey::HOSTNAME => 'zappa1',
-            Config\ConfigKey::REVISION_SHA => 'abcabc',
-        ]);
+        $config = Config::fromArray([Config\ConfigKey::REVISION_SHA => 'abcabc']);
 
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
@@ -33,6 +31,9 @@ final class ErrorEventTest extends TestCase
         $request->stopSpan();
         $request->tag('ContextTag', 'ContextValue');
         $request->overrideRequestUri('/path/to/thething');
+
+        $determineHostname = $this->createMock(DetermineHostname::class);
+        $determineHostname->method('__invoke')->willReturn('zappa1');
 
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
             ->toJsonableArray(
@@ -49,7 +50,8 @@ final class ErrorEventTest extends TestCase
                         'HTTPS' => 'on',
                         'HTTP_HOST' => 'the-great-website',
                     ]
-                )
+                ),
+                $determineHostname
             );
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);

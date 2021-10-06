@@ -15,10 +15,11 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
+use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\Timer;
 
-use function gethostname;
 use function json_decode;
 use function json_encode;
 use function putenv;
@@ -39,6 +40,8 @@ final class MetadataTest extends TestCase
     private $phpExtension;
     /** @var FindApplicationRoot&MockObject */
     private $findApplicationRoot;
+    /** @var DetermineHostname&MockObject */
+    private $determineHostname;
     /** @var DateTimeImmutable */
     private $time;
 
@@ -48,6 +51,7 @@ final class MetadataTest extends TestCase
 
         $this->phpExtension        = $this->createMock(ExtensionCapabilities::class);
         $this->findApplicationRoot = $this->createMock(FindApplicationRoot::class);
+        $this->determineHostname   = $this->createMock(DetermineHostname::class);
 
         $this->findApplicationRoot
             ->method('__invoke')
@@ -125,7 +129,13 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->findApplicationRoot)), true)
+            json_decode(json_encode(new Metadata(
+                $this->time,
+                $config,
+                $this->phpExtension,
+                $this->findApplicationRoot,
+                new DetermineHostnameWithConfigOverride($config)
+            )), true)
         );
     }
 
@@ -137,6 +147,12 @@ final class MetadataTest extends TestCase
             ->willReturn(null);
 
         $config = Config::fromArray([]);
+
+        $hostname = uniqid('determined-hostname-', true);
+        $this->determineHostname
+            ->expects(self::once())
+            ->method('__invoke')
+            ->willReturn($hostname);
 
         self::assertEquals(
             [
@@ -151,7 +167,7 @@ final class MetadataTest extends TestCase
                         'framework_version' => '',
                         'environment' => '',
                         'app_server' => '',
-                        'hostname' => gethostname(),
+                        'hostname' => $hostname,
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => '',
@@ -165,7 +181,13 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->findApplicationRoot)), true)
+            json_decode(json_encode(new Metadata(
+                $this->time,
+                $config,
+                $this->phpExtension,
+                $this->findApplicationRoot,
+                $this->determineHostname
+            )), true)
         );
     }
 
@@ -182,7 +204,8 @@ final class MetadataTest extends TestCase
                 $this->time,
                 Config::fromArray([]),
                 $this->phpExtension,
-                $this->findApplicationRoot
+                $this->findApplicationRoot,
+                $this->determineHostname
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

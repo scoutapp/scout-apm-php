@@ -6,7 +6,7 @@ namespace Scoutapm\Errors;
 
 use Scoutapm\Config;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Helper\DetermineHostname;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
 use Scoutapm\Helper\RootPackageGitSha;
 use Scoutapm\Helper\Superglobals\Superglobals;
@@ -122,8 +122,11 @@ final class ErrorEvent
     }
 
     /** @psalm-return ErrorEventJsonableArray */
-    public function toJsonableArray(Config $config, Superglobals $superglobals): array
-    {
+    public function toJsonableArray(
+        Config $config,
+        Superglobals $superglobals,
+        DetermineHostname $determineHostname
+    ): array {
         $filteredParameters = Config\Helper\RequireValidFilteredParameters::fromConfigForErrors($config);
 
         $controllerName = explode(
@@ -149,7 +152,7 @@ final class ErrorEvent
                 'action' => $controllerName[1],
             ],
             'context' => $this->request ? $this->request->tags() : [],
-            'host' => DetermineHostname::withConfig($config),
+            'host' => $determineHostname(),
             'revision_sha' => RootPackageGitSha::find($config),
         ];
     }

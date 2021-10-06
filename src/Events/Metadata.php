@@ -10,7 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
-use Scoutapm\Helper\DetermineHostname;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\RootPackageGitSha;
 use Scoutapm\Helper\Timer;
@@ -40,12 +40,15 @@ final class Metadata implements Command
     private $phpExtension;
     /** @var FindApplicationRoot */
     private $findApplicationRoot;
+    /** @var DetermineHostname */
+    private $determineHostname;
 
     public function __construct(
         DateTimeImmutable $now,
         Config $config,
         ExtensionCapabilities $phpExtension,
-        FindApplicationRoot $findApplicationRoot
+        FindApplicationRoot $findApplicationRoot,
+        DetermineHostname $determineHostname
     ) {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
@@ -53,6 +56,7 @@ final class Metadata implements Command
         $this->config              = $config;
         $this->phpExtension        = $phpExtension;
         $this->findApplicationRoot = $findApplicationRoot;
+        $this->determineHostname   = $determineHostname;
     }
 
     public function cleanUp(): void
@@ -74,7 +78,7 @@ final class Metadata implements Command
             'framework_version' => $this->config->get(ConfigKey::FRAMEWORK_VERSION) ?? '',
             'environment' => '',
             'app_server' => '',
-            'hostname' => DetermineHostname::withConfig($this->config),
+            'hostname' => ($this->determineHostname)(),
             'database_engine' => '',
             'database_adapter' => '',
             'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',

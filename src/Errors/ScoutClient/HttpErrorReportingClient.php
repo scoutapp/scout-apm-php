@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
-use Scoutapm\Helper\DetermineHostname;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\Superglobals\Superglobals;
 
@@ -48,6 +48,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
     private $memoizedErrorsUrl;
     /** @var Superglobals */
     private $superglobals;
+    /** @var DetermineHostname */
+    private $determineHostname;
 
     public function __construct(
         ClientInterface $client,
@@ -57,7 +59,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         Config $config,
         LoggerInterface $logger,
         FindApplicationRoot $findApplicationRoot,
-        Superglobals $superglobals
+        Superglobals $superglobals,
+        DetermineHostname $determineHostname
     ) {
         $this->client              = $client;
         $this->requestFactory      = $requestFactory;
@@ -67,6 +70,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         $this->logger              = $logger;
         $this->findApplicationRoot = $findApplicationRoot;
         $this->superglobals        = $superglobals;
+        $this->determineHostname   = $determineHostname;
     }
 
     public function sendErrorToScout(ErrorEvent $errorEvent): void // @todo check if we want to bulk send them - probably
@@ -119,7 +123,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
                     'name' => $this->config->get(ConfigKey::APPLICATION_NAME),
                 ])
             )
-            ->withHeader('Agent-Hostname', DetermineHostname::withConfig($this->config))
+            ->withHeader('Agent-Hostname', ($this->determineHostname)())
             ->withHeader('Content-Encoding', 'gzip') // Must be gzipped
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('X-Error-Count', (string) count($errorEvent))
@@ -132,7 +136,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
                         function (ErrorEvent $errorEvent): array {
                             return $errorEvent->toJsonableArray(
                                 $this->config,
-                                $this->superglobals
+                                $this->superglobals,
+                                $this->determineHostname
                             );
                         },
                         $errorEvent
