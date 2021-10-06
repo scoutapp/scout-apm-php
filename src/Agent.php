@@ -37,6 +37,7 @@ use Scoutapm\Extension\Version;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
@@ -555,7 +556,8 @@ final class Agent implements ScoutApmAgent
                 $this->config,
                 $this->phpExtension,
                 new FindApplicationRoot($this->locateFileOrFolder, $this->config, $this->superglobals),
-                new DetermineHostnameWithConfigOverride($this->config)
+                new DetermineHostnameWithConfigOverride($this->config),
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($this->config)
             ));
 
             $this->markMetadataSent();

@@ -6,8 +6,8 @@ namespace Scoutapm\UnitTests\Helper;
 
 use PHPUnit\Framework\TestCase;
 
-/** @covers \Scoutapm\Helper\RootPackageGitSha */
-final class RootPackageGitShaTest extends TestCase
+/** @covers \Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride */
+final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCase
 {
     public function testFindingRootPackageGitSha(): void
     {

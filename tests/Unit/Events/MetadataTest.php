@@ -18,11 +18,14 @@ use Scoutapm\Extension\Version;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Timer;
 
 use function json_decode;
 use function json_encode;
 use function putenv;
+use function sha1;
 use function sprintf;
 use function uniqid;
 
@@ -42,6 +45,8 @@ final class MetadataTest extends TestCase
     private $findApplicationRoot;
     /** @var DetermineHostname&MockObject */
     private $determineHostname;
+    /** @var FindRootPackageGitSha&MockObject */
+    private $findRootPackageGitSha;
     /** @var DateTimeImmutable */
     private $time;
 
@@ -49,9 +54,10 @@ final class MetadataTest extends TestCase
     {
         parent::setUp();
 
-        $this->phpExtension        = $this->createMock(ExtensionCapabilities::class);
-        $this->findApplicationRoot = $this->createMock(FindApplicationRoot::class);
-        $this->determineHostname   = $this->createMock(DetermineHostname::class);
+        $this->phpExtension          = $this->createMock(ExtensionCapabilities::class);
+        $this->findApplicationRoot   = $this->createMock(FindApplicationRoot::class);
+        $this->determineHostname     = $this->createMock(DetermineHostname::class);
+        $this->findRootPackageGitSha = $this->createMock(FindRootPackageGitSha::class);
 
         $this->findApplicationRoot
             ->method('__invoke')
@@ -134,7 +140,8 @@ final class MetadataTest extends TestCase
                 $config,
                 $this->phpExtension,
                 $this->findApplicationRoot,
-                new DetermineHostnameWithConfigOverride($config)
+                new DetermineHostnameWithConfigOverride($config),
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
             )), true)
         );
     }
@@ -153,6 +160,12 @@ final class MetadataTest extends TestCase
             ->expects(self::once())
             ->method('__invoke')
             ->willReturn($hostname);
+
+        $gitRevision = sha1(uniqid('git-revision', true));
+        $this->findRootPackageGitSha
+            ->expects(self::once())
+            ->method('__invoke')
+            ->willReturn($gitRevision);
 
         self::assertEquals(
             [
@@ -175,7 +188,7 @@ final class MetadataTest extends TestCase
                         'paas' => '',
                         'application_root' => self::FAKE_APPLICATION_ROOT,
                         'scm_subdirectory' => '',
-                        'git_sha' => InstalledVersions::getRootPackage()['reference'],
+                        'git_sha' => $gitRevision,
                     ],
                     'event_type' => 'scout.metadata',
                     'source' => 'php',
@@ -186,7 +199,8 @@ final class MetadataTest extends TestCase
                 $config,
                 $this->phpExtension,
                 $this->findApplicationRoot,
-                $this->determineHostname
+                $this->determineHostname,
+                $this->findRootPackageGitSha
             )), true)
         );
     }
@@ -198,14 +212,17 @@ final class MetadataTest extends TestCase
 
         putenv('HEROKU_SLUG_COMMIT=' . $testHerokuSlugCommit);
 
+        $config = Config::fromArray([]);
+
         self::assertSame(
             $testHerokuSlugCommit,
             json_decode(json_encode(new Metadata(
                 $this->time,
-                Config::fromArray([]),
+                $config,
                 $this->phpExtension,
                 $this->findApplicationRoot,
-                $this->determineHostname
+                $this->determineHostname,
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

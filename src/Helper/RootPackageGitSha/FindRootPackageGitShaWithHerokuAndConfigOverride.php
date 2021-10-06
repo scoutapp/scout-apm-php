@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Helper;
+namespace Scoutapm\Helper\RootPackageGitSha;
 
 use Composer\InstalledVersions;
 use Scoutapm\Config;
@@ -16,13 +16,20 @@ use function is_string;
 use function method_exists;
 
 /** @internal */
-final class RootPackageGitSha
+final class FindRootPackageGitShaWithHerokuAndConfigOverride implements FindRootPackageGitSha
 {
-    /** @todo refactor to an injectable service */
-    public static function find(Config $config): string
+    /** @var Config */
+    private $config;
+
+    public function __construct(Config $config)
+    {
+        $this->config = $config;
+    }
+
+    public function __invoke(): string
     {
         /** @var mixed $revisionShaConfiguration */
-        $revisionShaConfiguration = $config->get(ConfigKey::REVISION_SHA);
+        $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
         if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
             return $revisionShaConfiguration;
         }

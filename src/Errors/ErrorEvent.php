@@ -8,7 +8,7 @@ use Scoutapm\Config;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FilterParameters;
-use Scoutapm\Helper\RootPackageGitSha;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\Superglobals;
 use Throwable;
 
@@ -125,7 +125,8 @@ final class ErrorEvent
     public function toJsonableArray(
         Config $config,
         Superglobals $superglobals,
-        DetermineHostname $determineHostname
+        DetermineHostname $determineHostname,
+        FindRootPackageGitSha $findRootPackageGitSha
     ): array {
         $filteredParameters = Config\Helper\RequireValidFilteredParameters::fromConfigForErrors($config);
 
@@ -153,7 +154,7 @@ final class ErrorEvent
             ],
             'context' => $this->request ? $this->request->tags() : [],
             'host' => $determineHostname(),
-            'revision_sha' => RootPackageGitSha::find($config),
+            'revision_sha' => $findRootPackageGitSha(),
         ];
     }
 }

@@ -10,6 +10,7 @@ use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 use function array_key_exists;
@@ -21,7 +22,7 @@ final class ErrorEventTest extends TestCase
 {
     public function testToJsonableArray(): void
     {
-        $config = Config::fromArray([Config\ConfigKey::REVISION_SHA => 'abcabc']);
+        $config = Config::fromArray([]);
 
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
@@ -34,6 +35,9 @@ final class ErrorEventTest extends TestCase
 
         $determineHostname = $this->createMock(DetermineHostname::class);
         $determineHostname->method('__invoke')->willReturn('zappa1');
+
+        $findRootPackageGitSha = $this->createMock(FindRootPackageGitSha::class);
+        $findRootPackageGitSha->method('__invoke')->willReturn('abcabc');
 
         $jsonableArrayForEvent = ErrorEvent::fromThrowable($request, $exception)
             ->toJsonableArray(
@@ -51,7 +55,8 @@ final class ErrorEventTest extends TestCase
                         'HTTP_HOST' => 'the-great-website',
                     ]
                 ),
-                $determineHostname
+                $determineHostname,
+                $findRootPackageGitSha
             );
 
         self::assertSame(get_class($exception), $jsonableArrayForEvent['exception_class']);

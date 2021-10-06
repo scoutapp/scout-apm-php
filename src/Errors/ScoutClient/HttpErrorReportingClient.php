@@ -15,6 +15,7 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_map;
@@ -50,6 +51,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
     private $superglobals;
     /** @var DetermineHostname */
     private $determineHostname;
+    /** @var FindRootPackageGitSha */
+    private $findRootPackageGitSha;
 
     public function __construct(
         ClientInterface $client,
@@ -60,17 +63,19 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         LoggerInterface $logger,
         FindApplicationRoot $findApplicationRoot,
         Superglobals $superglobals,
-        DetermineHostname $determineHostname
+        DetermineHostname $determineHostname,
+        FindRootPackageGitSha $findRootPackageGitSha
     ) {
-        $this->client              = $client;
-        $this->requestFactory      = $requestFactory;
-        $this->streamFactory       = $streamFactory;
-        $this->compressPayload     = $compressPayload;
-        $this->config              = $config;
-        $this->logger              = $logger;
-        $this->findApplicationRoot = $findApplicationRoot;
-        $this->superglobals        = $superglobals;
-        $this->determineHostname   = $determineHostname;
+        $this->client                = $client;
+        $this->requestFactory        = $requestFactory;
+        $this->streamFactory         = $streamFactory;
+        $this->compressPayload       = $compressPayload;
+        $this->config                = $config;
+        $this->logger                = $logger;
+        $this->findApplicationRoot   = $findApplicationRoot;
+        $this->superglobals          = $superglobals;
+        $this->determineHostname     = $determineHostname;
+        $this->findRootPackageGitSha = $findRootPackageGitSha;
     }
 
     public function sendErrorToScout(ErrorEvent $errorEvent): void // @todo check if we want to bulk send them - probably
@@ -137,7 +142,8 @@ final class HttpErrorReportingClient implements ErrorReportingClient
                             return $errorEvent->toJsonableArray(
                                 $this->config,
                                 $this->superglobals,
-                                $this->determineHostname
+                                $this->determineHostname,
+                                $this->findRootPackageGitSha
                             );
                         },
                         $errorEvent

@@ -16,6 +16,7 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot;
 use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
 use Scoutapm\Helper\Superglobals\Superglobals;
 use Throwable;
 
@@ -71,7 +72,8 @@ final class ScoutErrorHandling implements ErrorHandling
                 $logger,
                 new FindApplicationRoot(new LocateFileOrFolder(), $config, $superglobals),
                 $superglobals,
-                new DetermineHostnameWithConfigOverride($config)
+                new DetermineHostnameWithConfigOverride($config),
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
             ),
             $config,
             $logger

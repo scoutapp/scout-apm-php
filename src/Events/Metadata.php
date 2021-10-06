@@ -12,7 +12,7 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Helper\DetermineHostname\DetermineHostname;
 use Scoutapm\Helper\FindApplicationRoot;
-use Scoutapm\Helper\RootPackageGitSha;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Timer;
 
 use function array_map;
@@ -42,21 +42,25 @@ final class Metadata implements Command
     private $findApplicationRoot;
     /** @var DetermineHostname */
     private $determineHostname;
+    /** @var FindRootPackageGitSha */
+    private $findRootPackageGitSha;
 
     public function __construct(
         DateTimeImmutable $now,
         Config $config,
         ExtensionCapabilities $phpExtension,
         FindApplicationRoot $findApplicationRoot,
-        DetermineHostname $determineHostname
+        DetermineHostname $determineHostname,
+        FindRootPackageGitSha $findRootPackageGitSha
     ) {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer               = new Timer((float) $now->format('U.u'));
-        $this->config              = $config;
-        $this->phpExtension        = $phpExtension;
-        $this->findApplicationRoot = $findApplicationRoot;
-        $this->determineHostname   = $determineHostname;
+        $this->timer                 = new Timer((float) $now->format('U.u'));
+        $this->config                = $config;
+        $this->phpExtension          = $phpExtension;
+        $this->findApplicationRoot   = $findApplicationRoot;
+        $this->determineHostname     = $determineHostname;
+        $this->findRootPackageGitSha = $findRootPackageGitSha;
     }
 
     public function cleanUp(): void
@@ -86,7 +90,7 @@ final class Metadata implements Command
             'paas' => '',
             'application_root' => ($this->findApplicationRoot)(),
             'scm_subdirectory' => $this->scmSubdirectory(),
-            'git_sha' => RootPackageGitSha::find($this->config),
+            'git_sha' => ($this->findRootPackageGitSha)(),
         ];
     }
 
