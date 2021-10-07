@@ -135,6 +135,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server', $request->requestPath());
     }
 
     public function testOrigPathInfoFromServerGlobalIsTaggedWhenRequestStopped(): void
@@ -149,6 +150,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/orig-path-info-from-server', $tagRequest['value']);
+        self::assertSame('/orig-path-info-from-server', $request->requestPath());
     }
 
     public function testRequestUriFromOverrideIsTaggedWhenRequestStopped(): void
@@ -163,6 +165,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/overridden-request-uri', $tagRequest['value']);
+        self::assertSame('/overridden-request-uri', $request->requestPath());
     }
 
     public function testRequestUriQueryParametersAreNotRemovedWhenFullPathUriReportingIsUsed(): void
@@ -178,6 +181,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server?a=1&b=2', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server?a=1&b=2', $request->requestPath());
     }
 
     /**
@@ -234,6 +238,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server', $request->requestPath());
     }
 
     public function testRequestUriCustomQueryParametersAreFilteredWhenFilteringEnabled(): void
@@ -250,6 +255,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server?notFiltered=anotherValue', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server?notFiltered=anotherValue', $request->requestPath());
     }
 
     public function testJsonSerializes(): void
@@ -449,10 +455,5 @@ final class RequestTest extends TestCase
         }
 
         self::assertSame($expectedName, $request->controllerOrJobName());
-    }
-
-    public function testRequestPathCanBeDetermined(): void
-    {
-        self::markTestIncomplete(__METHOD__); // @todo needs tests
     }
 }
