@@ -136,6 +136,10 @@ final class ScoutErrorHandling implements ErrorHandling
         }
 
         $eventCount = count($this->errorEvents);
+        if (! $eventCount) {
+            return;
+        }
+
         foreach ($this->errorEvents as $errorEvent) {
             $this->reportingClient->sendErrorToScout($errorEvent);
         }
@@ -165,16 +169,16 @@ final class ScoutErrorHandling implements ErrorHandling
         }
 
         $error = error_get_last();
-        if (! is_array($error) || ! in_array($error['type'], self::ERROR_TYPES_TO_CATCH, true)) {
-            return;
+        if (is_array($error) && in_array($error['type'], self::ERROR_TYPES_TO_CATCH, true)) {
+            $this->handleException(new ErrorException(
+                $error['message'],
+                $error['type'],
+                $error['type'],
+                $error['file'],
+                $error['line']
+            ));
         }
 
-        $this->handleException(new ErrorException(
-            $error['message'],
-            $error['type'],
-            $error['type'],
-            $error['file'],
-            $error['line']
-        ));
+        $this->sendCollectedErrors();
     }
 }

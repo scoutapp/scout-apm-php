@@ -77,12 +77,12 @@ final class ErrorEvent
             get_class($throwable),
             $throwable->getMessage(),
             array_values(array_map(
-                /** @psalm-param array{function: string, line: int, file: string, class?: string, type?: '->'|'::'} $trace */
+                /** @psalm-param array{function: string, line?: int, file?: string, class?: string, type?: '->'|'::'} $trace */
                 static function (array $trace): string {
                     return sprintf(
                         '%s:%d:in `%s`',
-                        $trace['file'],
-                        $trace['line'],
+                        array_key_exists('file', $trace) ? $trace['file'] : 'unknown file',
+                        array_key_exists('line', $trace) ? $trace['line'] : 0,
                         array_key_exists('class', $trace) && array_key_exists('type', $trace)
                             ? sprintf(
                                 '%s%s%s',
