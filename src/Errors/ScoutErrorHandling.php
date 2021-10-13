@@ -37,7 +37,6 @@ use const E_USER_ERROR;
 
 final class ScoutErrorHandling implements ErrorHandling
 {
-    // @todo check these, they were copy/pasta from old client
     private const ERROR_TYPES_TO_CATCH = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
 
     /** @var ErrorReportingClient */
