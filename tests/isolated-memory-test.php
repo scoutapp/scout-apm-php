@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\UnitTests\TestLogger;
 
 require __DIR__ . '/../vendor/autoload.php';
 

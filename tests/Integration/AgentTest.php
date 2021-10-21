@@ -11,7 +11,6 @@ use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\Test\TestLogger;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -19,6 +18,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\UnitTests\TestLogger;
 
 use function assert;
 use function extension_loaded;

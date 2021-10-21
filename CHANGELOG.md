@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file, in reverse 
 ### Added
 
 - [#238](https://github.com/scoutapp/scout-apm-php/pull/238) Add scheduled CI run every month to ensure compatibility with dependency updates
+- [#240](https://github.com/scoutapp/scout-apm-php/pull/240) Add support for psr/log ^1.0|^2.0|^3.0, and added Roave/BackwardCompatibilityCheck to CI
 
 ### Changed
 
