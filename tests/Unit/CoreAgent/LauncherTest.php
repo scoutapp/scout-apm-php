@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\CoreAgent;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Log\Test\TestLogger;
 use Scoutapm\Config;
 use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\CoreAgent\Launcher;
+use Scoutapm\UnitTests\TestLogger;
 
 /** @covers \Scoutapm\CoreAgent\Launcher */
 final class LauncherTest extends TestCase
