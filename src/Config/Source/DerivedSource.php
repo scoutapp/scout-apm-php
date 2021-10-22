@@ -75,7 +75,21 @@ final class DerivedSource implements ConfigSource
     {
         $unameArch = php_uname('m');
 
-        if (in_array($unameArch, ['i686', 'x86_64'], true)) {
+        /**
+         * On new M1 Macs (arm64), we can still use x86_64 build
+         *
+         * @link https://github.com/scoutapp/scout-apm-php/issues/239
+         */
+        if ($unameArch === 'arm64') {
+            return 'x86_64';
+        }
+
+        /**
+         * aarch64 reported for some Linux environments, e.g. "AWS Graviton"
+         *
+         * @link https://github.com/scoutapp/scout-apm-php/issues/239
+         */
+        if (in_array($unameArch, ['i686', 'x86_64', 'aarch64'], true)) {
             return $unameArch;
         }
 
@@ -87,7 +101,7 @@ final class DerivedSource implements ConfigSource
         /**
          * Since the `musl`-based agent should work on `glibc`-based systems, we can hard-code this now.
          *
-         * @see https://github.com/scoutapp/scout-apm-php/issues/166
+         * @link https://github.com/scoutapp/scout-apm-php/issues/166
          */
         $platform = 'unknown-linux-musl';
 
