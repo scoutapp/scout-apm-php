@@ -6,13 +6,13 @@ namespace Scoutapm\UnitTests\Errors;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\Test\TestLogger;
 use ReflectionProperty;
 use RuntimeException;
 use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
 use Scoutapm\Errors\ScoutErrorHandling;
+use Scoutapm\UnitTests\TestLogger;
 
 use function set_exception_handler;
 

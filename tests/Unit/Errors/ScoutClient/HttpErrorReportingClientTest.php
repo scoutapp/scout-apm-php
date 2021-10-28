@@ -10,7 +10,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
-use Psr\Log\Test\TestLogger;
 use RuntimeException;
 use Scoutapm\Config;
 use Scoutapm\Errors\ErrorEvent;
@@ -23,6 +22,7 @@ use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
+use Scoutapm\UnitTests\TestLogger;
 
 use function json_decode;
 
