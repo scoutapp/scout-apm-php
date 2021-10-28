@@ -11,6 +11,7 @@ use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -167,6 +168,27 @@ final class AgentTest extends TestCase
         }
 
         unlink($logFileGeneratedByTestScript);
+    }
+
+    /**
+     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
+     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
+     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
+     */
+    public function testRecordedThrowablesAreSentToScout(): void
+    {
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::ERRORS_ENABLED => true,
+        ]));
+
+        $this->agent->recordThrowable(new RuntimeException('something went wrong'));
+        $this->agent->send();
+
+        self::assertTrue($this->logger->hasDebugThatContains('"errors_enabled":true'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent an error payload to Scout Error Reporting'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 collected error event'));
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void

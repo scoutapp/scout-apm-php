@@ -10,6 +10,7 @@ use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
+use RuntimeException;
 use Scoutapm\Agent;
 use Scoutapm\Cache\DevNullCache;
 use Scoutapm\Config;
@@ -19,6 +20,7 @@ use Scoutapm\Connector\Connector;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
 use Scoutapm\Connector\Exception\NotConnected;
+use Scoutapm\Errors\ErrorHandling;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Request;
@@ -29,6 +31,7 @@ use Scoutapm\Events\Tag\TagRequest;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\RecordedCall;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
 use Scoutapm\IntegrationTests\TestHelper;
 use Scoutapm\ScoutApmAgent;
 
@@ -50,20 +53,21 @@ final class AgentTest extends TestCase
 
     /** @var TestLogger */
     private $logger;
-
     /** @var Connector&MockObject */
     private $connector;
-
     /** @var ExtensionCapabilities&MockObject */
     private $phpExtension;
+    /** @var ErrorHandling&MockObject */
+    private $errorHandling;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->logger       = new TestLogger();
-        $this->connector    = $this->createMock(Connector::class);
-        $this->phpExtension = $this->createMock(ExtensionCapabilities::class);
+        $this->logger        = new TestLogger();
+        $this->connector     = $this->createMock(Connector::class);
+        $this->phpExtension  = $this->createMock(ExtensionCapabilities::class);
+        $this->errorHandling = $this->createMock(ErrorHandling::class);
     }
 
     private function requestFromAgent(ScoutApmAgent $agent): ?Request
@@ -90,7 +94,9 @@ final class AgentTest extends TestCase
             $this->logger,
             new DevNullCache(),
             $this->connector,
-            $this->phpExtension
+            $this->phpExtension,
+            new LocateFileOrFolderUsingFilesystem(),
+            $this->errorHandling
         );
     }
 
@@ -1034,5 +1040,19 @@ final class AgentTest extends TestCase
         $agent->stopSpan();
 
         $agent->send();
+    }
+
+    public function testRecordingExceptionProxiesToErrorHandlingComponent(): void
+    {
+        $throwable = new RuntimeException('oh dear');
+
+        $this->errorHandling
+            ->expects(self::once())
+            ->method('recordThrowable')
+            ->with($throwable);
+
+        $agent = $this->agentFromConfigArray([]);
+
+        $agent->recordThrowable($throwable);
     }
 }

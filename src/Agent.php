@@ -443,9 +443,15 @@ final class Agent implements ScoutApmAgent
         $this->request->overrideRequestUri($newRequestUri);
     }
 
+    public function recordThrowable(Throwable $throwable): void
+    {
+        $this->errorHandling->recordThrowable($throwable);
+    }
+
     /** {@inheritDoc} */
     public function send(): bool
     {
+        // @todo move this below "stop request"
         $this->errorHandling->sendCollectedErrors();
 
         // Don't send if the agent is not enabled.

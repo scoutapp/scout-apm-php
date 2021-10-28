@@ -147,12 +147,19 @@ final class ScoutErrorHandling implements ErrorHandling
         $this->errorEvents = [];
     }
 
+    public function recordThrowable(Throwable $throwable): void
+    {
+        if (! $this->errorsEnabled() || $this->isIgnoredException($throwable)) {
+            return;
+        }
+
+        $this->errorEvents[] = ErrorEvent::fromThrowable($this->request, $throwable);
+        $this->sendCollectedErrors();
+    }
+
     public function handleException(Throwable $throwable): void
     {
-        if ($this->errorsEnabled() && ! $this->isIgnoredException($throwable)) {
-            $this->errorEvents[] = ErrorEvent::fromThrowable($this->request, $throwable);
-            $this->sendCollectedErrors();
-        }
+        $this->recordThrowable($throwable);
 
         if (! $this->oldExceptionHandler) {
             return;
@@ -169,7 +176,7 @@ final class ScoutErrorHandling implements ErrorHandling
 
         $error = error_get_last();
         if (is_array($error) && in_array($error['type'], self::ERROR_TYPES_TO_CATCH, true)) {
-            $this->handleException(new ErrorException(
+            $this->recordThrowable(new ErrorException(
                 $error['message'],
                 $error['type'],
                 $error['type'],

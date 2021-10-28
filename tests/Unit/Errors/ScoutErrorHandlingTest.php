@@ -154,4 +154,32 @@ final class ScoutErrorHandlingTest extends TestCase
 
         set_exception_handler($phpunitHandler);
     }
+
+    public function testExceptionCanBeRecordedWhenEnabled(): void
+    {
+        $handling = $this->errorHandlingFromConfig(Config::fromArray([Config\ConfigKey::ERRORS_ENABLED => true]));
+
+        $this->reportingClient
+            ->expects(self::once())
+            ->method('sendErrorToScout')
+            ->with(self::isInstanceOf(ErrorEvent::class));
+
+        $handling->recordThrowable(new RuntimeException());
+
+        $handling->sendCollectedErrors();
+    }
+
+    public function testExceptionIsNotRecordedWhenDisabled(): void
+    {
+        $handling = $this->errorHandlingFromConfig(Config::fromArray([Config\ConfigKey::ERRORS_ENABLED => false]));
+
+        $this->reportingClient
+            ->expects(self::never())
+            ->method('sendErrorToScout')
+            ->with(self::isInstanceOf(ErrorEvent::class));
+
+        $handling->recordThrowable(new RuntimeException());
+
+        $handling->sendCollectedErrors();
+    }
 }

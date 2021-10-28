@@ -7,6 +7,7 @@ namespace Scoutapm;
 use Exception;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\SpanReference;
+use Throwable;
 
 interface ScoutApmAgent
 {
@@ -131,4 +132,9 @@ interface ScoutApmAgent
      * @deprecated
      */
     public function getRequest(): ?Request;
+
+    /**
+     * Record that a throwable (exception or error) happened to Scout's Error Monitoring service.
+     */
+    public function recordThrowable(Throwable $throwable): void;
 }
