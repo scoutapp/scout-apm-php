@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder;
 use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
 
 use function array_filter;
@@ -63,7 +64,7 @@ final class Backtrace
      *
      * @psalm-return list<ScoutStackFrame>
      */
-    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = 3): array
+    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = LocateFileOrFolder::SKIP_LEVELS_DEFAULT): array
     {
         return self::filterVendorFramesFromStack(self::capture(), $skipPathLevelsWhenLocatingComposerJson);
     }

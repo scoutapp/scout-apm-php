@@ -17,11 +17,11 @@ final class LocateFileOrFolderUsingFilesystem implements LocateFileOrFolder
      *
      * @inheritDoc
      */
-    public function __invoke(string $fileOrFolder, int $skipLevels = 3): ?string
+    public function __invoke(string $fileOrFolder, int $skipLevels = LocateFileOrFolder::SKIP_LEVELS_DEFAULT): ?string
     {
         $dir = __DIR__;
 
-        // Starting 3 levels up will avoid finding scout-apm-php's own contents, speeding up the process
+        // Starting some levels up will avoid finding scout-apm-php's own contents, speeding up the process
         if ($skipLevels > 0) {
             $dir = dirname(__DIR__, $skipLevels);
         }

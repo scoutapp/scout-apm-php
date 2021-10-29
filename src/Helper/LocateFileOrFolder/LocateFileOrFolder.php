@@ -7,6 +7,9 @@ namespace Scoutapm\Helper\LocateFileOrFolder;
 /** @internal This is not covered by BC promise */
 interface LocateFileOrFolder
 {
+    /** This constant dictates how many paths "up" we must go from the default implementation (cd ../../../..) */
+    public const SKIP_LEVELS_DEFAULT = 4;
+
     /**
      * Try to locate a file or folder in any parent directory (upwards of this library itself)
      *
@@ -32,5 +35,5 @@ interface LocateFileOrFolder
      *
      * @internal This is not covered by BC promise
      */
-    public function __invoke(string $fileOrFolder, int $skipLevels = 3): ?string;
+    public function __invoke(string $fileOrFolder, int $skipLevels = self::SKIP_LEVELS_DEFAULT): ?string;
 }

@@ -20,4 +20,9 @@ final class LocateFileOrFolderTest extends TestCase
             $composerLocation
         );
     }
+
+    public function testDefaultNumberOfLevelsSkipsComposerJson(): void
+    {
+        self::assertNull((new LocateFileOrFolderUsingFilesystem())->__invoke('composer.json'));
+    }
 }
