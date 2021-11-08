@@ -12,6 +12,7 @@ use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\ScoutApmAgent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 use function is_array;
@@ -91,12 +92,18 @@ final class InstrumentationListener implements EventSubscriberInterface
         $this->agent->send();
     }
 
+    public function onKernelException(ExceptionEvent $exceptionEvent): void
+    {
+        $this->agent->recordThrowable($exceptionEvent->getThrowable());
+    }
+
     /**
      * @inheritDoc
      */
     public static function getSubscribedEvents(): array
     {
         return [
+            KernelEvents::EXCEPTION => ['onKernelException', 100],
             KernelEvents::REQUEST => ['onKernelRequest', -100],
             KernelEvents::CONTROLLER => ['onKernelController', -100],
             KernelEvents::RESPONSE => ['onKernelResponse', 0],
