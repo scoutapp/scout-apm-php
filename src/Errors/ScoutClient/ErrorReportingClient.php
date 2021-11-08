@@ -11,5 +11,10 @@ use Scoutapm\Errors\ErrorEvent;
  */
 interface ErrorReportingClient
 {
-    public function sendErrorToScout(ErrorEvent $errorEvent): void; // @todo work out if we need to send multiple exceptions at once (probably...)
+    /**
+     * @param ErrorEvent[] $errorEvents
+     *
+     * @psalm-param non-empty-list<ErrorEvent> $errorEvents
+     */
+    public function sendErrorToScout(array $errorEvents): void;
 }

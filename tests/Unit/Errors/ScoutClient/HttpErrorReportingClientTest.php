@@ -88,7 +88,6 @@ final class HttpErrorReportingClientTest extends TestCase
         $this->compressPayload->method('__invoke')->willReturnArgument(0);
         $this->determineHostname->method('__invoke')->willReturn('www.friendface.com');
 
-        /** @noinspection PhpParamsInspection */
         $this->client
             ->expects(self::once())
             ->method('sendRequest')
@@ -125,9 +124,9 @@ final class HttpErrorReportingClientTest extends TestCase
                 (new Psr17Factory())->createResponse(202)
             );
 
-        $this->errorReportingClient->sendErrorToScout($errorEvent);
+        $this->errorReportingClient->sendErrorToScout([$errorEvent]);
 
-        self::assertTrue($this->logger->hasDebugThatContains('Sent an error payload to Scout Error Reporting'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 error event to Scout Error Reporting'));
     }
 
     public function testSendingErrorToScoutLogsFailureToInfo(): void
@@ -137,7 +136,6 @@ final class HttpErrorReportingClientTest extends TestCase
             new RuntimeException('things')
         );
 
-        /** @noinspection PhpParamsInspection */
         $this->client
             ->expects(self::once())
             ->method('sendRequest')
@@ -146,7 +144,7 @@ final class HttpErrorReportingClientTest extends TestCase
                 (new Psr17Factory())->createResponse(500)
             );
 
-        $this->errorReportingClient->sendErrorToScout($errorEvent);
+        $this->errorReportingClient->sendErrorToScout([$errorEvent]);
 
         self::assertTrue($this->logger->hasInfoThatContains('ErrorEvent sending returned unexpected status code 500'));
     }
@@ -158,7 +156,6 @@ final class HttpErrorReportingClientTest extends TestCase
             new RuntimeException('things')
         );
 
-        /** @noinspection PhpParamsInspection */
         $this->client
             ->expects(self::once())
             ->method('sendRequest')
@@ -166,7 +163,7 @@ final class HttpErrorReportingClientTest extends TestCase
             ->willThrowException(new class ('oh no') extends RuntimeException implements ClientExceptionInterface {
             });
 
-        $this->errorReportingClient->sendErrorToScout($errorEvent);
+        $this->errorReportingClient->sendErrorToScout([$errorEvent]);
 
         self::assertTrue($this->logger->hasWarningThatContains('ErrorEvent could not be sent to Scout [ClientException]: oh no'));
     }

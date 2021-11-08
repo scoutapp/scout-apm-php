@@ -160,8 +160,7 @@ final class AgentTest extends TestCase
 
         $logContents = file_get_contents($logFileGeneratedByTestScript);
 
-        self::assertStringContainsString('Sent an error payload to Scout Error Reporting', $logContents);
-        self::assertStringContainsString('Sent 1 collected error event', $logContents);
+        self::assertStringContainsString('Sent 1 error event to Scout Error Reporting', $logContents);
 
         if (! file_exists($logFileGeneratedByTestScript)) {
             return;
@@ -187,8 +186,7 @@ final class AgentTest extends TestCase
         $this->agent->send();
 
         self::assertTrue($this->logger->hasDebugThatContains('"errors_enabled":true'));
-        self::assertTrue($this->logger->hasDebugThatContains('Sent an error payload to Scout Error Reporting'));
-        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 collected error event'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 error event to Scout Error Reporting'));
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void

@@ -78,10 +78,11 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         $this->findRootPackageGitSha = $findRootPackageGitSha;
     }
 
-    public function sendErrorToScout(ErrorEvent $errorEvent): void // @todo check if we want to bulk send them - probably
+    /** @inheritDoc */
+    public function sendErrorToScout(array $errorEvents): void
     {
         try {
-            $response = $this->client->sendRequest($this->psrRequestFromEvents([$errorEvent]));
+            $response = $this->client->sendRequest($this->psrRequestFromEvents($errorEvents));
         } catch (ClientExceptionInterface $clientException) {
             $this->logger->warning(
                 sprintf('ErrorEvent could not be sent to Scout [ClientException]: %s', $clientException->getMessage()),
@@ -103,7 +104,11 @@ final class HttpErrorReportingClient implements ErrorReportingClient
             return;
         }
 
-        $this->logger->debug('Sent an error payload to Scout Error Reporting');
+        $this->logger->debug(sprintf(
+            'Sent %d error event%s to Scout Error Reporting',
+            count($errorEvents),
+            count($errorEvents) === 1 ? '' : 's'
+        ));
     }
 
     private function memoizedErrorsUrl(): string

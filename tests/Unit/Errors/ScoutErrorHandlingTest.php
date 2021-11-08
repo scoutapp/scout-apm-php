@@ -78,7 +78,7 @@ final class ScoutErrorHandlingTest extends TestCase
         $this->reportingClient
             ->expects(self::once())
             ->method('sendErrorToScout')
-            ->with(self::isInstanceOf(ErrorEvent::class));
+            ->with(self::containsOnlyInstancesOf(ErrorEvent::class));
 
         $handling->handleException(new RuntimeException());
         $handling->sendCollectedErrors();
@@ -162,7 +162,7 @@ final class ScoutErrorHandlingTest extends TestCase
         $this->reportingClient
             ->expects(self::once())
             ->method('sendErrorToScout')
-            ->with(self::isInstanceOf(ErrorEvent::class));
+            ->with(self::containsOnlyInstancesOf(ErrorEvent::class));
 
         $handling->recordThrowable(new RuntimeException());
 

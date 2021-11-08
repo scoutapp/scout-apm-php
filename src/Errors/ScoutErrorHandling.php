@@ -27,7 +27,6 @@ use function in_array;
 use function is_array;
 use function register_shutdown_function;
 use function set_exception_handler;
-use function sprintf;
 
 use const E_COMPILE_ERROR;
 use const E_CORE_ERROR;
@@ -35,6 +34,9 @@ use const E_ERROR;
 use const E_PARSE;
 use const E_USER_ERROR;
 
+/**
+ * @internal This is not covered by BC promise
+ */
 final class ScoutErrorHandling implements ErrorHandling
 {
     private const ERROR_TYPES_TO_CATCH = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
@@ -95,22 +97,6 @@ final class ScoutErrorHandling implements ErrorHandling
         return in_array(get_class($exception), $ignoredExceptions, true);
     }
 
-    // phpcs:disable SlevomatCodingStandard.Classes.UnusedPrivateElements.UnusedMethod
-
-    private function batchSendSize(): int
-    {
-        $batchSize = (int) $this->config->get(Config\ConfigKey::ERRORS_BATCH_SIZE);
-
-        if ($batchSize <= 0) {
-            return 1;
-        }
-
-        // @todo Should there be a max batch size, e.g. 20?
-        return $batchSize;
-    }
-
-    // phpcs:enable
-
     public function changeCurrentRequest(Request $request): void
     {
         $this->request = $request;
@@ -130,20 +116,12 @@ final class ScoutErrorHandling implements ErrorHandling
 
     public function sendCollectedErrors(): void
     {
-        if (! $this->errorsEnabled()) {
+        if (! $this->errorsEnabled() || ! count($this->errorEvents)) {
             return;
         }
 
-        $eventCount = count($this->errorEvents);
-        if (! $eventCount) {
-            return;
-        }
+        $this->reportingClient->sendErrorToScout($this->errorEvents);
 
-        foreach ($this->errorEvents as $errorEvent) {
-            $this->reportingClient->sendErrorToScout($errorEvent);
-        }
-
-        $this->logger->debug(sprintf('Sent %d collected error event%s', $eventCount, $eventCount === 1 ? '' : 's'));
         $this->errorEvents = [];
     }
 
