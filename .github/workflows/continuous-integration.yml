@@ -60,6 +60,11 @@ jobs:
           sudo mkdir -p /tmp/pear/temp
           sudo pecl update-channels
           yes | sudo pecl install -f scoutapm
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
         run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
@@ -172,6 +177,11 @@ jobs:
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
         run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
