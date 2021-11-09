@@ -23,7 +23,7 @@ use Scoutapm\CoreAgent\Downloader;
 use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\CoreAgent\Verifier;
 use Scoutapm\Errors\ErrorHandling;
-use Scoutapm\Errors\ScoutErrorHandling;
+use Scoutapm\Errors\ErrorHandlingDiscoveryFactory;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
@@ -172,7 +172,7 @@ final class Agent implements ScoutApmAgent
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
-            $errorHandling ?? ScoutErrorHandling::factory($config, $logger, $superglobals),
+            $errorHandling ?? ErrorHandlingDiscoveryFactory::create($config, $logger, $superglobals),
             $superglobals
         );
     }

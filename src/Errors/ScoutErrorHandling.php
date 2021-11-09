@@ -5,19 +5,10 @@ declare(strict_types=1);
 namespace Scoutapm\Errors;
 
 use ErrorException;
-use Http\Discovery\Psr17FactoryDiscovery;
-use Http\Discovery\Psr18ClientDiscovery;
 use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
-use Scoutapm\Errors\ScoutClient\CompressPayload;
 use Scoutapm\Errors\ScoutClient\ErrorReportingClient;
-use Scoutapm\Errors\ScoutClient\HttpErrorReportingClient;
 use Scoutapm\Events\Request\Request;
-use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
-use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
-use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
-use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
-use Scoutapm\Helper\Superglobals\Superglobals;
 use Throwable;
 
 use function count;
@@ -59,26 +50,6 @@ final class ScoutErrorHandling implements ErrorHandling
         $this->reportingClient = $reportingClient;
         $this->config          = $config;
         $this->logger          = $logger;
-    }
-
-    public static function factory(Config $config, LoggerInterface $logger, Superglobals $superglobals): self
-    {
-        return new self(
-            new HttpErrorReportingClient(
-                Psr18ClientDiscovery::find(),
-                Psr17FactoryDiscovery::findRequestFactory(),
-                Psr17FactoryDiscovery::findStreamFactory(),
-                new CompressPayload(),
-                $config,
-                $logger,
-                new FindApplicationRootWithConfigOverride(new LocateFileOrFolderUsingFilesystem(), $config, $superglobals),
-                $superglobals,
-                new DetermineHostnameWithConfigOverride($config),
-                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
-            ),
-            $config,
-            $logger
-        );
     }
 
     private function errorsEnabled(): bool

@@ -13,7 +13,6 @@
         "ext-zlib": "*",
         "php-http/discovery": "^1.14",
         "psr/http-client": "^1.0",
-        "psr/http-client-implementation": "^1.0",
         "psr/http-factory": "^1.0",
         "psr/http-message": "^1.0",
         "psr/log": "^1.0|^2.0|^3.0",
@@ -45,7 +44,10 @@
     "suggest": {
         "composer-runtime-api": "Composer v2 is required for seeing version information in metadata",
         "ext-scoutapm": "Recommended for additional recording capability of IO-bound PHP internal functions",
-        "ext-mongodb": "Required for instrumentation of MongoDB"
+        "ext-mongodb": "Required for instrumentation of MongoDB",
+        "psr/http-client-implementation": "Required for Scout Error Reporting",
+        "psr/http-factory-implementation": "Required for Scout Error Reporting",
+        "psr/http-message-implementation": "Required for Scout Error Reporting"
     },
     "autoload": {
         "psr-4": {
