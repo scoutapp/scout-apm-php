@@ -154,11 +154,19 @@ final class AgentTest extends TestCase
             $phpBinary,
             __DIR__ . '/../isolated-error-capture-test.php',
         ]);
-        $process->mustRun();
+        $process->run();
 
         $logFileGeneratedByTestScript = trim($process->getOutput());
 
         $logContents = file_get_contents($logFileGeneratedByTestScript);
+
+        if (! $process->isSuccessful()) {
+            self::fail(sprintf(
+                "Failed. %s\n\nLog file: %s",
+                $logFileGeneratedByTestScript,
+                $logContents
+            ));
+        }
 
         self::assertStringContainsString('Sent 1 error event to Scout Error Reporting', $logContents);
 
