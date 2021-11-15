@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.6.0 - TBD
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- [#246](https://github.com/scoutapp/scout-apm-php/pull/246) Updated Core Agent version to 1.4.0
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.5.0 - 2021-10-28
 
 ### Added
