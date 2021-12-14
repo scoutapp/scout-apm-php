@@ -320,6 +320,13 @@ final class Agent implements ScoutApmAgent
                 foreach ($this->phpExtension->getCalls() as $recordedCall) {
                     $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
 
+                    $maybeHttpUrl = $recordedCall->maybeHttpUrl();
+                    if ($maybeHttpUrl !== null) {
+                        $httpSpan = $this->request->startSpan('HTTP', $recordedCall->timeEntered());
+                        $httpSpan->tag(Tag::TAG_URI, $maybeHttpUrl);
+                        $this->request->stopSpan($recordedCall->timeExited());
+                    }
+
                     $arguments = $recordedCall->filteredArguments();
 
                     if (count($arguments) > 0) {

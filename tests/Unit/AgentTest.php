@@ -219,24 +219,31 @@ final class AgentTest extends TestCase
                 TestHelper::assertUnserializedCommandContainsPayload(
                     'BatchCommand',
                     [
-                        'commands' => static function (array $commands): bool {
-                            TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Test'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'SQL/Query'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'sql.query', 'value' => 'select * from foo'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'uri', 'value' => 'example.com/foo/bar.php'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
-                            TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
+                        'commands' =>
+                            /**
+                             * @psalm-param list<array<string, array<string, mixed>>> $commands
+                             */
+                            static function (array $commands): bool {
+                                TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'HTTP'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'uri', 'value' => 'http://some-url'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], TestHelper::skipBacktraceTagIfNext($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Test'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'SQL/Query'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'sql.query', 'value' => 'select * from foo'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'uri', 'value' => 'example.com/foo/bar.php'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
 
-                            return true;
-                        },
+                                return true;
+                            },
                     ],
                     $request->jsonSerialize(),
                     null

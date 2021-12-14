@@ -6,6 +6,10 @@ namespace Scoutapm\Extension;
 
 use Webmozart\Assert\Assert;
 
+use function array_key_exists;
+use function in_array;
+use function stripos;
+
 final class RecordedCall
 {
     /** @var string */
@@ -87,16 +91,37 @@ final class RecordedCall
      * avoid potentially spilling personally identifiable information. Another reason to only return specific arguments
      * is to avoid sending loads of data unnecessarily.
      *
-     * @return mixed[]
+     * @return list<empty>|array{url: string}
      */
     public function filteredArguments(): array
     {
-        if ($this->function === 'file_get_contents') {
+        if ($this->function === 'file_get_contents' || $this->function === 'curl_exec') {
             return [
                 'url' => (string) $this->arguments[0],
             ];
         }
 
         return [];
+    }
+
+    public function maybeHttpUrl(): ?string
+    {
+        if (! in_array($this->function, ['file_get_contents', 'curl_exec'], true)) {
+            return null;
+        }
+
+        $arguments = $this->filteredArguments();
+
+        if (! array_key_exists('url', $arguments)) {
+            return null;
+        }
+
+        $url = $arguments['url'];
+
+        if (stripos($url, 'http://') !== 0 && stripos($url, 'https://') !== 0) {
+            return null;
+        }
+
+        return $url;
     }
 }
