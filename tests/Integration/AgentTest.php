@@ -484,18 +484,23 @@ final class AgentTest extends TestCase
         $httpUrl  = 'http://scoutapm.com/robots.txt';
         $httpsUrl = 'https://scoutapm.com/robots.txt';
 
-        file_get_contents($httpUrl);
-        file_get_contents($httpsUrl);
+        $this->agent->webTransaction(
+            'TestingHttpSpans',
+            static function () use ($httpUrl, $httpsUrl): void {
+                file_get_contents($httpUrl);
+                file_get_contents($httpsUrl);
 
-        $httpCurl = curl_init();
-        curl_setopt($httpCurl, CURLOPT_URL, $httpUrl);
-        curl_setopt($httpCurl, CURLOPT_RETURNTRANSFER, true);
-        curl_exec($httpCurl);
+                $httpCurl = curl_init();
+                curl_setopt($httpCurl, CURLOPT_URL, $httpUrl);
+                curl_setopt($httpCurl, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($httpCurl);
 
-        $httpsCurl = curl_init();
-        curl_setopt($httpsCurl, CURLOPT_URL, $httpsUrl);
-        curl_setopt($httpsCurl, CURLOPT_RETURNTRANSFER, true);
-        curl_exec($httpsCurl);
+                $httpsCurl = curl_init();
+                curl_setopt($httpsCurl, CURLOPT_URL, $httpsUrl);
+                curl_setopt($httpsCurl, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($httpsCurl);
+            }
+        );
 
         self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
 
@@ -526,10 +531,14 @@ final class AgentTest extends TestCase
                     static function (array $commands) use ($assertSpanContainingHttpSpan, $httpUrl, $httpsUrl): bool {
                         TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
 
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/TestingHttpSpans'], next($commands), null);
+
                         $assertSpanContainingHttpSpan($commands, 'file_get_contents', $httpUrl);
                         $assertSpanContainingHttpSpan($commands, 'file_get_contents', $httpsUrl);
                         $assertSpanContainingHttpSpan($commands, 'curl_exec', $httpUrl);
                         $assertSpanContainingHttpSpan($commands, 'curl_exec', $httpsUrl);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
 
                         TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
                         TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
