@@ -448,6 +448,7 @@ final class Agent implements ScoutApmAgent
             $this->registerIfRequired();
             $this->sendMetadataIfRequired();
 
+            $this->addSpansFromExtension();
             $this->request->stopIfRunning();
 
             $shouldLogContent = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);

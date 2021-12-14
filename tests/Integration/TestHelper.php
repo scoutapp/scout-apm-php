@@ -9,11 +9,14 @@ use Exception;
 use PHPUnit\Framework\Assert;
 use Scoutapm\Helper\Timer;
 
+use function array_key_exists;
 use function array_keys;
 use function extension_loaded;
 use function implode;
+use function is_array;
 use function is_callable;
 use function is_string;
+use function next;
 use function sprintf;
 use function var_export;
 
@@ -22,6 +25,27 @@ abstract class TestHelper
     public static function scoutApmExtensionAvailable(): bool
     {
         return extension_loaded('scoutapm');
+    }
+
+    /**
+     * @param list<array<string, array<string, mixed>>> $commands
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public static function skipBacktraceTagIfNext(array &$commands): array
+    {
+        $nextCommand = next($commands);
+        if (
+            array_key_exists('TagSpan', $nextCommand)
+            && is_array($nextCommand['TagSpan'])
+            && $nextCommand['TagSpan']['tag'] === 'stack'
+        ) {
+            // In this case, the request was slow (can happen occasionally), so the stack trace was added.
+            // We're not interested in stack traces in this test, so just skip it.
+            $nextCommand = next($commands);
+        }
+
+        return $nextCommand;
     }
 
     /**
