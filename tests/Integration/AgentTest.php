@@ -381,6 +381,7 @@ final class AgentTest extends TestCase
 
         $cursor = $mongo->executeQuery($db . '.' . $collection, new Query(['_id' => 1]));
         $cursor->rewind();
+        /** @psalm-suppress PossiblyInvalidPropertyFetch This is the expected API of MongoDB ext */
         self::assertSame($helloValue, $cursor->current()->hello);
 
         self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());

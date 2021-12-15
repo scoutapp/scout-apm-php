@@ -78,11 +78,15 @@ final class SocketConnectorTest extends TestCase
             {
             }
 
+            // phpcs:disable SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly.ReferenceViaFullyQualifiedName
             /** @return mixed */
+            #[\ReturnTypeWillChange] // Not really, this is just necessary to keep compatibility with PHP 8.0 and below
             public function jsonSerialize()
             {
                 return "\xB1\x31"; // should cause json_encode to return false
             }
+
+            // phpcs:enable
         });
     }
 

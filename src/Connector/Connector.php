@@ -14,7 +14,11 @@ interface Connector
 
     public function connected(): bool;
 
-    /** @throws NotConnected */
+    /**
+     * @throws NotConnected
+     *
+     * @no-named-arguments
+     */
     public function sendCommand(Command $message): string;
 
     public function shutdown(): void;

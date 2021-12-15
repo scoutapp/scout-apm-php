@@ -8,5 +8,6 @@ use Illuminate\Http\Request;
 
 interface AutomaticallyDetermineControllerName
 {
+    /** @no-named-arguments */
     public function __invoke(Request $request): string;
 }

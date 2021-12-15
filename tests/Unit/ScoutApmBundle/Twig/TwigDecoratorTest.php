@@ -127,8 +127,9 @@ final class TwigDecoratorTest extends TestCase
 
     public function testTemplateWrapperIsConvertedToStringForInstrumentation(): void
     {
-        $templateName    = uniqid('foo.html.twig', true);
-        $template        = $this->createMock(Template::class);
+        $templateName = uniqid('foo.html.twig', true);
+        $template     = $this->createMock(Template::class);
+        /** @psalm-suppress InternalMethod This might break indeed, but we don't want the whole of Twig here */
         $templateWrapper = new TemplateWrapper($this->twig, $template);
         $renderedContent = uniqid('renderedContent', true);
 
@@ -168,7 +169,7 @@ final class TwigDecoratorTest extends TestCase
      */
     public function decoratedTwigMethodsProvider(): array
     {
-        $moduleNode      = new ModuleNode(
+        $moduleNode = new ModuleNode(
             $this->createMock(Node::class),
             $this->createMock(AbstractExpression::class),
             $this->createMock(Node::class),
@@ -177,6 +178,7 @@ final class TwigDecoratorTest extends TestCase
             'a',
             new Source('foo', 'bar')
         );
+        /** @psalm-suppress InternalMethod This might break indeed, but we don't want the whole of Twig here */
         $templateWrapper = new TemplateWrapper($this->createMock(Twig::class), $this->createMock(Template::class));
 
         // phpcs:disable Squiz.Arrays.ArrayDeclaration.ValueNoNewline

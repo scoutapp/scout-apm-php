@@ -16,7 +16,6 @@ use Scoutapm\Helper\Timer;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
-use function array_values;
 use function class_exists;
 use function getenv;
 use function gethostname;
@@ -171,10 +170,10 @@ final class Metadata implements Command
             );
         }
 
-        return array_values(array_merge(
+        return array_merge(
             $composerPlatformVersions,
             [['ext-scoutapm', $extensionVersion === null ? 'not installed' : $extensionVersion->toString()]]
-        ));
+        );
     }
 
     /**

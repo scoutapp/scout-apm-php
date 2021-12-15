@@ -31,6 +31,8 @@ interface ScoutApmAgent
      * @param bool   $leafSpan          A leaf span will not have any child spans included on serialization (except tags)
      *
      * @throws Exception
+     *
+     * @no-named-arguments
      */
     public function startSpan(string $operation, ?float $overrideTimestamp = null, bool $leafSpan = false): ?SpanReference;
 
@@ -42,6 +44,8 @@ interface ScoutApmAgent
      * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
+     *
+     * @no-named-arguments
      */
     public function instrument(string $type, string $name, callable $block);
 
@@ -51,6 +55,8 @@ interface ScoutApmAgent
      * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
+     *
+     * @no-named-arguments
      */
     public function webTransaction(string $name, callable $block);
 
@@ -60,17 +66,23 @@ interface ScoutApmAgent
      * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
      * @psalm-return T
+     *
+     * @no-named-arguments
      */
     public function backgroundTransaction(string $name, callable $block);
 
+    /** @no-named-arguments */
     public function addContext(string $tag, string $value): void;
 
+    /** @no-named-arguments */
     public function tagRequest(string $tag, string $value): void;
 
     /**
      * Check if a given URL was configured as ignored.
      * Does not alter the running request. If you wish to abort tracing of this
      * request, use ignore()
+     *
+     * @no-named-arguments
      */
     public function ignored(string $path): bool;
 
@@ -85,6 +97,8 @@ interface ScoutApmAgent
      * configuration - if an instrumentation is not explicitly disabled, this will return true.
      *
      * The list of functionality that can be disabled depends on the library binding being used.
+     *
+     * @no-named-arguments
      */
     public function shouldInstrument(string $functionality): bool;
 
@@ -93,6 +107,8 @@ interface ScoutApmAgent
      * override the automatic determination of the request URI by calling this method.
      *
      * @link https://github.com/scoutapp/scout-apm-php
+     *
+     * @no-named-arguments
      */
     public function changeRequestUri(string $newRequestUri): void;
 

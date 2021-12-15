@@ -8,6 +8,8 @@ interface ConfigSource
 {
     /**
      * Returns true if this config source knows for certain it has an answer for this key
+     *
+     * @no-named-arguments
      */
     public function hasKey(string $key): bool;
 
@@ -17,6 +19,8 @@ interface ConfigSource
      * Only valid if the Source has previously returned "true" to `hasKey`
      *
      * @return mixed
+     *
+     * @no-named-arguments
      */
     public function get(string $key);
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.17.0@6f4707aa41c9174353a6434bba3fc8840f981d9c">
+<files psalm-version="4.18.1@dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb">
   <file src="src/Agent.php">
     <MixedArgument occurrences="12">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
@@ -60,16 +60,6 @@
       <code>$version</code>
     </MixedOperand>
   </file>
-  <file src="src/Config/TypeCoercion/CoerceBoolean.php">
-    <ParamNameMismatch occurrences="1">
-      <code>$value</code>
-    </ParamNameMismatch>
-  </file>
-  <file src="src/Config/TypeCoercion/CoerceJson.php">
-    <ParamNameMismatch occurrences="1">
-      <code>$value</code>
-    </ParamNameMismatch>
-  </file>
   <file src="src/Connector/ConnectionAddress.php">
     <MixedArgument occurrences="1">
       <code>$config-&gt;get(ConfigKey::CORE_AGENT_SOCKET_PATH)</code>
@@ -85,20 +75,12 @@
     <MixedPropertyFetch occurrences="1">
       <code>$this-&gt;connectionAddress</code>
     </MixedPropertyFetch>
-    <UnnecessaryVarAnnotation occurrences="1">
-      <code>mixed[]|false</code>
-    </UnnecessaryVarAnnotation>
     <UnusedClosureParam occurrences="1">
       <code>$context</code>
     </UnusedClosureParam>
     <UnusedFunctionCall occurrences="1">
       <code>socket_shutdown</code>
     </UnusedFunctionCall>
-  </file>
-  <file src="src/CoreAgent/Launcher.php">
-    <MixedArgumentTypeCoercion occurrences="1">
-      <code>$output</code>
-    </MixedArgumentTypeCoercion>
   </file>
   <file src="src/CoreAgent/Manifest.php">
     <MixedArrayAccess occurrences="3">
@@ -128,9 +110,6 @@
     <MixedReturnTypeCoercion occurrences="2">
       <code>array&lt;string, (string|VersionList|null)&gt;</code>
     </MixedReturnTypeCoercion>
-    <RedundantCast occurrences="1">
-      <code>array_values</code>
-    </RedundantCast>
   </file>
   <file src="src/Events/Request/Request.php">
     <MixedAssignment occurrences="4">
@@ -139,9 +118,6 @@
       <code>$requestUri</code>
       <code>$value</code>
     </MixedAssignment>
-    <ParamNameMismatch occurrences="1">
-      <code>$span</code>
-    </ParamNameMismatch>
   </file>
   <file src="src/Events/Span/Span.php">
     <MixedAssignment occurrences="2">
@@ -216,24 +192,11 @@
       <code>$treeBuilder-&gt;root(self::ROOT_NODE_NAME)</code>
     </MixedReturnStatement>
   </file>
-  <file src="src/ScoutApmBundle/EventListener/DoctrineSqlLogger.php">
-    <DeprecatedClass occurrences="2">
-      <code>$connectionConfiguration-&gt;getSQLLogger()</code>
-    </DeprecatedClass>
-    <DeprecatedInterface occurrences="1">
-      <code>DoctrineSqlLogger</code>
-    </DeprecatedInterface>
-  </file>
   <file src="src/ScoutApmBundle/Twig/TwigDecorator.php">
     <MixedInferredReturnType occurrences="1">
       <code>string</code>
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1"/>
-  </file>
-  <file src="tests/Integration/AgentTest.php">
-    <PossiblyInvalidPropertyFetch occurrences="1">
-      <code>$cursor-&gt;current()-&gt;hello</code>
-    </PossiblyInvalidPropertyFetch>
   </file>
   <file src="tests/Integration/CheckScoutApmKeyListener.php">
     <DeprecatedInterface occurrences="1">
@@ -319,26 +282,12 @@
       <code>self::at(5)</code>
       <code>self::at(6)</code>
     </DeprecatedMethod>
-    <MixedArgument occurrences="19">
+    <MixedArgument occurrences="5">
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 1]</code>
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 2]</code>
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 3]</code>
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 4]</code>
       <code>$commands[0]</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>next($commands)</code>
-      <code>reset($commands)</code>
     </MixedArgument>
     <MixedReturnTypeCoercion occurrences="2">
       <code>$request-&gt;getEvents()</code>
@@ -417,11 +366,6 @@
       <code>$recordedCall</code>
       <code>$version</code>
     </MixedAssignment>
-  </file>
-  <file src="tests/Unit/Helper/FormatUrlPathAndQueryTest.php">
-    <PossiblyInvalidArgument occurrences="1">
-      <code>testUrlPathIsFilteredCorrectly</code>
-    </PossiblyInvalidArgument>
   </file>
   <file src="tests/Unit/Helper/MemoryUsageTest.php">
     <UnusedVariable occurrences="1">
@@ -511,14 +455,6 @@
       <code>$agentConfigurationArgument</code>
     </MixedAssignment>
   </file>
-  <file src="tests/Unit/ScoutApmBundle/EventListener/DoctrineSqlLoggerTest.php">
-    <DeprecatedClass occurrences="4">
-      <code>$configuration-&gt;getSQLLogger()</code>
-      <code>$configuration-&gt;getSQLLogger()</code>
-      <code>$this-&gt;createMock(SQLLogger::class)</code>
-      <code>LoggerChain::class</code>
-    </DeprecatedClass>
-  </file>
   <file src="tests/Unit/ScoutApmBundle/ScoutApmAgentFactoryTest.php">
     <DeprecatedClass occurrences="1">
       <code>self::at(3)</code>
@@ -539,16 +475,7 @@
       <code>$flattenedMetadata</code>
     </MixedAssignment>
   </file>
-  <file src="tests/Unit/ScoutApmBundle/ScoutApmBundleTest.php">
-    <DeprecatedClass occurrences="1">
-      <code>$configuration-&gt;getSQLLogger()</code>
-    </DeprecatedClass>
-  </file>
   <file src="tests/Unit/ScoutApmBundle/Twig/TwigDecoratorTest.php">
-    <InternalMethod occurrences="2">
-      <code>new TemplateWrapper($this-&gt;createMock(Twig::class), $this-&gt;createMock(Template::class))</code>
-      <code>new TemplateWrapper($this-&gt;twig, $template)</code>
-    </InternalMethod>
     <UnusedClosureParam occurrences="8">
       <code>$name</code>
       <code>$name</code>
