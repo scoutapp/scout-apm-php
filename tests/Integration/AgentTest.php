@@ -476,6 +476,10 @@ final class AgentTest extends TestCase
             self::markTestSkipped('scoutapm extension must be enabled for HTTP spans');
         }
 
+        if (! extension_loaded('curl')) {
+            self::markTestSkipped('curl extension must be enabled for HTTP spans');
+        }
+
         $this->setUpWithConfiguration(Config::fromArray([
             ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
             ConfigKey::MONITORING_ENABLED => true,
