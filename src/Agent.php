@@ -322,7 +322,8 @@ final class Agent implements ScoutApmAgent
 
                     $maybeHttpUrl = $recordedCall->maybeHttpUrl();
                     if ($maybeHttpUrl !== null) {
-                        $httpSpan = $this->request->startSpan('HTTP', $recordedCall->timeEntered());
+                        $httpMethod = $recordedCall->maybeHttpMethod() ?: 'GET';
+                        $httpSpan   = $this->request->startSpan('HTTP/' . $httpMethod, $recordedCall->timeEntered());
                         $httpSpan->tag(Tag::TAG_URI, $maybeHttpUrl);
                         $this->request->stopSpan($recordedCall->timeExited());
                     }

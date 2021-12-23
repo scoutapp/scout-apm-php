@@ -199,7 +199,7 @@ final class AgentTest extends TestCase
                     'entered' => $microtime - 1,
                     'exited' => $microtime,
                     'time_taken' => 1,
-                    'argv' => ['http://some-url'],
+                    'argv' => ['http://some-url', 'method' => 'GET'],
                 ]),
             ]);
 
@@ -226,10 +226,10 @@ final class AgentTest extends TestCase
                             static function (array $commands): bool {
                                 TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);
-                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'HTTP'], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'HTTP/GET'], next($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'uri', 'value' => 'http://some-url'], next($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], TestHelper::skipBacktraceTagIfNext($commands), null);
-                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url']], next($commands), null);
+                                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'args', 'value' => ['url' => 'http://some-url', 'method' => 'GET']], next($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['tag' => 'stack'], next($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/Test'], next($commands), null);
