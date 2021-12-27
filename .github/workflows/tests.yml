@@ -41,7 +41,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl
+          tools: pecl, composer:v2.1
           extensions: "curl, ${{ matrix.extensions }}"
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
         # be missing wherever the extension is built (not immediately obvious), so install it first

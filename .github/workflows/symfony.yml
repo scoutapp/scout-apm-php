@@ -38,7 +38,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl
+          tools: pecl, composer:v2.1
           extensions: ${{ matrix.extensions }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561

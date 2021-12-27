@@ -19,6 +19,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+          tools: composer:v2.1
       - name: "Install dependencies"
         run: "composer install"
       - name: "Run PHP_CodeSniffer"
@@ -34,6 +35,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+          tools: composer:v2.1
       - name: "Install dependencies"
         run: "composer install"
       - name: "Run Psalm"
@@ -51,6 +53,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "8.0"
+          tools: composer:v2.1
       - name: "Require Roave/BackwardCompatibilityCheck"
         run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:^6.0.1"
       - name: "Composer update with new requirements"
