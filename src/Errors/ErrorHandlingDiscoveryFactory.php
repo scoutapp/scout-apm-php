@@ -39,7 +39,7 @@ final class ErrorHandlingDiscoveryFactory
                     new FindApplicationRootWithConfigOverride(new LocateFileOrFolderUsingFilesystem(), $config, $superglobals),
                     $superglobals,
                     new DetermineHostnameWithConfigOverride($config),
-                    new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
+                    new FindRootPackageGitShaWithHerokuAndConfigOverride($config, $superglobals)
                 ),
                 $config,
                 $logger

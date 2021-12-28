@@ -570,7 +570,7 @@ final class Agent implements ScoutApmAgent
                 $this->phpExtension,
                 new FindApplicationRootWithConfigOverride($this->locateFileOrFolder, $this->config, $this->superglobals),
                 new DetermineHostnameWithConfigOverride($this->config),
-                new FindRootPackageGitShaWithHerokuAndConfigOverride($this->config)
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($this->config, $this->superglobals)
             ));
 
             $this->markMetadataSent();

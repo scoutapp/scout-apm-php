@@ -20,6 +20,8 @@ use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
+use Scoutapm\Helper\Superglobals\Superglobals;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Helper\Timer;
 
 use function json_decode;
@@ -141,7 +143,10 @@ final class MetadataTest extends TestCase
                 $this->phpExtension,
                 $this->findApplicationRoot,
                 new DetermineHostnameWithConfigOverride($config),
-                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
+                new FindRootPackageGitShaWithHerokuAndConfigOverride(
+                    $config,
+                    $this->createMock(Superglobals::class)
+                )
             )), true)
         );
     }
@@ -210,7 +215,12 @@ final class MetadataTest extends TestCase
     {
         $testHerokuSlugCommit = uniqid('testHerokuSlugCommit', true);
 
-        putenv('HEROKU_SLUG_COMMIT=' . $testHerokuSlugCommit);
+        $superglobals = new SuperglobalsArrays(
+            [],
+            [],
+            ['HEROKU_SLUG_COMMIT' => $testHerokuSlugCommit],
+            []
+        );
 
         $config = Config::fromArray([]);
 
@@ -222,7 +232,7 @@ final class MetadataTest extends TestCase
                 $this->phpExtension,
                 $this->findApplicationRoot,
                 $this->determineHostname,
-                new FindRootPackageGitShaWithHerokuAndConfigOverride($config)
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($config, $superglobals)
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

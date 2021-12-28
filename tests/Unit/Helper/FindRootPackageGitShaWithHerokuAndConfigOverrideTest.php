@@ -8,8 +8,7 @@ use Composer\InstalledVersions;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
-
-use function putenv;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 
 /** @covers \Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride */
 final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCase
@@ -18,25 +17,32 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCas
     {
         self::assertSame(
             'abcdef',
-            (new FindRootPackageGitShaWithHerokuAndConfigOverride(Config::fromArray([Config\ConfigKey::REVISION_SHA => 'abcdef'])))()
+            (new FindRootPackageGitShaWithHerokuAndConfigOverride(
+                Config::fromArray([Config\ConfigKey::REVISION_SHA => 'abcdef']),
+                new SuperglobalsArrays([], [], [], [])
+            ))()
         );
     }
 
     public function testFindingRootPackageGitShaFromHerokuSlugCommit(): void
     {
-        putenv('HEROKU_SLUG_COMMIT=bcdef1');
         self::assertSame(
             'bcdef1',
-            (new FindRootPackageGitShaWithHerokuAndConfigOverride(Config::fromArray([])))()
+            (new FindRootPackageGitShaWithHerokuAndConfigOverride(
+                Config::fromArray([]),
+                new SuperglobalsArrays([], [], ['HEROKU_SLUG_COMMIT' => 'bcdef1'], [])
+            ))()
         );
-        putenv('HEROKU_SLUG_COMMIT');
     }
 
     public function testFindingRootPackageGitShaFallbackUsingComposer(): void
     {
         self::assertSame(
             InstalledVersions::getRootPackage()['reference'],
-            (new FindRootPackageGitShaWithHerokuAndConfigOverride(Config::fromArray([])))()
+            (new FindRootPackageGitShaWithHerokuAndConfigOverride(
+                Config::fromArray([]),
+                new SuperglobalsArrays([], [], [], [])
+            ))()
         );
     }
 }

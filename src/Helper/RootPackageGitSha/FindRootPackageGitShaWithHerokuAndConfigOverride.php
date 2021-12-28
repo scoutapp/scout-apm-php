@@ -7,10 +7,10 @@ namespace Scoutapm\Helper\RootPackageGitSha;
 use Composer\InstalledVersions;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_key_exists;
 use function class_exists;
-use function getenv;
 use function is_array;
 use function is_string;
 use function method_exists;
@@ -20,10 +20,13 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverride implements FindRoot
 {
     /** @var Config */
     private $config;
+    /** @var Superglobals */
+    private $superglobals;
 
-    public function __construct(Config $config)
+    public function __construct(Config $config, Superglobals $superglobals)
     {
-        $this->config = $config;
+        $this->config       = $config;
+        $this->superglobals = $superglobals;
     }
 
     public function __invoke(): string
@@ -34,7 +37,8 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverride implements FindRoot
             return $revisionShaConfiguration;
         }
 
-        $herokuSlugCommit = getenv('HEROKU_SLUG_COMMIT');
+        $env              = $this->superglobals->env();
+        $herokuSlugCommit = $env['HEROKU_SLUG_COMMIT'] ?? null;
         if (is_string($herokuSlugCommit) && $herokuSlugCommit !== '') {
             return $herokuSlugCommit;
         }
