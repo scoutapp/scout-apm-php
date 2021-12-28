@@ -19,7 +19,7 @@ use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
-use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\Helper\Timer;
 
 use function array_combine;
@@ -68,6 +68,8 @@ class Request implements CommandWithChildren
     private $filteredParameters;
     /** @var FindRequestHeaders */
     private $findRequestHeaders;
+    /** @var Superglobals */
+    private $superglobals;
 
     /**
      * @param string[] $filteredParameters
@@ -77,7 +79,7 @@ class Request implements CommandWithChildren
      * @psalm-param Config\ConfigKey::URI_REPORTING_* $uriReportingOption
      * @psalm-param list<string> $filteredParameters
      */
-    private function __construct(FindRequestHeaders $findRequestHeaders, string $uriReportingOption, array $filteredParameters, ?float $override = null)
+    private function __construct(Superglobals $superglobals, FindRequestHeaders $findRequestHeaders, string $uriReportingOption, array $filteredParameters, ?float $override = null)
     {
         $this->id = RequestId::new();
 
@@ -86,6 +88,7 @@ class Request implements CommandWithChildren
 
         $this->currentCommand = $this;
 
+        $this->superglobals       = $superglobals;
         $this->findRequestHeaders = $findRequestHeaders;
         $this->uriReportingOption = $uriReportingOption;
         $this->filteredParameters = $filteredParameters;
@@ -105,9 +108,10 @@ class Request implements CommandWithChildren
         return $uriReportingConfiguration;
     }
 
-    public static function fromConfigAndOverrideTime(Config $config, FindRequestHeaders $findRequestHeaders, ?float $override = null): self
+    public static function fromConfigAndOverrideTime(Superglobals $superglobals, Config $config, FindRequestHeaders $findRequestHeaders, ?float $override = null): self
     {
         return new self(
+            $superglobals,
             $findRequestHeaders,
             self::requireValidUriReportingValue($config),
             Config\Helper\RequireValidFilteredParameters::fromConfigForUris($config),
@@ -139,7 +143,8 @@ class Request implements CommandWithChildren
             $this->leafNodeDepth,
             $this->uriReportingOption,
             $this->filteredParameters,
-            $this->findRequestHeaders
+            $this->findRequestHeaders,
+            $this->superglobals
         );
     }
 
@@ -150,8 +155,7 @@ class Request implements CommandWithChildren
 
     private function determineRequestPathFromServerGlobal(): string
     {
-        /** @todo this should be injected! */
-        $server = SuperglobalsArrays::fromGlobalState()->server();
+        $server = $this->superglobals->server();
 
         $requestUri = $server['REQUEST_URI'] ?? null;
 

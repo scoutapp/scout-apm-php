@@ -49,6 +49,7 @@ final class RequestTest extends TestCase
     private function requestFromConfiguration(array $configOverrides = [], ?float $overrideTime = null): Request
     {
         return Request::fromConfigAndOverrideTime(
+            $this->superglobals,
             Config::fromArray($configOverrides),
             new FindRequestHeadersUsingServerGlobal($this->superglobals),
             $overrideTime
@@ -126,7 +127,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriFromServerGlobalIsTaggedWhenRequestStoppedWithParametersRemovedByDefault(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
@@ -140,8 +143,12 @@ final class RequestTest extends TestCase
 
     public function testOrigPathInfoFromServerGlobalIsTaggedWhenRequestStopped(): void
     {
-        $_SERVER['REQUEST_URI']    = null;
-        $_SERVER['ORIG_PATH_INFO'] = '/orig-path-info-from-server';
+        $this->superglobals
+            ->method('server')
+            ->willReturn([
+                'REQUEST_URI' => null,
+                'ORIG_PATH_INFO' => '/orig-path-info-from-server',
+            ]);
 
         $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
@@ -155,7 +162,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriFromOverrideIsTaggedWhenRequestStopped(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration();
         $request->overrideRequestUri('/overridden-request-uri');
@@ -170,7 +179,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriQueryParametersAreNotRemovedWhenFullPathUriReportingIsUsed(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FULL_PATH,
@@ -227,7 +238,11 @@ final class RequestTest extends TestCase
      */
     public function testRequestUriDefaultQueryParametersAreFilteredWhenFilteringEnabled(string $parameterName): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?' . $parameterName . '=someValue';
+        $this->superglobals
+            ->method('server')
+            ->willReturn([
+                'REQUEST_URI' => '/request-uri-from-server?' . $parameterName . '=someValue',
+            ]);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,
@@ -243,7 +258,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriCustomQueryParametersAreFilteredWhenFilteringEnabled(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?aFilteredParam=someValue&notFiltered=anotherValue';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?aFilteredParam=someValue&notFiltered=anotherValue']);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,

@@ -27,6 +27,8 @@ final class SuperglobalsArrays implements Superglobals
     private $server;
 
     /**
+     * @internal This is not covered by BC promise
+     *
      * @param array<array-key, mixed> $session
      * @param array<array-key, mixed> $request
      * @param array<string, string>   $env
@@ -40,6 +42,9 @@ final class SuperglobalsArrays implements Superglobals
         $this->server  = $server;
     }
 
+    /**
+     * @internal This is not covered by BC promise
+     */
     public static function fromGlobalState(): self
     {
         return new self(

@@ -13,6 +13,7 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
+use Scoutapm\Helper\Superglobals\Superglobals;
 
 /** @covers \Scoutapm\Events\Span\Span */
 final class SpanTest extends TestCase
@@ -131,7 +132,11 @@ final class SpanTest extends TestCase
      */
     public function testStackTracesAreOnlyAddedForAppropriateSpans(string $spanName, float $startTime, float $endTime, int $expectedTagCount): void
     {
-        $request = Request::fromConfigAndOverrideTime(Config::fromArray([]), $this->createMock(FindRequestHeaders::class));
+        $request = Request::fromConfigAndOverrideTime(
+            $this->createMock(Superglobals::class),
+            Config::fromArray([]),
+            $this->createMock(FindRequestHeaders::class)
+        );
 
         $span = new Span($request, $spanName, RequestId::new(), $startTime);
         $span->stop($endTime);

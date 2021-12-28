@@ -28,7 +28,11 @@ final class ErrorEventTest extends TestCase
         $exceptionMessage = uniqid('the exception message', true);
         $exception        = new RuntimeException($exceptionMessage);
 
-        $request = Request::fromConfigAndOverrideTime($config, $this->createMock(FindRequestHeaders::class));
+        $request = Request::fromConfigAndOverrideTime(
+            new SuperglobalsArrays([], [], [], []),
+            $config,
+            $this->createMock(FindRequestHeaders::class)
+        );
         $request->startSpan('Controller/MyGreatController');
         $request->stopSpan();
         $request->tag('ContextTag', 'ContextValue');

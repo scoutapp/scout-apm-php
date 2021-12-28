@@ -532,7 +532,7 @@ final class Agent implements ScoutApmAgent
             $this->request->cleanUp();
         }
 
-        $this->request = Request::fromConfigAndOverrideTime($this->config, $this->findRequestHeaders);
+        $this->request = Request::fromConfigAndOverrideTime($this->superglobals, $this->config, $this->findRequestHeaders);
 
         $this->errorHandling->changeCurrentRequest($this->request);
     }
@@ -546,7 +546,7 @@ final class Agent implements ScoutApmAgent
         $this->connector->sendCommand(new RegisterMessage(
             (string) $this->config->get(ConfigKey::APPLICATION_NAME),
             (string) $this->config->get(ConfigKey::APPLICATION_KEY),
-            $this->config->get(ConfigKey::API_VERSION)
+            (string) $this->config->get(ConfigKey::API_VERSION)
         ));
 
         $this->registered = true;

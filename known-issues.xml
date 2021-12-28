@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <files psalm-version="4.18.1@dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb">
   <file src="src/Agent.php">
-    <MixedArgument occurrences="11">
+    <MixedArgument occurrences="10">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
       <code>$configuration-&gt;get(ConfigKey::IGNORED_ENDPOINTS)</code>
-      <code>$this-&gt;config-&gt;get(ConfigKey::API_VERSION)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::APPLICATION_NAME)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::APPLICATION_NAME)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::CORE_AGENT_CONFIG_FILE)</code>

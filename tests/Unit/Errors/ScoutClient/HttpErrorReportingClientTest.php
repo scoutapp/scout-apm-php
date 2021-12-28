@@ -80,7 +80,11 @@ final class HttpErrorReportingClientTest extends TestCase
     public function testSendingErrorToScoutHappyPath(): void
     {
         $errorEvent = ErrorEvent::fromThrowable(
-            Request::fromConfigAndOverrideTime($this->config, $this->createMock(FindRequestHeaders::class)),
+            Request::fromConfigAndOverrideTime(
+                $this->createMock(Superglobals::class),
+                $this->config,
+                $this->createMock(FindRequestHeaders::class)
+            ),
             new RuntimeException('things')
         );
 
@@ -132,7 +136,11 @@ final class HttpErrorReportingClientTest extends TestCase
     public function testSendingErrorToScoutLogsFailureToInfo(): void
     {
         $errorEvent = ErrorEvent::fromThrowable(
-            Request::fromConfigAndOverrideTime($this->config, $this->createMock(FindRequestHeaders::class)),
+            Request::fromConfigAndOverrideTime(
+                $this->createMock(Superglobals::class),
+                $this->config,
+                $this->createMock(FindRequestHeaders::class)
+            ),
             new RuntimeException('things')
         );
 
@@ -152,7 +160,11 @@ final class HttpErrorReportingClientTest extends TestCase
     public function testSendingErrorToScoutLogsClientExceptionInfo(): void
     {
         $errorEvent = ErrorEvent::fromThrowable(
-            Request::fromConfigAndOverrideTime($this->config, $this->createMock(FindRequestHeaders::class)),
+            Request::fromConfigAndOverrideTime(
+                $this->createMock(Superglobals::class),
+                $this->config,
+                $this->createMock(FindRequestHeaders::class)
+            ),
             new RuntimeException('things')
         );
 
