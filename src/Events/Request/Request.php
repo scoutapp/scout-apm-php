@@ -26,11 +26,11 @@ use function array_combine;
 use function array_filter;
 use function array_key_exists;
 use function array_map;
+use function array_values;
 use function count;
 use function in_array;
 use function is_string;
 use function microtime;
-use function reset;
 use function stripos;
 use function strpos;
 use function substr;
@@ -385,7 +385,7 @@ class Request implements CommandWithChildren
         }
 
         // Ideally there is only ever one...
-        return reset($controllerOrJobSpanNames);
+        return array_values($controllerOrJobSpanNames)[0];
     }
 
     /**
