@@ -21,6 +21,8 @@ final class FindApplicationRootWithConfigOverride implements FindApplicationRoot
     private $config;
     /** @var Superglobals */
     private $superglobals;
+    /** @var ?string */
+    private $memoizedApplicationRoot;
 
     public function __construct(LocateFileOrFolder $locateFileOrFolder, Config $config, Superglobals $superglobals)
     {
@@ -31,21 +33,33 @@ final class FindApplicationRootWithConfigOverride implements FindApplicationRoot
 
     public function __invoke(): string
     {
+        if (is_string($this->memoizedApplicationRoot)) {
+            return $this->memoizedApplicationRoot;
+        }
+
         /** @var mixed $applicationRootConfiguration */
         $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
         if (is_string($applicationRootConfiguration) && $applicationRootConfiguration !== '') {
+            $this->memoizedApplicationRoot = $applicationRootConfiguration;
+
             return $applicationRootConfiguration;
         }
 
         $composerJsonLocation = $this->locateFileOrFolder->__invoke('composer.json');
         if ($composerJsonLocation !== null) {
+            $this->memoizedApplicationRoot = $composerJsonLocation;
+
             return $composerJsonLocation;
         }
 
         $server = $this->superglobals->server();
         if (! array_key_exists('DOCUMENT_ROOT', $server)) {
+            $this->memoizedApplicationRoot = '';
+
             return '';
         }
+
+        $this->memoizedApplicationRoot = $server['DOCUMENT_ROOT'];
 
         return $server['DOCUMENT_ROOT'];
     }
