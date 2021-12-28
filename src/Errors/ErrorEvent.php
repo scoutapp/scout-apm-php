@@ -105,18 +105,34 @@ final class ErrorEvent
         $isHttps = array_key_exists('HTTPS', $server) && $server['HTTPS'] === 'on';
         $port    = array_key_exists('SERVER_PORT', $server) ? (int) $server['SERVER_PORT'] : 0;
 
-        // phpcs:disable SlevomatCodingStandard.PHP.UselessParentheses.UselessParentheses
+        $portString = '';
+
+        if ($port > 0 && $isHttps && $port !== 443) {
+            $portString = ':' . $port;
+        }
+
+        if ($port > 0 && ! $isHttps && $port !== 80) {
+            $portString = ':' . $portString;
+        }
+
+        $hostString = '';
+
+        if (array_key_exists('HTTP_HOST', $server)) {
+            $hostString = $server['HTTP_HOST'];
+        }
+
+        if ($hostString === '' && array_key_exists('SERVER_NAME', $server)) {
+            $hostString = $server['SERVER_NAME'];
+        }
+
         $builtUrl = sprintf(
             '%s://%s%s%s',
             $isHttps ? 'https' : 'http',
-            array_key_exists('HTTP_HOST', $server)
-                ? $server['HTTP_HOST']
-                : (array_key_exists('SERVER_NAME', $server) ? $server['SERVER_NAME'] : ''),
-            ($port === 0 || (! $isHttps && $port === 80) || ($isHttps && $port === 443)) ? '' : (':' . $port),
+            $hostString,
+            $portString,
             $this->request ? $this->request->requestPath() : $server['REQUEST_URI']
         );
         assert($builtUrl !== '');
-        // phpcs:enable
 
         return $builtUrl;
     }
