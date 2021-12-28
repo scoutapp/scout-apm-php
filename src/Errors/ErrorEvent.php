@@ -55,7 +55,7 @@ final class ErrorEvent
     private $formattedTrace;
 
     /**
-     * @psalm-param class-string $exceptionClass
+     * @psalm-param class-string<Throwable> $exceptionClass
      * @psalm-param list<string> $formattedTrace
      */
     private function __construct(?Request $request, string $exceptionClass, string $message, array $formattedTrace)
