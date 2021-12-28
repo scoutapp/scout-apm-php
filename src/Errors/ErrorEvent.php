@@ -24,7 +24,7 @@ use function str_replace;
 /**
  * @internal This is not covered by BC promise
  *
- * @psalm-type ErrorEventJsonableArray = array{
+ * @psalm-type ErrorEventJsonStructure = array{
  *      exception_class: class-string,
  *      message: non-empty-string,
  *      request_id: string|null,
@@ -121,7 +121,7 @@ final class ErrorEvent
         return $builtUrl;
     }
 
-    /** @psalm-return ErrorEventJsonableArray */
+    /** @psalm-return ErrorEventJsonStructure */
     public function toJsonableArray(
         Config $config,
         Superglobals $superglobals,
