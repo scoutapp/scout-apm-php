@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Scoutapm\Config\Helper;
 
+use InvalidArgumentException;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 
 use function array_values;
+use function get_class;
+use function gettype;
 use function is_array;
+use function is_object;
 use function is_string;
+use function sprintf;
 
 /** @internal */
 final class RequireValidFilteredParameters
@@ -32,7 +37,11 @@ final class RequireValidFilteredParameters
 
         foreach ($uriFilteredParameters as $filteredParameter) {
             if (! is_string($filteredParameter)) {
-                return $defaultFilteredParameters;
+                throw new InvalidArgumentException(sprintf(
+                    'Parameter value for configuration "%s" was invalid - expected string, found %s',
+                    $filteredParametersConfigKey,
+                    is_object($filteredParameter) ? get_class($filteredParameter) : gettype($filteredParameter)
+                ));
             }
         }
 
