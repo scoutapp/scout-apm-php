@@ -69,7 +69,7 @@ final class FilterParametersTest extends TestCase
     }
 
     /**
-     * @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, depth: int, expectedFiltered: array}>
+     * @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, depth: positive-int|0, expectedFiltered: array}>
      */
     public function flattenedUriReportingConfiguration(): array
     {
@@ -110,7 +110,19 @@ final class FilterParametersTest extends TestCase
                 'depth' => 1,
                 'expectedFiltered' => ['a' => 'array', 'b' => 'b'],
             ],
-            'flattenedDeeperArray' => [
+            'flattenedDeeperArrayDepthZero' => [
+                'inputParameters' => ['a' => ['a1' => ['a1-1' => 'a1-1']], 'b' => 'b'],
+                'parameterKeysToBeFiltered' => [],
+                'depth' => 0,
+                'expectedFiltered' => ['a' => 'array', 'b' => 'b'],
+            ],
+            'flattenedDeeperArrayDepthOne' => [
+                'inputParameters' => ['a' => ['a1' => ['a1-1' => 'a1-1']], 'b' => 'b'],
+                'parameterKeysToBeFiltered' => [],
+                'depth' => 1,
+                'expectedFiltered' => ['a' => 'array', 'b' => 'b'],
+            ],
+            'flattenedDeeperArrayDepthTwo' => [
                 'inputParameters' => ['a' => ['a1' => ['a1-1' => 'a1-1']], 'b' => 'b'],
                 'parameterKeysToBeFiltered' => [],
                 'depth' => 2,
@@ -140,6 +152,7 @@ final class FilterParametersTest extends TestCase
     /**
      * @param array<array-key, mixed> $inputParameters
      * @param list<string>            $parameterKeysToBeFiltered
+     * @param positive-int|0          $depth
      * @param array<array-key, mixed> $expectedFiltered
      *
      * @dataProvider flattenedUriReportingConfiguration

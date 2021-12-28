@@ -46,12 +46,12 @@ final class FilterParameters
      * @return string[]
      *
      * @psalm-pure
-     * @psalm-template T as int
+     * @psalm-template T as positive-int|0
      * @psalm-param list<string> $parameterKeysToBeFiltered
      * @psalm-param array<array-key, mixed> $parameters
      * @psalm-param T $depth
      * @psalm-return (
-     *      T is 1
+     *      T is 0|1
      *      ? array<string,string>
      *      : (
      *          T is 2
@@ -82,7 +82,8 @@ final class FilterParameters
             array_map(
                 static function ($value) use ($parameterKeysToBeFiltered, $depth) {
                     if (is_array($value) && $depth > 1) {
-                        return self::flattenedForUriReportingConfiguration($parameterKeysToBeFiltered, $value, (int) ($depth) - 1);
+                        /** @psalm-suppress ArgumentTypeCoercion https://github.com/vimeo/psalm/issues/7235 */
+                        return self::flattenedForUriReportingConfiguration($parameterKeysToBeFiltered, $value, $depth - 1);
                     }
 
                     if (is_scalar($value)) {
