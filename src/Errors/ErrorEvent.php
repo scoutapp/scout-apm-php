@@ -165,8 +165,8 @@ final class ErrorEvent
             'trace' => $this->formattedTrace,
             'request_components' => [
                 'module' => 'UnknownModule',
-                'controller' => $controllerName[0],
-                'action' => $controllerName[1],
+                'controller' => array_key_exists(0, $controllerName) ? $controllerName[0] : 'UnknownController',
+                'action' => array_key_exists(1, $controllerName) ? $controllerName[1] : 'UnknownAction',
             ],
             'context' => $this->request ? $this->request->tags() : [],
             'host' => $determineHostname(),
