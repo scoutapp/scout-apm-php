@@ -100,7 +100,8 @@ final class Agent implements ScoutApmAgent
         CacheInterface $cache,
         LocateFileOrFolder $locateFileOrFolder,
         ErrorHandling $errorHandling,
-        Superglobals $superglobals
+        Superglobals $superglobals,
+        FindRequestHeadersUsingServerGlobal $findRequestHeaders
     ) {
         $this->config             = $configuration;
         $this->connector          = $connector;
@@ -110,7 +111,7 @@ final class Agent implements ScoutApmAgent
         $this->locateFileOrFolder = $locateFileOrFolder;
         $this->errorHandling      = $errorHandling;
         $this->superglobals       = $superglobals;
-        $this->findRequestHeaders = new FindRequestHeadersUsingServerGlobal($superglobals);
+        $this->findRequestHeaders = $findRequestHeaders;
 
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
@@ -173,7 +174,8 @@ final class Agent implements ScoutApmAgent
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
             $errorHandling ?? ErrorHandlingDiscoveryFactory::create($config, $logger, $superglobals),
-            $superglobals
+            $superglobals,
+            new FindRequestHeadersUsingServerGlobal($superglobals)
         );
     }
 
