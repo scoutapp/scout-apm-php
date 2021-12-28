@@ -40,6 +40,8 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl, composer:v2.1
           extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -87,6 +89,8 @@ jobs:
           php-version: "${{ matrix.php-version }}"
           tools: pecl, composer:v2.1
           extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
       - name: "Install Laravel quickstart project"
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
