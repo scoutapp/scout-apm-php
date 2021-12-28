@@ -46,7 +46,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
     /** @var FindApplicationRoot */
     private $findApplicationRoot;
     /** @var string|null */
-    private $memoizedErrorsUrl;
+    private $memoizedErrorReportingServiceUrl;
     /** @var Superglobals */
     private $superglobals;
     /** @var DetermineHostname */
@@ -111,13 +111,13 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         ));
     }
 
-    private function memoizedErrorsUrl(): string
+    private function errorReportingServiceUrl(): string
     {
-        if ($this->memoizedErrorsUrl === null) {
-            $this->memoizedErrorsUrl = rtrim((string) $this->config->get(ConfigKey::ERRORS_HOST), '/') . self::SCOUT_REPORTING_PATH;
+        if ($this->memoizedErrorReportingServiceUrl === null) {
+            $this->memoizedErrorReportingServiceUrl = rtrim((string) $this->config->get(ConfigKey::ERRORS_HOST), '/') . self::SCOUT_REPORTING_PATH;
         }
 
-        return $this->memoizedErrorsUrl;
+        return $this->memoizedErrorReportingServiceUrl;
     }
 
     /**
@@ -128,7 +128,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         return $this->requestFactory
             ->createRequest(
                 'POST',
-                $this->memoizedErrorsUrl() . '?' . http_build_query([
+                $this->errorReportingServiceUrl() . '?' . http_build_query([
                     'key' => $this->config->get(ConfigKey::APPLICATION_KEY),
                     'name' => $this->config->get(ConfigKey::APPLICATION_NAME),
                 ])
