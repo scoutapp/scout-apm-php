@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file, in reverse 
 - [#243](https://github.com/scoutapp/scout-apm-php/pull/243) **[BC]** Added support for ScoutApm Error Reporting
   - New interface method `\Scoutapm\ScoutApmAgent::recordThrowable(\Throwable $t): void` added
   - Class `Scoutapm\Helper\RecursivelyCountSpans` was marked `@internal`
-  - Class `Scoutapm\Helper\LocateFileOrFolder` became an interface (with default implementation) and marked `@internal`
+  - Class `Scoutapm\Helper\LocateFileOrFolder` became an interface (with default implementation) and both marked as
+    `@internal` API.
   - `Scoutapm\Agent::fromConfig` now depends on `\Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder` interface
 
 ### Changed
