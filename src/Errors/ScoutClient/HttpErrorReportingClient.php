@@ -30,6 +30,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
     private const SCOUT_REPORTING_PATH = '/apps/error.scout';
 
     private const SCOUT_ACCEPTED_STATUS_CODE = 202;
+    private const SCOUT_TOO_MANY_REQUESTS    = 429;
 
     /** @var ClientInterface */
     private $client;
@@ -93,6 +94,18 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         }
 
         $statusCode = $response->getStatusCode();
+
+        if ($statusCode === self::SCOUT_TOO_MANY_REQUESTS) {
+            $this->logger->notice(
+                sprintf(
+                    'Error send limit has been reached (HTTP %d returned from Error reporting service',
+                    self::SCOUT_TOO_MANY_REQUESTS
+                )
+            );
+
+            return;
+        }
+
         if ($statusCode !== self::SCOUT_ACCEPTED_STATUS_CODE) {
             $this->logger->info(
                 sprintf('ErrorEvent sending returned unexpected status code %d', $statusCode),

@@ -157,6 +157,30 @@ final class HttpErrorReportingClientTest extends TestCase
         self::assertTrue($this->logger->hasInfoThatContains('ErrorEvent sending returned unexpected status code 500'));
     }
 
+    public function testSendingErrorWhenErrorLimitReachedLogsMessage(): void
+    {
+        $errorEvent = ErrorEvent::fromThrowable(
+            Request::fromConfigAndOverrideTime(
+                $this->createMock(Superglobals::class),
+                $this->config,
+                $this->createMock(FindRequestHeaders::class)
+            ),
+            new RuntimeException('things')
+        );
+
+        $this->client
+            ->expects(self::once())
+            ->method('sendRequest')
+            ->with(self::isInstanceOf(RequestInterface::class))
+            ->willReturn(
+                (new Psr17Factory())->createResponse(429)
+            );
+
+        $this->errorReportingClient->sendErrorToScout([$errorEvent]);
+
+        self::assertTrue($this->logger->hasNoticeThatContains('Error send limit has been reached (HTTP 429 returned from Error reporting service'));
+    }
+
     public function testSendingErrorToScoutLogsClientExceptionInfo(): void
     {
         $errorEvent = ErrorEvent::fromThrowable(
