@@ -10,6 +10,7 @@ use function array_map;
 use function extension_loaded;
 use function function_exists;
 use function phpversion;
+use function scoutapm_enable_instrumentation;
 use function scoutapm_get_calls;
 
 final class PotentiallyAvailableExtensionCapabilities implements ExtensionCapabilities
