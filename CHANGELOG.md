@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.6.1 - 2022-01-03
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#252](https://github.com/scoutapp/scout-apm-php/pull/252) Fix for Composer 2.2.3 where phpvfscomposer stream added
+
 ## 6.6.0 - 2021-11-15
 
 ### Added
