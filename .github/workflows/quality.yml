@@ -50,9 +50,9 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "7.4" # https://github.com/Roave/BackwardCompatibilityCheck/issues/283
+          php-version: "8.0"
       - name: "Require Roave/BackwardCompatibilityCheck"
-        run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:6.0.x-dev"
+        run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:^6.0.1"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Check for BC breaks"

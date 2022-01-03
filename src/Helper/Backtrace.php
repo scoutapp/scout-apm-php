@@ -12,6 +12,7 @@ use function debug_backtrace;
 use function file_get_contents;
 use function is_array;
 use function json_decode;
+use function str_replace;
 use function strpos;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
@@ -75,8 +76,15 @@ final class Backtrace
      */
     private static function reformatStackFrame(array $frame): array
     {
+        /**
+         * The phpvfscomposer:// stream wrapper was added to fix a bug in Composer 2.2, which affects all PHP 7.*
+         * versions we support. Simple fix is to remove the protocol from the filename, as it is an edge case. This
+         * str_replace can be dropped if/when we drop PHP 7.* support.
+         *
+         * @link https://github.com/composer/composer/issues/10387
+         */
         return [
-            'file' => $frame['file'],
+            'file' => str_replace('phpvfscomposer://', '', $frame['file']),
             'line' => $frame['line'],
             'function' => self::formatFunctionNameFromFrame($frame),
         ];
