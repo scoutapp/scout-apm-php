@@ -38,7 +38,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.1
+          tools: pecl, composer:v2.2
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
