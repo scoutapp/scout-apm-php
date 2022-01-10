@@ -51,7 +51,7 @@ final class Agent implements ScoutApmAgent
 
     private const METADATA_CACHE_TTL_SECONDS = 600;
 
-    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.4.0';
+    private const WARN_WHEN_EXTENSION_IS_OLDER_THAN = '1.5.0';
 
     /** @var Config */
     private $config;
@@ -320,6 +320,14 @@ final class Agent implements ScoutApmAgent
                 foreach ($this->phpExtension->getCalls() as $recordedCall) {
                     $callSpan = $this->request->startSpan($recordedCall->functionName(), $recordedCall->timeEntered());
 
+                    $maybeHttpUrl = $recordedCall->maybeHttpUrl();
+                    if ($maybeHttpUrl !== null) {
+                        $httpMethod = $recordedCall->maybeHttpMethod() ?: 'GET';
+                        $httpSpan   = $this->request->startSpan('HTTP/' . $httpMethod, $recordedCall->timeEntered());
+                        $httpSpan->tag(Tag::TAG_URI, $maybeHttpUrl);
+                        $this->request->stopSpan($recordedCall->timeExited());
+                    }
+
                     $arguments = $recordedCall->filteredArguments();
 
                     if (count($arguments) > 0) {
@@ -448,6 +456,7 @@ final class Agent implements ScoutApmAgent
             $this->registerIfRequired();
             $this->sendMetadataIfRequired();
 
+            $this->addSpansFromExtension();
             $this->request->stopIfRunning();
 
             $shouldLogContent = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);

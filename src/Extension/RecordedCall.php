@@ -6,6 +6,15 @@ namespace Scoutapm\Extension;
 
 use Webmozart\Assert\Assert;
 
+use function array_key_exists;
+use function in_array;
+use function is_array;
+use function is_string;
+use function json_decode;
+use function preg_replace;
+use function stripos;
+use function strtoupper;
+
 final class RecordedCall
 {
     /** @var string */
@@ -87,16 +96,90 @@ final class RecordedCall
      * avoid potentially spilling personally identifiable information. Another reason to only return specific arguments
      * is to avoid sending loads of data unnecessarily.
      *
-     * @return mixed[]
+     * @return list<empty>|array{url: string, method: string}
      */
     public function filteredArguments(): array
     {
-        if ($this->function === 'file_get_contents') {
+        if ($this->function === 'file_get_contents' || $this->function === 'curl_exec') {
+            $method = 'GET';
+
+            // file_get_contents was used with a stream context
+            if (
+                $this->function === 'file_get_contents'
+                && array_key_exists(2, $this->arguments)
+                && is_string($this->arguments[2])
+            ) {
+                /** @var mixed $fileGetContentsStreamContext */
+                $fileGetContentsStreamContext = json_decode($this->arguments[2], true);
+                if (
+                    is_array($fileGetContentsStreamContext)
+                    && array_key_exists('http', $fileGetContentsStreamContext)
+                    && is_array($fileGetContentsStreamContext['http'])
+                    && array_key_exists('method', $fileGetContentsStreamContext['http'])
+                    && is_string($fileGetContentsStreamContext['http']['method'])
+                    && ! empty($fileGetContentsStreamContext['http']['method'])
+                ) {
+                    $method = $fileGetContentsStreamContext['http']['method'];
+                }
+            }
+
+            // curl_exec with CURLOPT_POST option was used with a truthy value
+            if ($this->function === 'curl_exec' && array_key_exists(1, $this->arguments) && $this->arguments[1]) {
+                $method = 'POST';
+            }
+
+            // curl_exec with CURLOPT_POST option was used with a truthy value
+            if (
+                $this->function === 'curl_exec'
+                && array_key_exists(2, $this->arguments)
+                && is_string($this->arguments[2])
+                && ! empty($this->arguments[2])
+            ) {
+                $method = $this->arguments[2];
+            }
+
             return [
                 'url' => (string) $this->arguments[0],
+                'method' => preg_replace('/[^A-Z]/', '', strtoupper($method)),
             ];
         }
 
         return [];
+    }
+
+    public function maybeHttpUrl(): ?string
+    {
+        if (! in_array($this->function, ['file_get_contents', 'curl_exec'], true)) {
+            return null;
+        }
+
+        $arguments = $this->filteredArguments();
+
+        if (! array_key_exists('url', $arguments)) {
+            return null;
+        }
+
+        $url = $arguments['url'];
+
+        if (stripos($url, 'http://') !== 0 && stripos($url, 'https://') !== 0) {
+            return null;
+        }
+
+        return $url;
+    }
+
+    public function maybeHttpMethod(): ?string
+    {
+        if (! in_array($this->function, ['file_get_contents', 'curl_exec'], true)) {
+            return null;
+        }
+
+        $arguments = $this->filteredArguments();
+
+        if (! array_key_exists('method', $arguments)) {
+            return null;
+        }
+
+        return $arguments['method'];
     }
 }

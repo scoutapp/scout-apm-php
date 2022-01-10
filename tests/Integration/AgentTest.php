@@ -21,6 +21,9 @@ use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\UnitTests\TestLogger;
 
 use function assert;
+use function curl_exec;
+use function curl_init;
+use function curl_setopt;
 use function extension_loaded;
 use function file_get_contents;
 use function fopen;
@@ -35,7 +38,13 @@ use function shell_exec;
 use function sleep;
 use function sprintf;
 use function str_repeat;
+use function stream_context_create;
 use function uniqid;
+
+use const CURLOPT_CUSTOMREQUEST;
+use const CURLOPT_POST;
+use const CURLOPT_RETURNTRANSFER;
+use const CURLOPT_URL;
 
 /**
  * @psalm-import-type UnserializedCapturedMessagesList from MessageCapturingConnectorDelegator
@@ -278,7 +287,7 @@ final class AgentTest extends TestCase
 
                         if (TestHelper::scoutApmExtensionAvailable()) {
                             $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__, 'method' => 'GET']], next($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                         }
 
@@ -286,7 +295,7 @@ final class AgentTest extends TestCase
 
                         if (TestHelper::scoutApmExtensionAvailable()) {
                             $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $fooSpanId], next($commands), 'span_id');
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__, 'method' => 'GET']], next($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                         }
 
@@ -294,7 +303,7 @@ final class AgentTest extends TestCase
 
                         if (TestHelper::scoutApmExtensionAvailable()) {
                             $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $barSpanId], next($commands), 'span_id');
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__, 'method' => 'GET']], next($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                         }
 
@@ -306,7 +315,7 @@ final class AgentTest extends TestCase
 
                         if (TestHelper::scoutApmExtensionAvailable()) {
                             $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents', 'parent_id' => $controllerSpanId], next($commands), 'span_id');
-                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__]], next($commands), null);
+                            TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => __FILE__, 'method' => 'GET']], next($commands), null);
                             TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], next($commands), null);
                         }
 
@@ -448,6 +457,106 @@ final class AgentTest extends TestCase
                         TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
 
                         TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'AnotherOperation'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);
+                        TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'path'], next($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('FinishRequest', [], next($commands), null);
+
+                        return true;
+                    },
+            ],
+            next($unserialized),
+            null
+        );
+    }
+
+    /** @noinspection PhpExpressionResultUnusedInspection */
+    public function testHttpSpansArePromoted(): void
+    {
+        if (! TestHelper::scoutApmExtensionAvailable()) {
+            self::markTestSkipped('scoutapm extension must be enabled for HTTP spans');
+        }
+
+        if (! extension_loaded('curl')) {
+            self::markTestSkipped('curl extension must be enabled for HTTP spans');
+        }
+
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]));
+
+        $httpUrl  = 'http://scoutapm.com/robots.txt';
+        $httpsUrl = 'https://scoutapm.com/robots.txt';
+
+        $this->agent->webTransaction(
+            'TestingHttpSpans',
+            static function () use ($httpUrl, $httpsUrl): void {
+                file_get_contents($httpUrl);
+
+                // 405 Method Not Allowed is expected, and emitted as a warning, so ignore for this test
+                @file_get_contents($httpsUrl, false, stream_context_create([
+                    'http' => ['method' => 'POST'],
+                ]));
+
+                $httpCurl = curl_init();
+                curl_setopt($httpCurl, CURLOPT_URL, $httpUrl);
+                curl_setopt($httpCurl, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($httpCurl);
+
+                $httpsPostCurl = curl_init();
+                curl_setopt($httpsPostCurl, CURLOPT_URL, $httpsUrl);
+                curl_setopt($httpsPostCurl, CURLOPT_POST, 1);
+                curl_setopt($httpsPostCurl, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($httpsPostCurl);
+
+                $httpsPutCurl = curl_init();
+                curl_setopt($httpsPutCurl, CURLOPT_URL, $httpsUrl);
+                curl_setopt($httpsPutCurl, CURLOPT_CUSTOMREQUEST, 'PUT');
+                curl_setopt($httpsPutCurl, CURLOPT_RETURNTRANSFER, true);
+                curl_exec($httpsPutCurl);
+            }
+        );
+
+        self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+
+        $unserialized = $this->connector->sentMessages;
+        reset($unserialized); // Skip Register event
+        next($unserialized); // Skip Metadata event
+
+        $assertSpanContainingHttpSpan =
+            /**
+             * @psalm-param list<array<string, array<string, mixed>>> $commands
+             */
+            static function (&$commands, string $outerOperation, string $method, string $url): void {
+                $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => $outerOperation], next($commands), 'span_id');
+
+                $httpSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'HTTP/' . $method, 'parent_id' => $fileGetContentsSpanId], next($commands), 'span_id');
+                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $httpSpanId, 'tag' => 'uri', 'value' => $url], next($commands), null);
+                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $httpSpanId], TestHelper::skipBacktraceTagIfNext($commands), null);
+
+                TestHelper::assertUnserializedCommandContainsPayload('TagSpan', ['span_id' => $fileGetContentsSpanId, 'tag' => 'args', 'value' => ['url' => $url, 'method' => $method]], next($commands), null);
+                TestHelper::assertUnserializedCommandContainsPayload('StopSpan', ['span_id' => $fileGetContentsSpanId], TestHelper::skipBacktraceTagIfNext($commands), null);
+            };
+
+        TestHelper::assertUnserializedCommandContainsPayload(
+            'BatchCommand',
+            [
+                'commands' =>
+                    /** @psalm-param UnserializedCapturedMessagesList $commands */
+                    static function (array $commands) use ($assertSpanContainingHttpSpan, $httpUrl, $httpsUrl): bool {
+                        TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
+
+                        TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'Controller/TestingHttpSpans'], next($commands), null);
+
+                        $assertSpanContainingHttpSpan($commands, 'file_get_contents', 'GET', $httpUrl);
+                        $assertSpanContainingHttpSpan($commands, 'file_get_contents', 'POST', $httpsUrl);
+                        $assertSpanContainingHttpSpan($commands, 'curl_exec', 'GET', $httpUrl);
+                        $assertSpanContainingHttpSpan($commands, 'curl_exec', 'POST', $httpsUrl);
+                        $assertSpanContainingHttpSpan($commands, 'curl_exec', 'PUT', $httpsUrl);
+
                         TestHelper::assertUnserializedCommandContainsPayload('StopSpan', [], next($commands), null);
 
                         TestHelper::assertUnserializedCommandContainsPayload('TagRequest', ['tag' => 'memory_delta'], next($commands), null);

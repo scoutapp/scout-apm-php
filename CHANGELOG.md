@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 6.7.0 - 2022-01-10
+
+### Added
+
+- [#249](https://github.com/scoutapp/scout-apm-php/pull/249) Added HTTP spans for file_get_contents and curl_exec
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 6.6.1 - 2022-01-03
 
 ### Added

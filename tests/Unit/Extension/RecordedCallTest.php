@@ -48,7 +48,7 @@ final class RecordedCallTest extends TestCase
         return [
             'file_get_contents' => [
                 'recordedFunctionName' => 'file_get_contents',
-                'expectedFilteredArguments' => ['url' => 'a'],
+                'expectedFilteredArguments' => ['url' => 'a', 'method' => 'GET'],
             ],
             'password_hash' => [
                 'recordedFunctionName' => 'password_hashj',

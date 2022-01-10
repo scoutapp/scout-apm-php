@@ -18,6 +18,7 @@ abstract class Tag implements Command
     public const TAG_REQUEST_PATH     = 'path';
     public const TAG_QUEUE_TIME       = 'scout.queue_time_ns';
     public const TAG_REACHED_SPAN_CAP = 'scout.reached_span_cap';
+    public const TAG_URI              = 'uri';
 
     /** @var RequestId */
     protected $requestId;
