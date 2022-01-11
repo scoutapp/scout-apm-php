@@ -21,14 +21,14 @@ use function sprintf;
 
 final class ErrorHandlingDiscoveryFactory
 {
-    public static function create(Config $config, LoggerInterface $logger, Superglobals $superglobals): ErrorHandling
+    public static function createAndListen(Config $config, LoggerInterface $logger, Superglobals $superglobals): ErrorHandling
     {
         if (! (bool) $config->get(Config\ConfigKey::ERRORS_ENABLED)) {
             return new NoErrorHandling();
         }
 
         try {
-            return new ScoutErrorHandling(
+            $errorHandling = new ScoutErrorHandling(
                 new HttpErrorReportingClient(
                     Psr18ClientDiscovery::find(),
                     Psr17FactoryDiscovery::findRequestFactory(),
@@ -44,6 +44,9 @@ final class ErrorHandlingDiscoveryFactory
                 $config,
                 $logger
             );
+            $errorHandling->registerListeners();
+
+            return $errorHandling;
         } catch (Throwable $noHttpClient) {
             /**
              * Note, ideally we catch a {@see \Http\Discovery\Exception\NotFoundException} here, but Symfony is a

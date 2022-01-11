@@ -122,8 +122,6 @@ final class Agent implements ScoutApmAgent
             QueryTimeCollector::register($this);
         }
 
-        $this->errorHandling->registerListeners();
-
         $this->startNewRequest();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
@@ -173,7 +171,7 @@ final class Agent implements ScoutApmAgent
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
-            $errorHandling ?? ErrorHandlingDiscoveryFactory::create($config, $logger, $superglobals),
+            $errorHandling ?? ErrorHandlingDiscoveryFactory::createAndListen($config, $logger, $superglobals),
             $superglobals,
             new FindRequestHeadersUsingServerGlobal($superglobals)
         );
