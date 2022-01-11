@@ -24,8 +24,15 @@
             <errorLevel type="info">
                 <!-- Handles usage of composer/package-versions-deprecated -->
                 <referencedClass name="PackageVersions\Versions" />
+                <referencedClass name="Doctrine\DBAL\Logging\SQLLogger" />
+                <referencedClass name="Doctrine\DBAL\Logging\LoggerChain" />
             </errorLevel>
         </DeprecatedClass>
+        <DeprecatedInterface>
+            <errorLevel type="info">
+                <referencedClass name="Doctrine\DBAL\Logging\SQLLogger" />
+            </errorLevel>
+        </DeprecatedInterface>
         <MissingConstructor>
             <errorLevel type="info">
                 <!-- Mostly caused by PHPUnit -->

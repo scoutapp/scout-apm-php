@@ -90,7 +90,19 @@ class Launcher
 
             exec($escapedCommand . ' 2>&1', $output, $exitStatus);
 
-            $this->assertOutputDoesNotContainErrors(implode("\n", $output), $exitStatus);
+            /** @noinspection UnnecessaryClosureInspection */
+            $this->assertOutputDoesNotContainErrors(
+                implode(
+                    "\n",
+                    array_map(
+                        static function ($item): string {
+                            return (string) $item;
+                        },
+                        $output
+                    )
+                ),
+                $exitStatus
+            );
 
             return true;
         } catch (Throwable $e) {

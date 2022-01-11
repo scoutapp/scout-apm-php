@@ -328,8 +328,11 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
         $events = $this->application->make('events');
         assert($events instanceof Dispatcher);
 
-        $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
-        $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
+        $jobWithName = $this->createMock(Job::class);
+        $jobWithName->method('resolveName')->willReturn('JobName');
+
+        $events->dispatch(new JobProcessing('foo', $jobWithName));
+        $events->dispatch(new JobProcessed('foo', $jobWithName));
     }
 
     /** @throws Throwable */
@@ -372,8 +375,11 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
         $events = $this->application->make('events');
         assert($events instanceof Dispatcher);
 
-        $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
-        $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
+        $jobWithName = $this->createMock(Job::class);
+        $jobWithName->method('resolveName')->willReturn('JobName');
+
+        $events->dispatch(new JobProcessing('foo', $jobWithName));
+        $events->dispatch(new JobProcessed('foo', $jobWithName));
     }
 
     /** @throws Throwable */
