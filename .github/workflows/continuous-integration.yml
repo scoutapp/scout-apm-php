@@ -1,0 +1,440 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '37 9 1 * *'
+
+jobs:
+
+###############################################################################
+################################### GENERAL ###################################
+###############################################################################
+
+  base-unit:
+    name: "Unit tests"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dependencies: ["lowest", "highest"]
+        scout-ext: ["with-scout-ext", "no-scout-ext"]
+        extensions: [
+            "",
+            "mongodb"
+        ]
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: "curl, ${{ matrix.extensions }}"
+        env:
+          fail-fast: true
+        # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
+        # be missing wherever the extension is built (not immediately obvious), so install it first
+      - name: "Install scoutapm extension"
+        if: ${{ matrix.scout-ext == 'with-scout-ext' }}
+        run: |
+          sudo apt-get install -y libcurl4-openssl-dev
+          sudo mkdir -p /tmp/pear/temp
+          sudo pecl update-channels
+          yes | sudo pecl install -f scoutapm
+      - name: "Install lowest dependencies"
+        if: ${{ matrix.dependencies == 'lowest' }}
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
+      - name: "Install highest dependencies"
+        if: ${{ matrix.dependencies == 'highest' }}
+        run: "composer update --prefer-dist --no-interaction --no-progress"
+      - name: "Run PHPUnit test suite"
+        run: "vendor/bin/phpunit --testsuite=unit,integration"
+      - name: "Check for memory leaks"
+        run: "tests/check-memory-leaks.sh"
+
+  coding-standards:
+    name: "Check coding standards"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "8.0"
+          tools: composer:v2.2
+        env:
+          fail-fast: true
+      - name: "Install dependencies"
+        run: "composer install"
+      - name: "Run PHP_CodeSniffer"
+        run: "vendor/bin/phpcs"
+
+  static-analysis:
+    name: "Perform static analysis"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "8.0"
+          tools: composer:v2.2
+        env:
+          fail-fast: true
+      - name: "Install dependencies"
+        run: "composer install"
+      - name: "Run Psalm"
+        run: "vendor/bin/psalm"
+
+  roave-backwards-compatibility-check:
+    name: "Check for Backward Compatibility breaks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "8.0"
+          tools: composer:v2.2
+        env:
+          fail-fast: true
+      - name: "Require Roave/BackwardCompatibilityCheck"
+        run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:^6.0.1"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Check for BC breaks"
+        run: ".github/workflows/roave-backwards-compatibility-check.sh"
+
+###############################################################################
+################################### SYMFONY ###################################
+###############################################################################
+
+  symfony-unit:
+    needs: base-unit
+    name: "Symfony Unit"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extensions: ["scoutapm", ""]
+        twig-version:
+          - "2.*"
+          - "3.*"
+        symfony-version:
+          - "4.*"
+          - "5.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "2.*" } # Symfony 5 (with Twig 2) requires 7.2+
+          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "3.*" } # Symfony 5 (with Twig 3) requires 7.2+
+          - { php-version: "7.1", symfony-version: "4.*", "twig-version": "3.*" } # Twig 3 (on Symfony 4) requires 7.2+
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      # --no-update then a full `composer update` is needed to overcome locked dependencies
+      # See: https://github.com/composer/composer/issues/9561
+      - name: "Remove existing requirements components (avoid conflicts)"
+        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+      - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
+        run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Run PHPUnit test suite"
+        run: "vendor/bin/phpunit --testsuite=symfony"
+
+###############################################################################
+################################### LARAVEL ###################################
+###############################################################################
+
+  laravel-unit:
+    needs: base-unit
+    name: "Laravel Unit"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extensions: ["scoutapm", ""]
+        laravel-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          - {php-version: "7.1", laravel-version: "6.*"} # Laravel 6 requires 7.2+
+          - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
+          - {php-version: "7.1", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "7.2", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "8.0", laravel-version: "5.5.*"} # Laravel 5.5.* does not support PHP 8.0+
+          - {php-version: "8.1", laravel-version: "5.5.*"} # Laravel 5.5.* does not support PHP 8.0+
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      # --no-update then a full `composer update` is needed to overcome locked dependencies
+      # See: https://github.com/composer/composer/issues/9561
+      - name: "Remove existing requirements components (avoid conflicts)"
+        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+      - name: "Require framework ${{ matrix.laravel-version}}"
+        run: "composer require laravel/framework:${{ matrix.laravel-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Run PHPUnit (Laravel) test suite"
+        run: "vendor/bin/phpunit --testsuite=laravel"
+
+  laravel-e2e:
+    needs: laravel-unit
+    name: "Laravel E2E"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extensions: ["scoutapm", ""]
+        laravel-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          - {php-version: "7.1", laravel-version: "6.*"} # Laravel 6 requires 7.2+
+          - {php-version: "7.1", laravel-version: "7.*"} # Laravel 7 requires 7.2+
+          - {php-version: "7.1", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "7.2", laravel-version: "8.*"} # Laravel 8 requires 7.3+
+          - {php-version: "8.0", laravel-version: "5.5.*"} # Laravel 5.5.* does not support PHP 8.0+
+          - {php-version: "8.1", laravel-version: "5.5.*"} # Laravel 5.5.* does not support PHP 8.0+
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: scout-apm-php
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      - name: "Install Laravel quickstart project"
+        run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
+      - name: "Add scout-apm-php as a repository"
+        run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Require scout-apm-php current checkout"
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
+      - name: "Publish the provider"
+        run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
+      - name: "Configure Scout"
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
+      - name: "Load the index page to trigger instrumentation"
+        run: |
+          cd test-app
+          cat .env
+          php artisan serve &
+          # Give Laravel a chance to start...
+          sleep 2
+          # Very occasionally in GH Actions, core-agent didn't quite start in time - so load the page twice
+          wget -O /dev/null http://localhost:8000
+          sleep 1
+          wget http://localhost:8000
+          cat index.html
+          ps -ax
+      - name: "Check logs for successful payload send"
+        run: |
+          cd test-app
+          cat storage/logs/laravel.log
+          grep -q "local.DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/laravel.log
+
+###############################################################################
+#################################### LUMEN ####################################
+###############################################################################
+
+  lumen-unit:
+    needs: base-unit
+    name: "Lumen Unit"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extensions: ["scoutapm", ""]
+        lumen-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
+          - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
+          - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.4", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 7.4+
+          - {php-version: "8.0", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      # --no-update then a full `composer update` is needed to overcome locked dependencies
+      # See: https://github.com/composer/composer/issues/9561
+      - name: "Remove existing requirements components (avoid conflicts)"
+        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+      - name: "Require framework ${{ matrix.lumen-version}}"
+        run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Composer update with new requirements"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Run PHPUnit (Lumen) test suite"
+        run: "vendor/bin/phpunit --testsuite=laravel" # Test suite is same as Laravel
+
+  lumen-e2e:
+    needs: lumen-unit
+    name: "Lumen E2E"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extensions: ["scoutapm", ""]
+        lumen-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          - {php-version: "7.1", lumen-version: "6.*"} # Lumen 6 requires 7.2+
+          - {php-version: "7.1", lumen-version: "7.*"} # Lumen 7 requires 7.2+
+          - {php-version: "7.1", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.2", lumen-version: "8.*"} # Lumen 8 requires 7.3+
+          - {php-version: "7.4", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 7.4+
+          - {php-version: "8.0", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "5.5.*"} # Lumen 5.5.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "6.*"} # Lumen 6.* does not support PHP 8.0+
+          - {php-version: "8.0", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
+          - {php-version: "8.1", lumen-version: "7.*"} # Lumen 7.* does not support PHP 8.0+
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: scout-apm-php
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      - name: "Install Lumen quickstart project"
+        run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
+      - name: "Add scout-apm-php as a repository"
+        run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Require scout-apm-php current checkout"
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
+      - name: "Configure the application"
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
+      - name: "Configure Scout"
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
+      - name: "Load the index page to trigger instrumentation"
+        run: |
+          cd test-app
+          cat .env
+          LOG_CHANNEL=single php -S localhost:8000 -t public/ &
+          # Give Lumen a chance to start...
+          sleep 2
+          # Very occasionally in GH Actions, core-agent didn't quite start in time - so load the page twice
+          wget -O /dev/null http://localhost:8000
+          sleep 1
+          wget http://localhost:8000
+          cat index.html
+          ps -ax
+      - name: "Check logs for successful payload send"
+        run: |
+          cd test-app
+          ls -l storage/logs/
+          cat storage/logs/lumen.log
+          grep -q "DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/lumen.log
+
