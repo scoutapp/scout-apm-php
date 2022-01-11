@@ -10,18 +10,15 @@ use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
 use Scoutapm\Connector\Command;
 use Scoutapm\Extension\ExtensionCapabilities;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
 use Scoutapm\Helper\Timer;
 
-use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function class_exists;
-use function getenv;
-use function gethostname;
-use function is_array;
 use function is_string;
-use function method_exists;
 use function sprintf;
 
 use const PHP_VERSION;
@@ -41,21 +38,29 @@ final class Metadata implements Command
     private $config;
     /** @var ExtensionCapabilities */
     private $phpExtension;
-    /** @var LocateFileOrFolder */
-    private $locateFileOrFolder;
+    /** @var FindApplicationRoot */
+    private $findApplicationRoot;
+    /** @var DetermineHostname */
+    private $determineHostname;
+    /** @var FindRootPackageGitSha */
+    private $findRootPackageGitSha;
 
     public function __construct(
         DateTimeImmutable $now,
         Config $config,
         ExtensionCapabilities $phpExtension,
-        LocateFileOrFolder $locateFileOrFolder
+        FindApplicationRoot $findApplicationRoot,
+        DetermineHostname $determineHostname,
+        FindRootPackageGitSha $findRootPackageGitSha
     ) {
         // Construct and stop the timer to use its timestamp logic. This event
         // is a single point in time, not a range.
-        $this->timer              = new Timer((float) $now->format('U.u'));
-        $this->config             = $config;
-        $this->phpExtension       = $phpExtension;
-        $this->locateFileOrFolder = $locateFileOrFolder;
+        $this->timer                 = new Timer((float) $now->format('U.u'));
+        $this->config                = $config;
+        $this->phpExtension          = $phpExtension;
+        $this->findApplicationRoot   = $findApplicationRoot;
+        $this->determineHostname     = $determineHostname;
+        $this->findRootPackageGitSha = $findRootPackageGitSha;
     }
 
     public function cleanUp(): void
@@ -77,35 +82,16 @@ final class Metadata implements Command
             'framework_version' => $this->config->get(ConfigKey::FRAMEWORK_VERSION) ?? '',
             'environment' => '',
             'app_server' => '',
-            'hostname' => $this->config->get(ConfigKey::HOSTNAME) ?? gethostname(),
+            'hostname' => ($this->determineHostname)(),
             'database_engine' => '',
             'database_adapter' => '',
             'application_name' => $this->config->get(ConfigKey::APPLICATION_NAME) ?? '',
             'libraries' => $this->getLibraries(),
             'paas' => '',
-            'application_root' => $this->applicationRoot(),
+            'application_root' => ($this->findApplicationRoot)(),
             'scm_subdirectory' => $this->scmSubdirectory(),
-            'git_sha' => $this->rootPackageGitSha(),
+            'git_sha' => ($this->findRootPackageGitSha)(),
         ];
-    }
-
-    private function applicationRoot(): string
-    {
-        $applicationRootConfiguration = $this->config->get(ConfigKey::APPLICATION_ROOT);
-        if (is_string($applicationRootConfiguration) && $applicationRootConfiguration !== '') {
-            return $applicationRootConfiguration;
-        }
-
-        $composerJsonLocation = $this->locateFileOrFolder->__invoke('composer.json');
-        if ($composerJsonLocation !== null) {
-            return $composerJsonLocation;
-        }
-
-        if (! array_key_exists('DOCUMENT_ROOT', $_SERVER)) {
-            return '';
-        }
-
-        return $_SERVER['DOCUMENT_ROOT'];
     }
 
     private function scmSubdirectory(): string
@@ -113,29 +99,6 @@ final class Metadata implements Command
         $scmSubdirectoryConfiguration = $this->config->get(ConfigKey::SCM_SUBDIRECTORY);
         if (is_string($scmSubdirectoryConfiguration) && $scmSubdirectoryConfiguration !== '') {
             return $scmSubdirectoryConfiguration;
-        }
-
-        return '';
-    }
-
-    private function rootPackageGitSha(): string
-    {
-        $revisionShaConfiguration = $this->config->get(ConfigKey::REVISION_SHA);
-        if (is_string($revisionShaConfiguration) && $revisionShaConfiguration !== '') {
-            return $revisionShaConfiguration;
-        }
-
-        $herokuSlugCommit = getenv('HEROKU_SLUG_COMMIT');
-        if (is_string($herokuSlugCommit) && $herokuSlugCommit !== '') {
-            return $herokuSlugCommit;
-        }
-
-        if (class_exists(InstalledVersions::class) && method_exists(InstalledVersions::class, 'getRootPackage')) {
-            /** @var mixed $rootPackage */
-            $rootPackage = InstalledVersions::getRootPackage();
-            if (is_array($rootPackage) && array_key_exists('reference', $rootPackage) && is_string($rootPackage['reference'])) {
-                return $rootPackage['reference'];
-            }
         }
 
         return '';

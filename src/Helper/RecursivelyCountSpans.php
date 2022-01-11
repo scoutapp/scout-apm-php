@@ -9,7 +9,8 @@ use Scoutapm\Events\Span\Span;
 
 use function array_reduce;
 
-abstract class RecursivelyCountSpans
+/** @internal */
+final class RecursivelyCountSpans
 {
     /** @param Command[] $commands */
     public static function forCommands(array $commands): int

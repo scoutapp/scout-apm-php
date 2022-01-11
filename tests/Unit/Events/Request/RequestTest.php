@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\Events\Request;
 
 use Exception;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Config;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Request\RequestId;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\UnitTests\TestHelper;
 
 use function array_key_exists;
@@ -32,12 +35,32 @@ final class RequestTest extends TestCase
 
     private const FIXED_POINT_UNIX_EPOCH_SECONDS = 1000000000.0;
 
+    /** @var Superglobals&MockObject */
+    private $superglobals;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        $this->superglobals = $this->createMock(Superglobals::class);
+    }
+
     /** @psalm-param array<string, mixed> $configOverrides */
     private function requestFromConfiguration(array $configOverrides = [], ?float $overrideTime = null): Request
     {
         return Request::fromConfigAndOverrideTime(
+            $this->superglobals,
             Config::fromArray($configOverrides),
+            new FindRequestHeadersUsingServerGlobal($this->superglobals),
             $overrideTime
+        );
+    }
+
+    public function testRequestHasDifferentId(): void
+    {
+        self::assertNotEquals(
+            $this->requestFromConfiguration()->id(),
+            $this->requestFromConfiguration()->id()
         );
     }
 
@@ -104,7 +127,9 @@ final class RequestTest extends TestCase
 
     public function testRequestUriFromServerGlobalIsTaggedWhenRequestStoppedWithParametersRemovedByDefault(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
@@ -113,12 +138,17 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server', $request->requestPath());
     }
 
     public function testOrigPathInfoFromServerGlobalIsTaggedWhenRequestStopped(): void
     {
-        $_SERVER['REQUEST_URI']    = null;
-        $_SERVER['ORIG_PATH_INFO'] = '/orig-path-info-from-server';
+        $this->superglobals
+            ->method('server')
+            ->willReturn([
+                'REQUEST_URI' => null,
+                'ORIG_PATH_INFO' => '/orig-path-info-from-server',
+            ]);
 
         $request = $this->requestFromConfiguration();
         $request->stopIfRunning();
@@ -127,11 +157,14 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/orig-path-info-from-server', $tagRequest['value']);
+        self::assertSame('/orig-path-info-from-server', $request->requestPath());
     }
 
     public function testRequestUriFromOverrideIsTaggedWhenRequestStopped(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration();
         $request->overrideRequestUri('/overridden-request-uri');
@@ -141,11 +174,14 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/overridden-request-uri', $tagRequest['value']);
+        self::assertSame('/overridden-request-uri', $request->requestPath());
     }
 
     public function testRequestUriQueryParametersAreNotRemovedWhenFullPathUriReportingIsUsed(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?a=1&b=2';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?a=1&b=2']);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FULL_PATH,
@@ -156,6 +192,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server?a=1&b=2', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server?a=1&b=2', $request->requestPath());
     }
 
     /**
@@ -201,7 +238,11 @@ final class RequestTest extends TestCase
      */
     public function testRequestUriDefaultQueryParametersAreFilteredWhenFilteringEnabled(string $parameterName): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?' . $parameterName . '=someValue';
+        $this->superglobals
+            ->method('server')
+            ->willReturn([
+                'REQUEST_URI' => '/request-uri-from-server?' . $parameterName . '=someValue',
+            ]);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,
@@ -212,11 +253,14 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server', $request->requestPath());
     }
 
     public function testRequestUriCustomQueryParametersAreFilteredWhenFilteringEnabled(): void
     {
-        $_SERVER['REQUEST_URI'] = '/request-uri-from-server?aFilteredParam=someValue&notFiltered=anotherValue';
+        $this->superglobals
+            ->method('server')
+            ->willReturn(['REQUEST_URI' => '/request-uri-from-server?aFilteredParam=someValue&notFiltered=anotherValue']);
 
         $request = $this->requestFromConfiguration([
             Config\ConfigKey::URI_REPORTING => Config\ConfigKey::URI_REPORTING_FILTERED,
@@ -228,6 +272,7 @@ final class RequestTest extends TestCase
 
         self::assertSame('path', $tagRequest['tag']);
         self::assertSame('/request-uri-from-server?notFiltered=anotherValue', $tagRequest['value']);
+        self::assertSame('/request-uri-from-server?notFiltered=anotherValue', $request->requestPath());
     }
 
     public function testJsonSerializes(): void
@@ -324,7 +369,7 @@ final class RequestTest extends TestCase
     public function testRequestIsTaggedWithQueueTime(string $headerName, string $headerValue): void
     {
         // 2 = 2ms after epoch
-        $_SERVER[$headerName] = $headerValue;
+        $this->superglobals->method('server')->willReturn([$headerName => $headerValue]);
 
         // 0.005 = 5ms after epoch
         $request = $this->requestFromConfiguration([], self::FIXED_POINT_UNIX_EPOCH_SECONDS + 0.005);
@@ -344,8 +389,6 @@ final class RequestTest extends TestCase
         }
 
         self::assertTrue($foundTag, 'Could not find queue time tag');
-
-        unset($_SERVER[$headerName]);
     }
 
     public function testSpansAreNotRecordedBelowLeafSpans(): void
@@ -373,5 +416,61 @@ final class RequestTest extends TestCase
 
         $children = TestHelper::childrenForCommand($firstSpan);
         self::assertCount(0, $children);
+    }
+
+    public function testTagsCanBeRetrieved(): void
+    {
+        $request = $this->requestFromConfiguration();
+
+        $request->startSpan('Foo');
+        $request->tag('a', 'a');
+        $request->tag('b', 'b');
+        $request->stopSpan();
+
+        self::assertEquals(
+            [
+                'a' => 'a',
+                'b' => 'b',
+            ],
+            $request->tags()
+        );
+    }
+
+    /**
+     * @psalm-return list<array{0: list<string>, 1: ?string}>
+     */
+    public function controllerNameProvider(): array
+    {
+        return [
+            [['Controller/Foo'], 'Controller/Foo'],
+            [['Interesting/Span', 'Controller/Foo'], 'Controller/Foo'],
+            [['Job/Bar'], 'Job/Bar'],
+            [['Interesting/Span', 'Job/Bar'], 'Job/Bar'],
+            // Whichever Controller/Job comes first is the one that is picked
+            [['Controller/Foo', 'Job/Bar'], 'Controller/Foo'],
+            [['Interesting/Span', 'Controller/Foo', 'Job/Bar'], 'Controller/Foo'],
+            [['Job/Bar', 'Controller/Foo'], 'Job/Bar'],
+            [['Interesting/Span', 'Job/Bar', 'Controller/Foo'], 'Job/Bar'],
+            [['Middleware/Baz'], null],
+            [['Interesting/Span', 'Middleware/Baz'], null],
+            [[], null],
+        ];
+    }
+
+    /**
+     * @param list<string> $spans
+     *
+     * @dataProvider controllerNameProvider
+     */
+    public function testControllerNameIsDetermined(array $spans, ?string $expectedName): void
+    {
+        $request = $this->requestFromConfiguration();
+
+        foreach ($spans as $span) {
+            $request->startSpan($span);
+            $request->stopSpan();
+        }
+
+        self::assertSame($expectedName, $request->controllerOrJobName());
     }
 }

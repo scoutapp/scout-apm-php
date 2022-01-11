@@ -15,13 +15,19 @@ use Scoutapm\Config\ConfigKey;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\Version;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\DetermineHostname\DetermineHostname;
+use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRoot;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitSha;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
+use Scoutapm\Helper\Superglobals\Superglobals;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Helper\Timer;
 
-use function gethostname;
 use function json_decode;
 use function json_encode;
 use function putenv;
+use function sha1;
 use function sprintf;
 use function uniqid;
 
@@ -33,10 +39,16 @@ use const PHP_VERSION;
  */
 final class MetadataTest extends TestCase
 {
+    private const FAKE_APPLICATION_ROOT = '/fake/path/to/app';
+
     /** @var ExtensionCapabilities&MockObject */
     private $phpExtension;
-    /** @var LocateFileOrFolder&MockObject */
-    private $locateFileOrFolder;
+    /** @var FindApplicationRoot&MockObject */
+    private $findApplicationRoot;
+    /** @var DetermineHostname&MockObject */
+    private $determineHostname;
+    /** @var FindRootPackageGitSha&MockObject */
+    private $findRootPackageGitSha;
     /** @var DateTimeImmutable */
     private $time;
 
@@ -44,8 +56,14 @@ final class MetadataTest extends TestCase
     {
         parent::setUp();
 
-        $this->phpExtension       = $this->createMock(ExtensionCapabilities::class);
-        $this->locateFileOrFolder = $this->createMock(LocateFileOrFolder::class);
+        $this->phpExtension          = $this->createMock(ExtensionCapabilities::class);
+        $this->findApplicationRoot   = $this->createMock(FindApplicationRoot::class);
+        $this->determineHostname     = $this->createMock(DetermineHostname::class);
+        $this->findRootPackageGitSha = $this->createMock(FindRootPackageGitSha::class);
+
+        $this->findApplicationRoot
+            ->method('__invoke')
+            ->willReturn(self::FAKE_APPLICATION_ROOT);
 
         $this->time = new DateTimeImmutable('now', new DateTimeZone('UTC'));
     }
@@ -84,7 +102,6 @@ final class MetadataTest extends TestCase
             ->willReturn(Version::fromString('1.2.3'));
 
         $config = Config::fromArray([
-            ConfigKey::APPLICATION_ROOT => '/fake/app/root',
             ConfigKey::SCM_SUBDIRECTORY => '/fake/scm/subdirectory',
             ConfigKey::APPLICATION_NAME => 'My amazing application',
             ConfigKey::REVISION_SHA => 'abc123',
@@ -112,7 +129,7 @@ final class MetadataTest extends TestCase
                         'application_name' => 'My amazing application',
                         'libraries' => $this->installedVersions('1.2.3'),
                         'paas' => '',
-                        'application_root' => '/fake/app/root',
+                        'application_root' => self::FAKE_APPLICATION_ROOT,
                         'scm_subdirectory' => '/fake/scm/subdirectory',
                         'git_sha' => 'abc123',
                     ],
@@ -120,7 +137,17 @@ final class MetadataTest extends TestCase
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
+            json_decode(json_encode(new Metadata(
+                $this->time,
+                $config,
+                $this->phpExtension,
+                $this->findApplicationRoot,
+                new DetermineHostnameWithConfigOverride($config),
+                new FindRootPackageGitShaWithHerokuAndConfigOverride(
+                    $config,
+                    $this->createMock(Superglobals::class)
+                )
+            )), true)
         );
     }
 
@@ -133,7 +160,17 @@ final class MetadataTest extends TestCase
 
         $config = Config::fromArray([]);
 
-        $_SERVER['DOCUMENT_ROOT'] = '/fake/document/root';
+        $hostname = uniqid('determined-hostname-', true);
+        $this->determineHostname
+            ->expects(self::once())
+            ->method('__invoke')
+            ->willReturn($hostname);
+
+        $gitRevision = sha1(uniqid('git-revision', true));
+        $this->findRootPackageGitSha
+            ->expects(self::once())
+            ->method('__invoke')
+            ->willReturn($gitRevision);
 
         self::assertEquals(
             [
@@ -148,21 +185,28 @@ final class MetadataTest extends TestCase
                         'framework_version' => '',
                         'environment' => '',
                         'app_server' => '',
-                        'hostname' => gethostname(),
+                        'hostname' => $hostname,
                         'database_engine' => '',
                         'database_adapter' => '',
                         'application_name' => '',
                         'libraries' => $this->installedVersions('not installed'),
                         'paas' => '',
-                        'application_root' => '/fake/document/root',
+                        'application_root' => self::FAKE_APPLICATION_ROOT,
                         'scm_subdirectory' => '',
-                        'git_sha' => InstalledVersions::getRootPackage()['reference'],
+                        'git_sha' => $gitRevision,
                     ],
                     'event_type' => 'scout.metadata',
                     'source' => 'php',
                 ],
             ],
-            json_decode(json_encode(new Metadata($this->time, $config, $this->phpExtension, $this->locateFileOrFolder)), true)
+            json_decode(json_encode(new Metadata(
+                $this->time,
+                $config,
+                $this->phpExtension,
+                $this->findApplicationRoot,
+                $this->determineHostname,
+                $this->findRootPackageGitSha
+            )), true)
         );
     }
 
@@ -171,15 +215,24 @@ final class MetadataTest extends TestCase
     {
         $testHerokuSlugCommit = uniqid('testHerokuSlugCommit', true);
 
-        putenv('HEROKU_SLUG_COMMIT=' . $testHerokuSlugCommit);
+        $superglobals = new SuperglobalsArrays(
+            [],
+            [],
+            ['HEROKU_SLUG_COMMIT' => $testHerokuSlugCommit],
+            []
+        );
+
+        $config = Config::fromArray([]);
 
         self::assertSame(
             $testHerokuSlugCommit,
             json_decode(json_encode(new Metadata(
                 $this->time,
-                Config::fromArray([]),
+                $config,
                 $this->phpExtension,
-                $this->locateFileOrFolder
+                $this->findApplicationRoot,
+                $this->determineHostname,
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($config, $superglobals)
             )), true)['ApplicationEvent']['event_value']['git_sha']
         );
 

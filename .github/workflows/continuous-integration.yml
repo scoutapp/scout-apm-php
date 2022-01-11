@@ -60,6 +60,11 @@ jobs:
           sudo mkdir -p /tmp/pear/temp
           sudo pecl update-channels
           yes | sudo pecl install -f scoutapm
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
         run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
@@ -172,6 +177,11 @@ jobs:
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
         run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
@@ -235,6 +245,11 @@ jobs:
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
       - name: "Require framework ${{ matrix.laravel-version}}"
         run: "composer require laravel/framework:${{ matrix.laravel-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter for PHP 7.1"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Laravel) test suite"
@@ -294,12 +309,27 @@ jobs:
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
-      - name: "Require scout-apm-php current checkout"
-        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
+      - name: "Require scout-apm-php current checkout (PHP 7.2+)"
+        if: ${{ matrix.php-version != '7.1' }}
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
+      - name: "Require scout-apm-php current checkout (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Publish the provider"
         run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
+      - name: "Configure error handler (Laravel 5-6)"
+        if: ${{ matrix.laravel-version == '5.5.*' || matrix.laravel-version == '6.*' }}
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel5-6-exception-handler.php app/Exceptions/Handler.php
+      - name: "Configure error handler (Laravel 7)"
+        if: ${{ matrix.laravel-version == '7.*' }}
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel7-exception-handler.php app/Exceptions/Handler.php
+      - name: "Configure error handler (Laravel 8)"
+        if: ${{ matrix.laravel-version == '8.*' }}
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel8-exception-handler.php app/Exceptions/Handler.php
+      - name: "Add route to trigger error"
+        run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app
@@ -310,14 +340,21 @@ jobs:
           # Very occasionally in GH Actions, core-agent didn't quite start in time - so load the page twice
           wget -O /dev/null http://localhost:8000
           sleep 1
-          wget http://localhost:8000
+          # Regular page load instrumentation
+          wget --content-on-error -O index.html http://localhost:8000
           cat index.html
+          # Error capture
+          wget --content-on-error -O error.html http://localhost:8000/e || true
+          cat error.html
           ps -ax
       - name: "Check logs for successful payload send"
         run: |
           cd test-app
           cat storage/logs/laravel.log
+          echo "Checking for APM instrumentation"
           grep -q "local.DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/laravel.log
+          echo "Checking for Error Reporting"
+          grep -q "local.DEBUG: \[Scout\] Sent 1 error event to Scout Error Reporting" storage/logs/laravel.log
 
 ###############################################################################
 #################################### LUMEN ####################################
@@ -376,6 +413,11 @@ jobs:
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Lumen) test suite"
@@ -436,8 +478,12 @@ jobs:
         run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
-      - name: "Require scout-apm-php current checkout"
-        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev composer/package-versions-deprecated
+      - name: "Require scout-apm-php current checkout (PHP 7.2+)"
+        if: ${{ matrix.php-version != '7.1' }}
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
+      - name: "Require scout-apm-php current checkout (PHP 7.1)"
+        if: ${{ matrix.php-version == '7.1' }}
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"

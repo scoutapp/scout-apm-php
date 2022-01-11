@@ -22,6 +22,8 @@ use Scoutapm\CoreAgent\AutomaticDownloadAndLaunchManager;
 use Scoutapm\CoreAgent\Downloader;
 use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\CoreAgent\Verifier;
+use Scoutapm\Errors\ErrorHandling;
+use Scoutapm\Errors\ErrorHandlingDiscoveryFactory;
 use Scoutapm\Events\Metadata;
 use Scoutapm\Events\RegisterMessage;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
@@ -32,7 +34,15 @@ use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
-use Scoutapm\Helper\LocateFileOrFolder;
+use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
+use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeadersUsingServerGlobal;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
+use Scoutapm\Helper\RootPackageGitSha\FindRootPackageGitShaWithHerokuAndConfigOverride;
+use Scoutapm\Helper\Superglobals\Superglobals;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\MongoDB\QueryTimeCollector;
 use Throwable;
@@ -59,7 +69,7 @@ final class Agent implements ScoutApmAgent
     private $request;
     /** @var Connector */
     private $connector;
-    /** @var LoggerInterface */
+    /** @var FilteredLogLevelDecorator */
     private $logger;
     /** @var IgnoredEndpoints Class that helps check incoming http paths vs. the configured ignore list*/
     private $ignoredEndpoints;
@@ -75,14 +85,23 @@ final class Agent implements ScoutApmAgent
     private $spanLimitReached = false;
     /** @var LocateFileOrFolder */
     private $locateFileOrFolder;
+    /** @var ErrorHandling */
+    private $errorHandling;
+    /** @var Superglobals */
+    private $superglobals;
+    /** @var FindRequestHeaders */
+    private $findRequestHeaders;
 
     private function __construct(
         Config $configuration,
         Connector $connector,
-        LoggerInterface $logger,
+        FilteredLogLevelDecorator $logger,
         ExtensionCapabilities $phpExtension,
         CacheInterface $cache,
-        LocateFileOrFolder $locateFileOrFolder
+        LocateFileOrFolder $locateFileOrFolder,
+        ErrorHandling $errorHandling,
+        Superglobals $superglobals,
+        FindRequestHeadersUsingServerGlobal $findRequestHeaders
     ) {
         $this->config             = $configuration;
         $this->connector          = $connector;
@@ -90,13 +109,9 @@ final class Agent implements ScoutApmAgent
         $this->phpExtension       = $phpExtension;
         $this->cache              = $cache;
         $this->locateFileOrFolder = $locateFileOrFolder;
-
-        if (! $this->logger instanceof FilteredLogLevelDecorator) {
-            $this->logger = new FilteredLogLevelDecorator(
-                $this->logger,
-                $this->config->get(ConfigKey::LOG_LEVEL)
-            );
-        }
+        $this->errorHandling      = $errorHandling;
+        $this->superglobals       = $superglobals;
+        $this->findRequestHeaders = $findRequestHeaders;
 
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
@@ -137,15 +152,28 @@ final class Agent implements ScoutApmAgent
         ?CacheInterface $cache = null,
         ?Connector $connector = null,
         ?ExtensionCapabilities $extensionCapabilities = null,
-        ?LocateFileOrFolder $locateFileOrFolder = null
+        ?LocateFileOrFolder $locateFileOrFolder = null,
+        ?ErrorHandling $errorHandling = null
     ): self {
+        if (! $logger instanceof FilteredLogLevelDecorator) {
+            $logger = new FilteredLogLevelDecorator(
+                $logger,
+                (string) $config->get(ConfigKey::LOG_LEVEL)
+            );
+        }
+
+        $superglobals = SuperglobalsArrays::fromGlobalState();
+
         return new self(
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
             $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
             $cache ?? new DevNullCache(),
-            $locateFileOrFolder ?? new LocateFileOrFolder()
+            $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
+            $errorHandling ?? ErrorHandlingDiscoveryFactory::createAndListen($config, $logger, $superglobals),
+            $superglobals,
+            new FindRequestHeadersUsingServerGlobal($superglobals)
         );
     }
 
@@ -415,6 +443,11 @@ final class Agent implements ScoutApmAgent
         $this->request->overrideRequestUri($newRequestUri);
     }
 
+    public function recordThrowable(Throwable $throwable): void
+    {
+        $this->errorHandling->recordThrowable($throwable);
+    }
+
     /** {@inheritDoc} */
     public function send(): bool
     {
@@ -459,6 +492,8 @@ final class Agent implements ScoutApmAgent
             $this->addSpansFromExtension();
             $this->request->stopIfRunning();
 
+            $this->errorHandling->sendCollectedErrors();
+
             $shouldLogContent = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);
 
             $this->logger->debug(sprintf(
@@ -495,7 +530,9 @@ final class Agent implements ScoutApmAgent
             $this->request->cleanUp();
         }
 
-        $this->request = Request::fromConfigAndOverrideTime($this->config);
+        $this->request = Request::fromConfigAndOverrideTime($this->superglobals, $this->config, $this->findRequestHeaders);
+
+        $this->errorHandling->changeCurrentRequest($this->request);
     }
 
     private function registerIfRequired(): void
@@ -507,7 +544,7 @@ final class Agent implements ScoutApmAgent
         $this->connector->sendCommand(new RegisterMessage(
             (string) $this->config->get(ConfigKey::APPLICATION_NAME),
             (string) $this->config->get(ConfigKey::APPLICATION_KEY),
-            $this->config->get(ConfigKey::API_VERSION)
+            (string) $this->config->get(ConfigKey::API_VERSION)
         ));
 
         $this->registered = true;
@@ -529,7 +566,9 @@ final class Agent implements ScoutApmAgent
                 new DateTimeImmutable('now', new DateTimeZone('UTC')),
                 $this->config,
                 $this->phpExtension,
-                $this->locateFileOrFolder
+                new FindApplicationRootWithConfigOverride($this->locateFileOrFolder, $this->config, $this->superglobals),
+                new DetermineHostnameWithConfigOverride($this->config),
+                new FindRootPackageGitShaWithHerokuAndConfigOverride($this->config, $this->superglobals)
             ));
 
             $this->markMetadataSent();

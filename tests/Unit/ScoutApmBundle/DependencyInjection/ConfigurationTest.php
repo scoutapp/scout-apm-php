@@ -42,6 +42,11 @@ final class ConfigurationTest extends TestCase
                     'log_payload_content' => null,
                     'uri_reporting' => null,
                     'uri_filtered_params' => null,
+                    'errors_enabled' => null,
+                    'errors_ignored_exceptions' => null,
+                    'errors_host' => null,
+                    'errors_batch_size' => null,
+                    'errors_filtered_params' => null,
                 ],
             ],
             (new Processor())->processConfiguration(

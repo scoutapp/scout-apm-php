@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\UnitTests\ScoutApmBundle\EventListener;
 
 use Exception;
+use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Events\Span\Span;
@@ -13,6 +14,7 @@ use Scoutapm\ScoutApmAgent;
 use Scoutapm\ScoutApmBundle\EventListener\InstrumentationListener;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 /** @covers \Scoutapm\ScoutApmBundle\EventListener\InstrumentationListener */
@@ -152,10 +154,28 @@ final class InstrumentationListenerTest extends TestCase
         $this->listener->onKernelRequest();
     }
 
+    public function testAgentSendsExceptionWhenExceptionOccurs(): void
+    {
+        $exception = new OutOfBoundsException('things');
+
+        $this->agent
+            ->expects(self::once())
+            ->method('recordThrowable')
+            ->with($exception);
+
+        $this->listener->onKernelException(new ExceptionEvent(
+            $this->createMock(HttpKernelInterface::class),
+            new Request(),
+            0,
+            $exception
+        ));
+    }
+
     public function testListenerIsSubscribedToCorrectEvents(): void
     {
         self::assertEquals(
             [
+                'kernel.exception' => ['onKernelException', 100],
                 'kernel.request' => ['onKernelRequest', -100],
                 'kernel.controller' => ['onKernelController', -100],
                 'kernel.response' => ['onKernelResponse', 0],

@@ -12,21 +12,26 @@ use Scoutapm\Connector\Command;
 use Scoutapm\Connector\CommandWithChildren;
 use Scoutapm\Events\Request\Exception\SpanLimitReached;
 use Scoutapm\Events\Span\Span;
+use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Events\Tag\TagRequest;
-use Scoutapm\Helper\FetchRequestHeaders;
+use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
 use Scoutapm\Helper\FormatUrlPathAndQuery;
 use Scoutapm\Helper\MemoryUsage;
 use Scoutapm\Helper\RecursivelyCountSpans;
+use Scoutapm\Helper\Superglobals\Superglobals;
 use Scoutapm\Helper\Timer;
 
+use function array_combine;
+use function array_filter;
 use function array_key_exists;
 use function array_map;
 use function array_values;
+use function count;
 use function in_array;
-use function is_array;
 use function is_string;
 use function microtime;
+use function stripos;
 use function strpos;
 use function substr;
 
@@ -61,10 +66,12 @@ class Request implements CommandWithChildren
      * @var string[]
      */
     private $filteredParameters;
+    /** @var FindRequestHeaders */
+    private $findRequestHeaders;
+    /** @var Superglobals */
+    private $superglobals;
 
     /**
-     * @deprecated Constructor will be made private in future, use {@see \Scoutapm\Events\Request\Request::fromConfigAndOverrideTime}
-     *
      * @param string[] $filteredParameters
      *
      * @throws Exception
@@ -72,7 +79,7 @@ class Request implements CommandWithChildren
      * @psalm-param Config\ConfigKey::URI_REPORTING_* $uriReportingOption
      * @psalm-param list<string> $filteredParameters
      */
-    public function __construct(string $uriReportingOption, array $filteredParameters, ?float $override = null)
+    private function __construct(Superglobals $superglobals, FindRequestHeaders $findRequestHeaders, string $uriReportingOption, array $filteredParameters, ?float $override = null)
     {
         $this->id = RequestId::new();
 
@@ -81,6 +88,8 @@ class Request implements CommandWithChildren
 
         $this->currentCommand = $this;
 
+        $this->superglobals       = $superglobals;
+        $this->findRequestHeaders = $findRequestHeaders;
         $this->uriReportingOption = $uriReportingOption;
         $this->filteredParameters = $filteredParameters;
     }
@@ -99,36 +108,20 @@ class Request implements CommandWithChildren
         return $uriReportingConfiguration;
     }
 
-    /** @psalm-return list<string> */
-    private static function requireValidFilteredUriParameters(Config $config): array
-    {
-        /** @var mixed $uriFilteredParameters */
-        $uriFilteredParameters = $config->get(ConfigKey::URI_FILTERED_PARAMETERS);
-
-        /** @var list<string> $defaultFilteredParameters */
-        $defaultFilteredParameters = (new Config\Source\DefaultSource())->get(ConfigKey::URI_FILTERED_PARAMETERS);
-
-        if (! is_array($uriFilteredParameters)) {
-            return $defaultFilteredParameters;
-        }
-
-        foreach ($uriFilteredParameters as $filteredParameter) {
-            if (! is_string($filteredParameter)) {
-                return $defaultFilteredParameters;
-            }
-        }
-
-        /** @psalm-var array<array-key, string> $uriFilteredParameters */
-        return array_values($uriFilteredParameters);
-    }
-
-    public static function fromConfigAndOverrideTime(Config $config, ?float $override = null): self
+    public static function fromConfigAndOverrideTime(Superglobals $superglobals, Config $config, FindRequestHeaders $findRequestHeaders, ?float $override = null): self
     {
         return new self(
+            $superglobals,
+            $findRequestHeaders,
             self::requireValidUriReportingValue($config),
-            self::requireValidFilteredUriParameters($config),
+            Config\Helper\RequireValidFilteredParameters::fromConfigForUris($config),
             $override
         );
+    }
+
+    public function id(): RequestId
+    {
+        return $this->id;
     }
 
     public function cleanUp(): void
@@ -146,7 +139,12 @@ class Request implements CommandWithChildren
             $this->id,
             $this->startMemory,
             $this->requestUriOverride,
-            $this->spanCount
+            $this->spanCount,
+            $this->leafNodeDepth,
+            $this->uriReportingOption,
+            $this->filteredParameters,
+            $this->findRequestHeaders,
+            $this->superglobals
         );
     }
 
@@ -157,15 +155,17 @@ class Request implements CommandWithChildren
 
     private function determineRequestPathFromServerGlobal(): string
     {
-        $requestUri = $_SERVER['REQUEST_URI'] ?? null;
+        $server = $this->superglobals->server();
 
-        if (is_string($requestUri)) {
+        $requestUri = $server['REQUEST_URI'] ?? null;
+
+        if (is_string($requestUri) && $requestUri !== '') {
             return $requestUri;
         }
 
-        $origPathInfo = $_SERVER['ORIG_PATH_INFO'] ?? null;
+        $origPathInfo = $server['ORIG_PATH_INFO'] ?? null;
 
-        if (is_string($origPathInfo)) {
+        if (is_string($origPathInfo) && $origPathInfo !== '') {
             return $origPathInfo;
         }
 
@@ -209,7 +209,7 @@ class Request implements CommandWithChildren
     /** @throws Exception */
     private function tagRequestIfRequestQueueTimeHeaderExists(float $currentTimeInSeconds): void
     {
-        $headers = FetchRequestHeaders::fromServerGlobal();
+        $headers = ($this->findRequestHeaders)();
 
         foreach (['X-Queue-Start', 'X-Request-Start'] as $headerToCheck) {
             if (! array_key_exists($headerToCheck, $headers)) {
@@ -250,16 +250,25 @@ class Request implements CommandWithChildren
         $this->timer->stop($overrideTimestamp);
 
         $this->tag(Tag::TAG_MEMORY_DELTA, MemoryUsage::record()->usedDifferenceInMegabytes($this->startMemory));
-        $this->tag(
-            Tag::TAG_REQUEST_PATH,
-            FormatUrlPathAndQuery::forUriReportingConfiguration(
-                $this->uriReportingOption,
-                $this->filteredParameters,
-                $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal()
-            )
-        );
+        $this->tag(Tag::TAG_REQUEST_PATH, $this->requestPath());
 
         $this->tagRequestIfRequestQueueTimeHeaderExists($currentTime ?? microtime(true));
+    }
+
+    /** @return non-empty-string */
+    public function requestPath(): string
+    {
+        $uriPathAndQuery = FormatUrlPathAndQuery::forUriReportingConfiguration(
+            $this->uriReportingOption,
+            $this->filteredParameters,
+            $this->requestUriOverride ?? $this->determineRequestPathFromServerGlobal()
+        );
+
+        if ($uriPathAndQuery === '') {
+            return 'Unable to detect URL for request';
+        }
+
+        return $uriPathAndQuery;
     }
 
     /**
@@ -326,6 +335,57 @@ class Request implements CommandWithChildren
     public function tag(string $tagName, $value): void
     {
         $this->appendChild(new TagRequest($tagName, $value, $this->id));
+    }
+
+    /** @return array<string, string> */
+    public function tags(): array
+    {
+        $tagCommands = array_filter(
+            $this->children,
+            static function (Command $command): bool {
+                return $command instanceof Tag;
+            }
+        );
+
+        return array_combine(
+            array_map(
+                static function (Tag $tag): string {
+                    return $tag->getTag();
+                },
+                $tagCommands
+            ),
+            array_map(
+                static function (Tag $tag): string {
+                    return $tag->getValue();
+                },
+                $tagCommands
+            )
+        );
+    }
+
+    public function controllerOrJobName(): ?string
+    {
+        $controllerOrJobSpanNames = array_map(
+            static function (Span $span): string {
+                return $span->getName();
+            },
+            array_filter(
+                $this->children,
+                static function (Command $command): bool {
+                    return $command instanceof Span && (
+                        stripos($command->getName(), SpanReference::INSTRUMENT_CONTROLLER) === 0
+                        || stripos($command->getName(), SpanReference::INSTRUMENT_JOB) === 0
+                    );
+                }
+            )
+        );
+
+        if (! count($controllerOrJobSpanNames)) {
+            return null;
+        }
+
+        // Ideally there is only ever one...
+        return array_values($controllerOrJobSpanNames)[0];
     }
 
     /**

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper;
 
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolder;
+use Scoutapm\Helper\LocateFileOrFolder\LocateFileOrFolderUsingFilesystem;
+
 use function array_filter;
 use function array_key_exists;
 use function array_slice;
@@ -61,7 +64,7 @@ final class Backtrace
      *
      * @psalm-return list<ScoutStackFrame>
      */
-    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = 3): array
+    public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = LocateFileOrFolder::SKIP_LEVELS_DEFAULT): array
     {
         return self::filterVendorFramesFromStack(self::capture(), $skipPathLevelsWhenLocatingComposerJson);
     }
@@ -155,7 +158,8 @@ final class Backtrace
      */
     private static function filterVendorFramesFromStack(array $formattedStack, int $skipPathLevelsWhenLocatingComposerJson): array
     {
-        $pathWhereComposerLives = (new LocateFileOrFolder())->__invoke('composer.json', $skipPathLevelsWhenLocatingComposerJson);
+        // @todo static instantiation of service should be refactored
+        $pathWhereComposerLives = (new LocateFileOrFolderUsingFilesystem())->__invoke('composer.json', $skipPathLevelsWhenLocatingComposerJson);
 
         // Probably not using composer, so we don't know how to find `vendor` directory anyway, so return early
         if ($pathWhereComposerLives === null) {

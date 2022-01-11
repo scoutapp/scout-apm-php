@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Scoutapm\Helper;
+namespace Scoutapm\Helper\FindRequestHeaders;
+
+use Scoutapm\Helper\Superglobals\Superglobals;
 
 use function array_combine;
 use function array_filter;
@@ -18,26 +20,24 @@ use function ucwords;
 use const ARRAY_FILTER_USE_BOTH;
 
 /** @internal */
-abstract class FetchRequestHeaders
+final class FindRequestHeadersUsingServerGlobal implements FindRequestHeaders
 {
+    /** @var Superglobals */
+    private $superglobals;
+
+    public function __construct(Superglobals $superglobals)
+    {
+        $this->superglobals = $superglobals;
+    }
+
     /**
      * @internal
      *
      * @return array<string, string>
      */
-    public static function fromServerGlobal(): array
+    public function __invoke(): array
     {
-        return self::fromArray($_SERVER);
-    }
-
-    /**
-     * @param array<int|string, string> $server
-     *
-     * @return array<string, string>
-     */
-    private static function fromArray(array $server): array
-    {
-        $qualifyingServerKeys = self::onlyQualifyingServerItems($server);
+        $qualifyingServerKeys = $this->onlyQualifyingServerItems($this->superglobals->server());
 
         return array_combine(
             array_map(
@@ -61,7 +61,7 @@ abstract class FetchRequestHeaders
      *
      * @psalm-suppress InvalidReturnType
      */
-    private static function onlyQualifyingServerItems(array $server): array
+    private function onlyQualifyingServerItems(array $server): array
     {
         /** @psalm-suppress InvalidReturnStatement */
         return array_filter(

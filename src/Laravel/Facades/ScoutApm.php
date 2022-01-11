@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Support\Facades\Facade;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\ScoutApmAgent;
+use Throwable;
 
 /**
  * @see \Scoutapm\ScoutApmAgent
@@ -24,6 +25,7 @@ use Scoutapm\ScoutApmAgent;
  * @method static bool ignored(string $path)
  * @method static void ignore()
  * @method static bool send()
+ * @method static void recordThrowable(Throwable $throwable)
  */
 final class ScoutApm extends Facade
 {

@@ -11,6 +11,7 @@ use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -19,12 +20,15 @@ use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\UnitTests\TestLogger;
+use Symfony\Component\Process\PhpExecutableFinder;
+use Symfony\Component\Process\Process;
 
 use function assert;
 use function curl_exec;
 use function curl_init;
 use function curl_setopt;
 use function extension_loaded;
+use function file_exists;
 use function file_get_contents;
 use function fopen;
 use function function_exists;
@@ -39,7 +43,9 @@ use function sleep;
 use function sprintf;
 use function str_repeat;
 use function stream_context_create;
+use function trim;
 use function uniqid;
+use function unlink;
 
 use const CURLOPT_CUSTOMREQUEST;
 use const CURLOPT_POST;
@@ -133,6 +139,62 @@ final class AgentTest extends TestCase
         }
 
         return $return;
+    }
+
+    /**
+     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
+     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
+     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
+     */
+    public function testUncaughtErrorsAreCapturedAndSentToScout(): void
+    {
+        $phpBinary = (new PhpExecutableFinder())->find();
+
+        $process = new Process([
+            $phpBinary,
+            __DIR__ . '/../isolated-error-capture-test.php',
+        ]);
+        $process->run();
+
+        $logFileGeneratedByTestScript = trim($process->getOutput());
+
+        $logContents = file_get_contents($logFileGeneratedByTestScript);
+
+        if (! $process->isSuccessful()) {
+            self::fail(sprintf(
+                "Failed. %s\n\nLog file: %s",
+                $logFileGeneratedByTestScript,
+                $logContents
+            ));
+        }
+
+        self::assertStringContainsString('Sent 1 error event to Scout Error Reporting', $logContents);
+
+        if (! file_exists($logFileGeneratedByTestScript)) {
+            return;
+        }
+
+        unlink($logFileGeneratedByTestScript);
+    }
+
+    /**
+     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
+     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
+     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
+     */
+    public function testRecordedThrowablesAreSentToScout(): void
+    {
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+            ConfigKey::ERRORS_ENABLED => true,
+        ]));
+
+        $this->agent->recordThrowable(new RuntimeException('something went wrong'));
+        $this->agent->send();
+
+        self::assertTrue($this->logger->hasDebugThatContains('"errors_enabled":true'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 error event to Scout Error Reporting'));
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void
