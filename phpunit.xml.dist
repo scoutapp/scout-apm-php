@@ -31,7 +31,7 @@
         </testsuite>
     </testsuites>
     <php>
-        <ini name="error_reporting" value="E_ALL" />
+        <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED" />
         <ini name="display_errors" value="On" />
     </php>
     <filter>
