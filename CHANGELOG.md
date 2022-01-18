@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
-## 7.0.0 - TBC
+## 7.0.0 - 2022-01-18
 
 ### Added
 
