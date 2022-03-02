@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 
 use function array_key_exists;
 
+/** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
 final class ScoutApmExtension extends Extension
 {
     /**
