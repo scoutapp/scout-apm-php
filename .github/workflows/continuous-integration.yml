@@ -137,7 +137,7 @@ jobs:
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Check for BC breaks"
-        run: ".github/workflows/roave-backwards-compatibility-check.sh"
+        run: ".github/workflows/roave-backwards-compatibility-check.sh --install-development-dependencies --from=origin/${{ github.base_ref }}"
 
 ###############################################################################
 ################################### SYMFONY ###################################
