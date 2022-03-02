@@ -104,12 +104,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "8.0"
+          php-version: "7.1"
           tools: composer:v2.2
         env:
           fail-fast: true
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install dependencies"
-        run: "composer install"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run Psalm"
         run: "vendor/bin/psalm"
 
