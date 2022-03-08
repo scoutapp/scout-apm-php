@@ -10,7 +10,7 @@ cd "$(dirname "$0")/../.." || exit 2
 echo "Running BC check, please wait..."
 
 # Capture output to variable AND print it
-OUTPUT=$(vendor/bin/roave-backward-compatibility-check --format=markdown --install-development-dependencies 2>&1)
+OUTPUT=$(vendor/bin/roave-backward-compatibility-check --format=markdown "$@" 2>&1)
 
 # Remove rows we want to suppress
 OUTPUT=`echo "$OUTPUT" | sed '/Roave\\\BetterReflection\\\Reflection\\\ReflectionClass "Symfony\\\Component\\\HttpKernel\\\Event\\\FilterControllerEvent" could not be found in the located source/'d`

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.18.1@dda05fa913f4dc6eb3386f2f7ce5a45d37a71bcb">
+<files psalm-version="4.22.0@fc2c6ab4d5fa5d644d8617089f012f3bb84b8703">
   <file src="src/Agent.php">
     <MixedArgument occurrences="10">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
@@ -158,9 +158,6 @@
       <code>$children</code>
       <code>$children</code>
     </MixedAssignment>
-    <MixedInferredReturnType occurrences="1">
-      <code>NodeDefinition|ArrayNodeDefinition</code>
-    </MixedInferredReturnType>
     <MixedMethodCall occurrences="8">
       <code>arrayNode</code>
       <code>children</code>
@@ -171,9 +168,6 @@
       <code>end</code>
       <code>scalarNode</code>
     </MixedMethodCall>
-    <MixedReturnStatement occurrences="1">
-      <code>$treeBuilder-&gt;root(self::ROOT_NODE_NAME)</code>
-    </MixedReturnStatement>
   </file>
   <file src="src/ScoutApmBundle/Twig/TwigDecorator.php">
     <MixedInferredReturnType occurrences="1">
@@ -181,13 +175,10 @@
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1"/>
   </file>
-  <file src="tests/Integration/CheckScoutApmKeyListener.php">
-    <DeprecatedInterface occurrences="1">
-      <code>CheckScoutApmKeyListener</code>
-    </DeprecatedInterface>
-    <DeprecatedTrait occurrences="1">
-      <code>TestListenerDefaultImplementation</code>
-    </DeprecatedTrait>
+  <file src="src/ScoutApmBundle/symfony-version-compatibility.php">
+    <DeprecatedClass occurrences="1">
+      <code>FilterControllerEvent::class</code>
+    </DeprecatedClass>
   </file>
   <file src="tests/Integration/TestHelper.php">
     <MixedAssignment occurrences="1">
@@ -201,70 +192,6 @@
     </MixedReturnStatement>
   </file>
   <file src="tests/Unit/AgentTest.php">
-    <DeprecatedClass occurrences="30">
-      <code>self::at(0)</code>
-      <code>self::at(0)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(4)</code>
-      <code>self::at(4)</code>
-      <code>self::at(4)</code>
-      <code>self::at(5)</code>
-      <code>self::at(5)</code>
-      <code>self::at(6)</code>
-    </DeprecatedClass>
-    <DeprecatedMethod occurrences="30">
-      <code>self::at(0)</code>
-      <code>self::at(0)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(1)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(2)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(3)</code>
-      <code>self::at(4)</code>
-      <code>self::at(4)</code>
-      <code>self::at(4)</code>
-      <code>self::at(5)</code>
-      <code>self::at(5)</code>
-      <code>self::at(6)</code>
-    </DeprecatedMethod>
     <MixedArgument occurrences="5">
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 1]</code>
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 2]</code>
@@ -355,12 +282,6 @@
       <code>$block</code>
     </UnusedVariable>
   </file>
-  <file src="tests/Unit/Helper/TimerTest.php">
-    <DeprecatedMethod occurrences="2">
-      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
-      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStop())</code>
-    </DeprecatedMethod>
-  </file>
   <file src="tests/Unit/Laravel/Facades/ScoutApmTest.php">
     <PossiblyInvalidArgument occurrences="1">
       <code>testFacadeProxiesMethodsToRealAgent</code>
@@ -405,15 +326,7 @@
       <code>$whichViews</code>
     </UnusedClosureParam>
   </file>
-  <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderUsingLaravelTest.php">
-    <DeprecatedMethod occurrences="1">
-      <code>setMethods</code>
-    </DeprecatedMethod>
-  </file>
   <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderUsingLumenTest.php">
-    <DeprecatedMethod occurrences="1">
-      <code>setMethods</code>
-    </DeprecatedMethod>
     <MixedArrayAssignment occurrences="1">
       <code>$loadedConfigurations['cache']</code>
     </MixedArrayAssignment>
@@ -439,12 +352,6 @@
     </MixedAssignment>
   </file>
   <file src="tests/Unit/ScoutApmBundle/ScoutApmAgentFactoryTest.php">
-    <DeprecatedClass occurrences="1">
-      <code>self::at(3)</code>
-    </DeprecatedClass>
-    <DeprecatedMethod occurrences="1">
-      <code>self::at(3)</code>
-    </DeprecatedMethod>
     <MixedArgument occurrences="2">
       <code>$flattenedMetadata</code>
       <code>$flattenedMetadata</code>
@@ -469,5 +376,11 @@
       <code>$type</code>
       <code>$type</code>
     </UnusedClosureParam>
+  </file>
+  <file src="tests/Unit/TestHelper.php">
+    <MixedReturnTypeCoercion occurrences="2">
+      <code>$children</code>
+      <code>Command[]</code>
+    </MixedReturnTypeCoercion>
   </file>
 </files>

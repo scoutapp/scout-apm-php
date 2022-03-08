@@ -46,6 +46,7 @@ use function array_merge;
 use function config_path;
 use function sprintf;
 
+/** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
 final class ScoutApmServiceProvider extends ServiceProvider
 {
     private const CONFIG_SERVICE_KEY = ScoutApmAgent::class . '_config';

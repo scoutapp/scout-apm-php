@@ -13,6 +13,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 use function array_map;
 use function assert;
 
+/** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
 final class ScoutApmBundle extends Bundle
 {
     private const DOCTRINE_CONNECTIONS = ['doctrine.dbal.default_connection'];

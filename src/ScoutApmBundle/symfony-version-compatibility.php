@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace Symfony\Component\HttpKernel\Event
 {
     if (! class_exists(ControllerEvent::class) && class_exists(FilterControllerEvent::class)) {
+        /** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
         class ControllerEvent extends FilterControllerEvent {
         }
     }

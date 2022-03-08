@@ -104,12 +104,16 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "8.0"
+          php-version: "7.1"
           tools: composer:v2.2
         env:
           fail-fast: true
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install dependencies"
-        run: "composer install"
+        run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run Psalm"
         run: "vendor/bin/psalm"
 
@@ -133,7 +137,7 @@ jobs:
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Check for BC breaks"
-        run: ".github/workflows/roave-backwards-compatibility-check.sh"
+        run: ".github/workflows/roave-backwards-compatibility-check.sh --install-development-dependencies --from=origin/${{ github.base_ref }}"
 
 ###############################################################################
 ################################### SYMFONY ###################################
@@ -152,6 +156,7 @@ jobs:
         symfony-version:
           - "4.*"
           - "5.*"
+          - "6.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -160,9 +165,12 @@ jobs:
           - "8.0"
           - "8.1"
         exclude:
-          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "2.*" } # Symfony 5 (with Twig 2) requires 7.2+
-          - { php-version: "7.1", symfony-version: "5.*", "twig-version": "3.*" } # Symfony 5 (with Twig 3) requires 7.2+
-          - { php-version: "7.1", symfony-version: "4.*", "twig-version": "3.*" } # Twig 3 (on Symfony 4) requires 7.2+
+          - { symfony-version: "4.*", "twig-version": "3.*", php-version: "7.1" } # Twig 3 (on Symfony 4) requires 7.2+
+          - { symfony-version: "5.*", php-version: "7.1" } # Symfony 5 requires 7.2+
+          - { symfony-version: "6.*", php-version: "7.1" } # Symfony 6 requires 8.0+
+          - { symfony-version: "6.*", php-version: "7.2" } # Symfony 6 requires 8.0+
+          - { symfony-version: "6.*", php-version: "7.3" } # Symfony 6 requires 8.0+
+          - { symfony-version: "6.*", php-version: "7.4" } # Symfony 6 requires 8.0+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
@@ -207,6 +215,7 @@ jobs:
           - "6.*"
           - "7.*"
           - "8.*"
+          - "9.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -229,6 +238,11 @@ jobs:
           # Laravel 8 supports PHP 7.3 - 8.1
           - {laravel-version: "8.*", php-version: "7.1"} # Laravel 8 requires 7.3+
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
+          # Laravel 9 supports PHP 7.3 - 8.1
+          - {laravel-version: "9.*", php-version: "7.1"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
@@ -269,6 +283,7 @@ jobs:
           - "6.*"
           - "7.*"
           - "8.*"
+          - "9.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -291,6 +306,11 @@ jobs:
           # Laravel 8 supports PHP 7.3 - 8.1
           - {laravel-version: "8.*", php-version: "7.1"} # Laravel 8 requires 7.3+
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
+          # Laravel 9 supports PHP 7.3 - 8.1
+          - {laravel-version: "9.*", php-version: "7.1"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -308,6 +328,9 @@ jobs:
           fail-fast: true
       - name: "Install Laravel quickstart project"
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
+        # We do not support psr/simple-cache 3.0.0 yet (https://github.com/scoutapp/scout-apm-php/issues/258)
+      - name: "Require psr/simple-cache:^1.0"
+        run: cd test-app && composer require psr/simple-cache:^1.0
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"
@@ -327,6 +350,9 @@ jobs:
       - name: "Configure error handler (Laravel 8)"
         if: ${{ matrix.laravel-version == '8.*' }}
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel8-exception-handler.php app/Exceptions/Handler.php
+      - name: "Configure error handler (Laravel 9)"
+        if: ${{ matrix.laravel-version == '9.*' }}
+        run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel9-exception-handler.php app/Exceptions/Handler.php
       - name: "Add route to trigger error"
         run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
       - name: "Configure Scout"
@@ -374,6 +400,7 @@ jobs:
           - "6.*"
           - "7.*"
           - "8.*"
+          - "9.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -397,6 +424,11 @@ jobs:
           # Lumen 8 supports PHP 7.3 - 8.1
           - {lumen-version: "8.*", php-version: "7.1"} # Lumen 8 requires 7.3+
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
+          # Lumen 9 supports PHP 7.3 - 8.1
+          - {lumen-version: "9.*", php-version: "7.1"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
     steps:
       - uses: actions/checkout@v2
       - name: "Install PHP"
@@ -437,6 +469,7 @@ jobs:
           - "6.*"
           - "7.*"
           - "8.*"
+          - "9.*"
         php-version:
           - "7.1"
           - "7.2"
@@ -460,6 +493,11 @@ jobs:
           # Lumen 8 supports PHP 7.3 - 8.1
           - {lumen-version: "8.*", php-version: "7.1"} # Lumen 8 requires 7.3+
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
+          # Lumen 9 supports PHP 7.3 - 8.1
+          - {lumen-version: "9.*", php-version: "7.1"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
+          - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -477,6 +515,9 @@ jobs:
           fail-fast: true
       - name: "Install Lumen quickstart project"
         run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
+        # We do not support psr/simple-cache 3.0.0 yet (https://github.com/scoutapp/scout-apm-php/issues/258)
+      - name: "Require psr/simple-cache:^1.0"
+        run: cd test-app && composer require psr/simple-cache:^1.0
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"

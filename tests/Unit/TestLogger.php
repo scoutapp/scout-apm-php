@@ -72,11 +72,12 @@ class TestLogger extends AbstractLogger
     /**
      * @inheritdoc
      */
-    public function log($level, $message, array $context = [])
+    public function log($level, $message, array $context = []): void
     {
+        /** @psalm-suppress RedundantCastGivenDocblockType */
         $record = [
             'level' => (string) $level,
-            'message' => $message,
+            'message' => (string) $message,
             'context' => $context,
         ];
 
