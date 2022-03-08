@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 8.0.0 - 2022-03-08
+
+### Added
+
+- [#259](https://github.com/scoutapp/scout-apm-php/pull/259) Display scoutapp/scout-apm-php version in banner in logs
+- [#256](https://github.com/scoutapp/scout-apm-php/pull/256) **[BC]** Add Laravel/Lumen 9 and Symfony 6 support
+  - [BC] Scoutapm\Laravel\Providers\ScoutApmServiceProvider was marked "@internal"
+  - [BC] Scoutapm\ScoutApmBundle\Twig\TwigDecorator was marked "@internal"
+  - [BC] Scoutapm\ScoutApmBundle\ScoutApmBundle was marked "@internal"
+  - [BC] Scoutapm\ScoutApmBundle\DependencyInjection\ScoutApmExtension was marked "@internal"
+  - [BC] Symfony\Component\HttpKernel\Event\ControllerEvent was marked "@internal"
+  - [BC] Scoutapm\Logger\FilteredLogLevelDecorator was marked "@internal"
+  - [BC] Symfony\Component\HttpKernel\Event\ControllerEvent was marked "@internal"
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#emergency() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#alert() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#critical() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#error() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#warning() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#notice() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#info() changed from no type to a non-contravariant string|Stringable
+  - [BC] The parameter $message of Psr\Log\LoggerTrait#debug() changed from no type to a non-contravariant string|Stringable
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 7.0.0 - 2022-01-18
 
 ### Added
