@@ -12,6 +12,7 @@ use function sprintf;
 
 final class ComposerPackagesCheck
 {
+    private const PHP_PACKAGE_NAME     = 'scoutapp/scout-apm-php';
     private const LARAVEL_PACKAGE_NAME = 'scoutapp/scout-apm-laravel';
     private const SYMFONY_PACKAGE_NAME = 'scoutapp/scout-apm-symfony-bundle';
 
@@ -23,6 +24,24 @@ final class ComposerPackagesCheck
     public static function logIfSymfonyPackageNotPresent(LoggerInterface $log): void
     {
         self::logIfPackageNotPresent($log, 'Symfony', self::SYMFONY_PACKAGE_NAME);
+    }
+
+    public static function phpLibraryVersion(): string
+    {
+        if (
+            ! class_exists(InstalledVersions::class)
+            || ! self::packageIsInstalled(self::PHP_PACKAGE_NAME)
+        ) {
+            return 'none';
+        }
+
+        $version = (string) InstalledVersions::getPrettyVersion(self::PHP_PACKAGE_NAME);
+
+        if ($version === '') {
+            return 'unknown';
+        }
+
+        return $version;
     }
 
     private static function logIfPackageNotPresent(

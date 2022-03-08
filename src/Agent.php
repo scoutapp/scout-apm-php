@@ -34,6 +34,7 @@ use Scoutapm\Events\Tag\Tag;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
+use Scoutapm\Helper\ComposerPackagesCheck;
 use Scoutapm\Helper\DetermineHostname\DetermineHostnameWithConfigOverride;
 use Scoutapm\Helper\FindApplicationRoot\FindApplicationRootWithConfigOverride;
 use Scoutapm\Helper\FindRequestHeaders\FindRequestHeaders;
@@ -217,11 +218,17 @@ final class Agent implements ScoutApmAgent
 
         $this->checkExtensionVersion();
 
+        $scoutBannerMetadata = sprintf(
+            'app=%s, ext=%s, lib=%s',
+            $this->config->get(ConfigKey::APPLICATION_NAME),
+            $this->extensionVersion(),
+            ComposerPackagesCheck::phpLibraryVersion()
+        );
+
         if (! $this->connector->connected()) {
             $this->logger->info(sprintf(
-                'Scout Core Agent (app=%s, ext=%s) not connected yet, attempting to start',
-                $this->config->get(ConfigKey::APPLICATION_NAME),
-                $this->extensionVersion()
+                'Scout Core Agent (%s) not connected yet, attempting to start',
+                $scoutBannerMetadata
             ));
             $coreAgentDownloadPath = $this->config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $this->config->get(ConfigKey::CORE_AGENT_FULL_NAME);
             $manager               = new AutomaticDownloadAndLaunchManager(
@@ -261,9 +268,8 @@ final class Agent implements ScoutApmAgent
             }
         } else {
             $this->logger->debug(sprintf(
-                'Scout Core Agent Connected (app=%s, ext=%s)',
-                $this->config->get(ConfigKey::APPLICATION_NAME),
-                $this->extensionVersion()
+                'Scout Core Agent Connected (%s)',
+                $scoutBannerMetadata
             ));
         }
     }
