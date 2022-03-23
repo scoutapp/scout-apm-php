@@ -18,6 +18,7 @@ use function in_array;
 use function is_array;
 use function register_shutdown_function;
 use function set_exception_handler;
+use function spl_object_hash;
 
 use const E_COMPILE_ERROR;
 use const E_CORE_ERROR;
@@ -36,6 +37,8 @@ final class ScoutErrorHandling implements ErrorHandling
     private $reportingClient;
     /** @var Config */
     private $config;
+    /** @var list<string> */
+    private $objectHashesOfHandledExceptions = [];
     /** @var list<ErrorEvent> */
     private $errorEvents = [];
     /** @var callable|null */
@@ -102,7 +105,15 @@ final class ScoutErrorHandling implements ErrorHandling
             return;
         }
 
-        $this->errorEvents[] = ErrorEvent::fromThrowable($this->request, $throwable);
+        $thisThrowableObjectHash = spl_object_hash($throwable);
+
+        // Storing the object hashes & checking means we don't send exactly the same exception twice in one request
+        if (! in_array($thisThrowableObjectHash, $this->objectHashesOfHandledExceptions, true)) {
+            $this->objectHashesOfHandledExceptions[] = $thisThrowableObjectHash;
+
+            $this->errorEvents[] = ErrorEvent::fromThrowable($this->request, $throwable);
+        }
+
         $this->sendCollectedErrors();
     }
 
