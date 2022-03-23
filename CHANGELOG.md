@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+## 8.0.1 - 2022-03-23
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- [#261](https://github.com/scoutapp/scout-apm-php/pull/261) Prevent the same exception from being sent to Scout multiple times
+
 ## 8.0.0 - 2022-03-08
 
 ### Added

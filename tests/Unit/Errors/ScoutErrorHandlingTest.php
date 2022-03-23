@@ -175,10 +175,26 @@ final class ScoutErrorHandlingTest extends TestCase
 
         $this->reportingClient
             ->expects(self::never())
-            ->method('sendErrorToScout')
-            ->with(self::isInstanceOf(ErrorEvent::class));
+            ->method('sendErrorToScout');
 
         $handling->recordThrowable(new RuntimeException());
+
+        $handling->sendCollectedErrors();
+    }
+
+    public function testExactlyTheSameExceptionIsNotSentTwice(): void
+    {
+        $handling = $this->errorHandlingFromConfig(Config::fromArray([Config\ConfigKey::ERRORS_ENABLED => true]));
+
+        $this->reportingClient
+            ->expects(self::once())
+            ->method('sendErrorToScout')
+            ->with(self::containsOnlyInstancesOf(ErrorEvent::class));
+
+        $exceptionInstance = new RuntimeException();
+
+        $handling->recordThrowable($exceptionInstance);
+        $handling->recordThrowable($exceptionInstance);
 
         $handling->sendCollectedErrors();
     }
