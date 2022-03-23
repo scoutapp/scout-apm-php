@@ -106,6 +106,11 @@ final class ScoutApmMiddlewareTest extends TestCase
 
         $exception = new RuntimeException('oh no');
 
+        $this->scoutApmAgent
+            ->expects(self::once())
+            ->method('recordThrowable')
+            ->with($exception);
+
         $this->handler
             ->expects(self::once())
             ->method('handle')

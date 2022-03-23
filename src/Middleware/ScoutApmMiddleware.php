@@ -39,6 +39,8 @@ final class ScoutApmMiddleware implements MiddlewareInterface
         } catch (Throwable $exception) {
             $this->scoutApmAgent->tagRequest('error', 'true');
 
+            $this->scoutApmAgent->recordThrowable($exception);
+
             throw $exception;
         } finally {
             try {
