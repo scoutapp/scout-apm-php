@@ -123,6 +123,38 @@ $agent = Agent::fromConfig(
 );
 ```
 
+## Using the PSR-15 Middleware provided
+
+Since `scoutapp/scout-apm-php` release version 8.1.0, a PSR-15 compatible middleware is included out the box, which may
+be used in a PSR-15 middleware-compatible framework, such as Slim or Mezzio. For example, in Slim framework:
+
+```php
+// Assumes $app is defined, e.g. an instance of `\Slim\App`
+$app->add(\Scoutapm\Middleware\ScoutApmMiddleware::class);
+```
+
+You will very likely need to define `\Scoutapm\Middleware\ScoutApmMiddleware::class` in your container. For example, if
+your container is Laminas ServiceManager, you could define a factory like:
+
+```php
+// Assumes $serviceManager is defined, e.g. an instance of `\Laminas\ServiceManager\ServiceManager`
+$serviceManager->setFactory(
+    \Scoutapm\Middleware\ScoutApmMiddleware::class,
+    static function (\Psr\Container\ContainerInterface $container) {
+        $logger = $container->get(LoggerInterface::class);
+
+        $agent = Agent::fromConfig(
+            Config::fromArray([
+                // any additional array configuration
+            ]),
+            $logger
+        );
+
+        return new ScoutApmMiddleware($agent, $logger);
+    }
+);
+```
+
 ## Documentation
 
 For full installation and troubleshooting documentation, visit our [help site](http://docs.scoutapm.com/#php-agent).
