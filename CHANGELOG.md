@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file, in reverse chronological order by release.
 
+# THE CHANGELOG HAS MOVED
+
+Please see [https://github.com/scoutapp/scout-apm-php/releases](https://github.com/scoutapp/scout-apm-php/releases) for
+release 8.1.0 onwards.
+
 ## 8.0.1 - 2022-03-23
 
 ### Added
