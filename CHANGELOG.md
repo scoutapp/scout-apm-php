@@ -7,6 +7,28 @@ All notable changes to this project will be documented in this file, in reverse 
 Please see [https://github.com/scoutapp/scout-apm-php/releases](https://github.com/scoutapp/scout-apm-php/releases) for
 release 8.1.0 onwards.
 
+## 8.2.0 - TBD
+
+### Added
+
+- Nothing.
+
+### Changed
+
+- Nothing.
+
+### Deprecated
+
+- Nothing.
+
+### Removed
+
+- Nothing.
+
+### Fixed
+
+- Nothing.
+
 ## 8.0.1 - 2022-03-23
 
 ### Added
