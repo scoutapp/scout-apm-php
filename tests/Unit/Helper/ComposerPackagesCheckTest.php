@@ -12,6 +12,10 @@ final class ComposerPackagesCheckTest extends TestCase
 {
     public function testPhpLibraryVersion(): void
     {
-        self::assertStringStartsWith('dev-', ComposerPackagesCheck::phpLibraryVersion());
+        $phpLibraryVersion = ComposerPackagesCheck::phpLibraryVersion();
+
+        self::assertNotEmpty($phpLibraryVersion);
+        self::assertNotSame('none', $phpLibraryVersion);
+        self::assertNotSame('unknown', $phpLibraryVersion);
     }
 }

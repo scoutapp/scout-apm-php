@@ -636,7 +636,7 @@ final class AgentTest extends TestCase
 
         self::assertTrue($this->logger->hasInfoThatContains('not connected yet, attempting to start'));
         self::assertTrue($this->logger->hasInfoThatContains('app=My test app'));
-        self::assertTrue($this->logger->hasInfoThatContains('lib=dev-'));
+        self::assertTrue($this->logger->hasInfoThatContains('lib='));
 
         self::assertTrue($this->logger->hasDebugThatContains('Connected to connector.'));
     }
@@ -664,7 +664,7 @@ final class AgentTest extends TestCase
 
         self::assertTrue($this->logger->hasDebugThatContains('Scout Core Agent Connected'));
         self::assertTrue($this->logger->hasDebugThatContains('app=My test app'));
-        self::assertTrue($this->logger->hasDebugThatContains('lib=dev-'));
+        self::assertTrue($this->logger->hasDebugThatContains('lib='));
     }
 
     public function testRequestUriCanBeChanged(): void
