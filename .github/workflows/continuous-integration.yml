@@ -12,6 +12,20 @@ jobs:
 ################################### GENERAL ###################################
 ###############################################################################
 
+  check_secrets:
+    name: "Check SCOUT_APM_KEY secret"
+    runs-on: ubuntu-latest
+    outputs:
+      has_scout_apm_key_secret: ${{ steps.check_scout_apm_key_secret_job.outputs.has_scout_apm_key_secret }}
+    steps:
+      - name: "Check if SCOUT_APM_KEY secret is available for this build"
+        id: check_scout_apm_key_secret_job
+        env:
+          SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+        run: |
+          echo "has_scout_apm_key_secret: ${{ env.SCOUT_APM_KEY != '' }}"
+          echo "::set-output name=has_scout_apm_key_secret::${{ env.SCOUT_APM_KEY != '' }}"
+
   base-unit:
     name: "Unit tests"
     runs-on: ubuntu-latest
@@ -72,6 +86,58 @@ jobs:
         run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHPUnit test suite"
         run: "vendor/bin/phpunit --testsuite=unit,integration"
+
+  memory-leak-unit:
+    name: "Memory leak test"
+    needs: [ check_secrets ]
+    if: needs.check_secrets.outputs.has_scout_apm_key_secret == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dependencies: ["highest"]
+        scout-ext: ["with-scout-ext", "no-scout-ext"]
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: "curl"
+        env:
+          fail-fast: true
+        # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
+        # be missing wherever the extension is built (not immediately obvious), so install it first
+      - name: "Install scoutapm extension"
+        if: matrix.scout-ext == 'with-scout-ext'
+        run: |
+          sudo apt --fix-broken install
+          sudo apt-get install -y libcurl4-openssl-dev
+          sudo mkdir -p /tmp/pear/temp
+          sudo pecl update-channels
+          yes | sudo pecl install -f scoutapm
+      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
+        if: matrix.php-version == '7.1'
+        run: |
+          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
+          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
+      - name: "Install lowest dependencies"
+        if: matrix.dependencies == 'lowest'
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
+      - name: "Install highest dependencies"
+        if: matrix.dependencies == 'highest'
+        run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Check for memory leaks"
         run: "tests/check-memory-leaks.sh"
 
@@ -269,7 +335,8 @@ jobs:
         run: "vendor/bin/phpunit --testsuite=laravel"
 
   laravel-e2e:
-    needs: laravel-unit
+    needs: [ check_secrets, laravel-unit ]
+    if: needs.check_secrets.outputs.has_scout_apm_key_secret == 'true'
     name: "Laravel E2E"
     runs-on: ubuntu-latest
     strategy:
@@ -332,24 +399,24 @@ jobs:
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"
-        if: ${{ matrix.php-version != '7.1' }}
+        if: matrix.php-version != '7.1'
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Require scout-apm-php current checkout (PHP 7.1)"
-        if: ${{ matrix.php-version == '7.1' }}
+        if: matrix.php-version == '7.1'
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Publish the provider"
         run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
       - name: "Configure error handler (Laravel 5-6)"
-        if: ${{ matrix.laravel-version == '5.5.*' || matrix.laravel-version == '6.*' }}
+        if: matrix.laravel-version == '5.5.*' || matrix.laravel-version == '6.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel5-6-exception-handler.php app/Exceptions/Handler.php
       - name: "Configure error handler (Laravel 7)"
-        if: ${{ matrix.laravel-version == '7.*' }}
+        if: matrix.laravel-version == '7.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel7-exception-handler.php app/Exceptions/Handler.php
       - name: "Configure error handler (Laravel 8)"
-        if: ${{ matrix.laravel-version == '8.*' }}
+        if: matrix.laravel-version == '8.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel8-exception-handler.php app/Exceptions/Handler.php
       - name: "Configure error handler (Laravel 9)"
-        if: ${{ matrix.laravel-version == '9.*' }}
+        if: matrix.laravel-version == '9.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel9-exception-handler.php app/Exceptions/Handler.php
       - name: "Add route to trigger error"
         run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
@@ -455,7 +522,8 @@ jobs:
         run: "vendor/bin/phpunit --testsuite=laravel" # Test suite is same as Laravel
 
   lumen-e2e:
-    needs: lumen-unit
+    needs: [ check_secrets, lumen-unit ]
+    if: needs.check_secrets.outputs.has_scout_apm_key_secret == 'true'
     name: "Lumen E2E"
     runs-on: ubuntu-latest
     strategy:
@@ -499,6 +567,8 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
+      - name: "Skip if SCOUT_APM_KEY secret is not available"
+        run: echo 'This job is skipped entirely as it needs SCOUT_APM_KEY set in secrets.'
       - uses: actions/checkout@v2
         with:
           path: scout-apm-php
@@ -519,10 +589,10 @@ jobs:
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"
-        if: ${{ matrix.php-version != '7.1' }}
+        if: matrix.php-version != '7.1'
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Require scout-apm-php current checkout (PHP 7.1)"
-        if: ${{ matrix.php-version == '7.1' }}
+        if: matrix.php-version == '7.1'
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
