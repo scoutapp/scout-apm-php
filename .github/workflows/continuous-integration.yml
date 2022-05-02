@@ -68,6 +68,7 @@ jobs:
       - name: "Install scoutapm extension"
         if: ${{ matrix.scout-ext == 'with-scout-ext' }}
         run: |
+          sudo apt-get update
           sudo apt --fix-broken install
           sudo apt-get install -y libcurl4-openssl-dev
           sudo mkdir -p /tmp/pear/temp
@@ -122,6 +123,7 @@ jobs:
       - name: "Install scoutapm extension"
         if: matrix.scout-ext == 'with-scout-ext'
         run: |
+          sudo apt-get update
           sudo apt --fix-broken install
           sudo apt-get install -y libcurl4-openssl-dev
           sudo mkdir -p /tmp/pear/temp
