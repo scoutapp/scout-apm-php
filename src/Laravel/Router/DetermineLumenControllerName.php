@@ -17,11 +17,7 @@ use function sprintf;
 use function trim;
 
 /**
- * @psalm-type LumenRouterActionShape = array{
- *     "as"?: string,
- *     uses?: string,
- *     0?: ?\Closure,
- * }
+ * @psalm-type LumenRouterActionShape array{as?: string, uses?: string, 0?: ?Closure}
  */
 final class DetermineLumenControllerName implements AutomaticallyDetermineControllerName
 {

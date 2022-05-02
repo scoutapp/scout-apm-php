@@ -87,8 +87,9 @@ final class DetermineLumenControllerNameTest extends TestCase
     }
 
     /**
-     * @dataProvider validRouteActionConfigurationToControllerNameProvider
      * @psalm-param LumenRouterActionShape $actionConfiguration
+     *
+     * @dataProvider validRouteActionConfigurationToControllerNameProvider
      */
     public function testControllerNameIsReturnedWhenRouteMatches(array $actionConfiguration, string $expectedControllerSuffix): void
     {

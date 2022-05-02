@@ -32,7 +32,6 @@ final class ConnectionAddressTest extends TestCase
 
     /**
      * @return string[][]|int[][]
-     *
      * @psalm-return list<array{configuration:string,address:string,port:int,both:string}>
      */
     public function tcpAddressProvider(): array

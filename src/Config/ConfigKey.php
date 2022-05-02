@@ -94,10 +94,9 @@ abstract class ConfigKey
 
     /**
      * @param mixed[] $configArray
+     * @psalm-param array<string, mixed> $configArray
      *
      * @return mixed[]
-     *
-     * @psalm-param array<string, mixed> $configArray
      * @psalm-return array<string, mixed>
      */
     public static function filterSecretsFromConfigArray(array $configArray): array

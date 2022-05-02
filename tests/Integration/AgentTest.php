@@ -182,6 +182,11 @@ final class AgentTest extends TestCase
         unlink($logFileGeneratedByTestScript);
     }
 
+    /**
+     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
+     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
+     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
+     */
     public function testRecordedThrowablesAreSentToScout(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([

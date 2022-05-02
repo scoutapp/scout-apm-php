@@ -35,7 +35,6 @@ final class Backtrace
      * relevant to customer monitoring.
      *
      * @return array<int, array<string, string|int>>
-     *
      * @psalm-return list<ScoutStackFrame>
      */
     public static function capture(): array
@@ -62,7 +61,6 @@ final class Backtrace
      * conditions are not met.
      *
      * @return array<int, array<string, string|int>>
-     *
      * @psalm-return list<ScoutStackFrame>
      */
     public static function captureWithoutVendor(int $skipPathLevelsWhenLocatingComposerJson = LocateFileOrFolder::SKIP_LEVELS_DEFAULT): array
@@ -72,10 +70,9 @@ final class Backtrace
 
     /**
      * @param array<string, string|int> $frame
+     * @psalm-param PhpStackFrame $frame
      *
      * @return array<string, string|int>
-     *
-     * @psalm-param PhpStackFrame $frame
      * @psalm-return ScoutStackFrame
      */
     private static function reformatStackFrame(array $frame): array
@@ -96,7 +93,6 @@ final class Backtrace
 
     /**
      * @param array<string, string|int> $frame
-     *
      * @psalm-param PhpStackFrame $frame
      */
     private static function formatFunctionNameFromFrame(array $frame): string
@@ -110,7 +106,6 @@ final class Backtrace
 
     /**
      * @param array<string, string|int> $frame
-     *
      * @psalm-param ScoutStackFrame $frame
      */
     private static function isScoutRelated(array $frame): bool
@@ -121,10 +116,9 @@ final class Backtrace
 
     /**
      * @param array<int, array<string, string|int>> $formattedStack
+     * @psalm-param list<ScoutStackFrame> $formattedStack
      *
      * @return array<int, array<string, string|int>>
-     *
-     * @psalm-param list<ScoutStackFrame> $formattedStack
      * @psalm-return list<ScoutStackFrame>
      */
     private static function filterScoutRelatedFramesFromTopOfStack(array $formattedStack): array
@@ -151,10 +145,9 @@ final class Backtrace
 
     /**
      * @param array<int, array<string, string|int>> $formattedStack
+     * @psalm-param list<ScoutStackFrame> $formattedStack
      *
      * @return array<int, array<string, string|int>>
-     *
-     * @psalm-param list<ScoutStackFrame> $formattedStack
      * @psalm-return list<ScoutStackFrame>
      */
     private static function filterVendorFramesFromStack(array $formattedStack, int $skipPathLevelsWhenLocatingComposerJson): array

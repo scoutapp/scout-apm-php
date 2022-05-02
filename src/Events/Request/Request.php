@@ -73,11 +73,10 @@ class Request implements CommandWithChildren
 
     /**
      * @param string[] $filteredParameters
-     *
-     * @throws Exception
-     *
      * @psalm-param Config\ConfigKey::URI_REPORTING_* $uriReportingOption
      * @psalm-param list<string> $filteredParameters
+     *
+     * @throws Exception
      */
     private function __construct(Superglobals $superglobals, FindRequestHeaders $findRequestHeaders, string $uriReportingOption, array $filteredParameters, ?float $override = null)
     {
@@ -392,9 +391,6 @@ class Request implements CommandWithChildren
      * turn this object into a list of commands to send to the CoreAgent
      *
      * @return array<string, array<string, array<int, array<string, (string|array|bool|null)>>>>
-     *
-     * @todo document more of the command structures better:
-     * @psalm-suppress InvalidReturnType
      * @psalm-return array{
      *      BatchCommand: array{
      *          commands: list<
@@ -412,6 +408,9 @@ class Request implements CommandWithChildren
      *          >
      *      }
      * }
+     *
+     * @todo document more of the command structures better:
+     * @psalm-suppress InvalidReturnType
      */
     public function jsonSerialize(): array
     {

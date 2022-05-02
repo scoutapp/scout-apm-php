@@ -31,7 +31,6 @@ final class PotentiallyAvailableExtensionCapabilities implements ExtensionCapabi
 
     /**
      * @return RecordedCall[]
-     *
      * @psalm-return list<RecordedCall>
      */
     public function getCalls(): array

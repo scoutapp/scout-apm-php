@@ -12,7 +12,6 @@ final class VersionTest extends TestCase
 {
     /**
      * @return string[][]|bool[][]
-     *
      * @psalm-return array<int, array{testVersion: string, isOlderThan: string, expectedResult: bool}>
      */
     public function olderThanVersionProvider(): array

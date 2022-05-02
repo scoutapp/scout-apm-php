@@ -41,8 +41,9 @@ final class FormatUrlPathAndQueryTest extends TestCase
     }
 
     /**
-     * @psalm-suppress PossiblyInvalidArgument
      * @psalm-param ConfigKey::URI_REPORTING_* $configuration
+     *
+     * @psalm-suppress PossiblyInvalidArgument
      * @dataProvider urlFilteringProvider
      */
     public function testUrlPathIsFilteredCorrectly(string $configuration, string $subjectUrlPath, string $expectedFormattedPath): void

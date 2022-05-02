@@ -86,7 +86,6 @@ final class SpanTest extends TestCase
 
     /**
      * @return int[][]|string[][]
-     *
      * @psalm-return list<array{spanName: string, startTime: float, endTime: float, expectedTagCount: int}>
      */
     public function spansForStackTraceProvider(): array

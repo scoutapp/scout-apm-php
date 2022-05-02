@@ -70,7 +70,6 @@ final class MetadataTest extends TestCase
 
     /**
      * @return string[][]
-     *
      * @psalm-return VersionList
      */
     private function installedVersions(string $withScoutExtensionVersion): array
