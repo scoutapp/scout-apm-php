@@ -14,7 +14,6 @@ use Throwable;
 
 use function array_key_exists;
 use function array_map;
-use function array_values;
 use function assert;
 use function explode;
 use function get_class;
@@ -76,9 +75,20 @@ final class ErrorEvent
             $request,
             get_class($throwable),
             $throwable->getMessage(),
-            array_values(array_map(
-                /** @psalm-param array{function: string, line?: int, file?: string, class?: string, type?: '->'|'::'} $trace */
+            array_map(
+                /**
+                 * @psalm-param array{
+                 *     args?: array,
+                 *     class?: class-string,
+                 *     file?: string,
+                 *     function?: string,
+                 *     line?: int,
+                 *     type?: '->'|'::'
+                 * } $trace
+                 */
                 static function (array $trace): string {
+                    $function = array_key_exists('function', $trace) ? $trace['function'] : 'unknown_function';
+
                     return sprintf(
                         '%s:%d:in `%s`',
                         array_key_exists('file', $trace) ? $trace['file'] : 'unknown file',
@@ -88,13 +98,13 @@ final class ErrorEvent
                                 '%s%s%s',
                                 $trace['class'],
                                 str_replace($trace['type'], '::', '#'),
-                                $trace['function']
+                                $function
                             )
-                            : $trace['function']
+                            : $function
                     );
                 },
                 $throwable->getTrace()
-            ))
+            )
         );
     }
 
