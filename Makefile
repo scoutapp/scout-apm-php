@@ -22,11 +22,19 @@ static-analysis: ## verify that no new static analysis issues were introduced
 coverage: ## generate code coverage reports
 	$(PHP_PATH) vendor/bin/phpunit --testsuite unit --coverage-html build/coverage-html --coverage-text $(OPTS)
 
+deps-install: ## Install the currently-locked set of dependencies
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
+
 deps-lowest: ## Update deps to lowest
 	$(PHP_PATH) $(COMPOSER_PATH) update --prefer-lowest --prefer-dist --no-interaction
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
 
 deps-highest: ## Update deps to highest
 	$(PHP_PATH) $(COMPOSER_PATH) update --prefer-dist --no-interaction
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
 
 update-static-analysis-baseline: ## bump static analysis baseline issues, reducing set of allowed failures
 	$(PHP_PATH) vendor/bin/psalm --update-baseline

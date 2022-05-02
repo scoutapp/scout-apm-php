@@ -78,9 +78,6 @@
         }
     },
     "config": {
-        "platform": {
-            "php": "7.2.34"
-        },
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
