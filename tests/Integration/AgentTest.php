@@ -121,6 +121,7 @@ final class AgentTest extends TestCase
         while ($retryCount < 5 && ! $this->connector->connected()) {
             $this->agent->connect();
             sleep(1);
+            $retryCount++;
         }
 
         if (! $this->connector->connected()) {
