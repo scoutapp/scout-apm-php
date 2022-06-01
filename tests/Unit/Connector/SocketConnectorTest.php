@@ -17,6 +17,8 @@ use function file_exists;
 use function realpath;
 use function usleep;
 
+use const PHP_OS;
+
 /** @covers \Scoutapm\Connector\SocketConnector */
 final class SocketConnectorTest extends TestCase
 {
@@ -24,6 +26,19 @@ final class SocketConnectorTest extends TestCase
 
     /** @var int[] */
     private $pidsStarted = [];
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+        if (PHP_OS !== 'Linux') {
+            // Because of the way the tests are run (launching the binary etc) this has not yet been updated to run on
+            // other platforms yet.
+            self::markTestSkipped('Test only runs on Linux at the moment');
+        }
+        // phpcs:enable
+    }
 
     public function testExceptionIsRaisedWhenConnectingToNonExistentSocket(): void
     {

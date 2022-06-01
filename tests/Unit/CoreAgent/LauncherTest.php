@@ -10,9 +10,24 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\UnitTests\TestLogger;
 
+use const PHP_OS;
+
 /** @covers \Scoutapm\CoreAgent\Launcher */
 final class LauncherTest extends TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+        if (PHP_OS !== 'Linux') {
+            // Launching of Core Agent on Windows is not supported yet. Windows users are expected to run the
+            // core-agent binary, and configure Scout to talk to the already-running instance.
+            self::markTestSkipped('Test only runs on Linux at the moment');
+        }
+        // phpcs:enable
+    }
+
     private function connectionAddressFromString(string $connectionAddress): ConnectionAddress
     {
         $config = new Config();
