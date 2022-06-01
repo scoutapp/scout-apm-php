@@ -19,6 +19,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\SocketConnector;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
+use Scoutapm\Helper\Platform;
 use Scoutapm\UnitTests\TestLogger;
 use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Process\Process;
@@ -81,8 +82,6 @@ final class AgentTest extends TestCase
 
         if ($scoutApmKey === false || $scoutApmKey === '') {
             self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
-
-            return;
         }
 
         $this->scoutApmKey = $scoutApmKey;
@@ -97,6 +96,11 @@ final class AgentTest extends TestCase
 
     private function cleanUpTestAssets(): void
     {
+        // Windows integration test leaves a single persistent instance of core-agent running, so don't shut it down
+        if (Platform::isWindows()) {
+            return;
+        }
+
         /** @psalm-suppress ForbiddenCode */
         shell_exec('killall -q core-agent || true');
         /** @psalm-suppress ForbiddenCode */
@@ -178,11 +182,6 @@ final class AgentTest extends TestCase
         unlink($logFileGeneratedByTestScript);
     }
 
-    /**
-     * We can't leave exceptions "uncaught" in PHPUnit, since the runner will always capture any exceptions this test
-     * might raise. Therefore, the actual test script has been written as an external PHP file which is executed, and
-     * we analyse the logs generated to inspect that the exception was sent to Scout's error reporting system.
-     */
     public function testRecordedThrowablesAreSentToScout(): void
     {
         $this->setUpWithConfiguration(Config::fromArray([
@@ -249,26 +248,28 @@ final class AgentTest extends TestCase
     }
 
     /**
-     * @return Config[][]
-     *
-     * @psalm-return array<string,list<Config>>
+     * @psalm-return iterable<string,list<Config>>
      */
-    public function endToEndConfigurationProvider(): array
+    public function endToEndConfigurationProvider(): iterable
     {
-        return [
-            'defaultBasicConfiguration' => [
-                Config::fromArray([
-                    ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
-                    ConfigKey::MONITORING_ENABLED => true,
-                ]),
-            ],
-            'unixSocketConfiguration' => [
-                Config::fromArray([
-                    ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
-                    ConfigKey::MONITORING_ENABLED => true,
-                    ConfigKey::CORE_AGENT_SOCKET_PATH => '/tmp/scout_apm_core/core-agent.sock',
-                ]),
-            ],
+        yield 'defaultBasicConfiguration' => [
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+                ConfigKey::MONITORING_ENABLED => true,
+            ]),
+        ];
+
+        if (Platform::isWindows()) {
+            // Sockets can only be used on Linux
+            return;
+        }
+
+        yield 'unixSocketConfiguration' => [
+            Config::fromArray([
+                ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+                ConfigKey::MONITORING_ENABLED => true,
+                ConfigKey::CORE_AGENT_SOCKET_PATH => '/tmp/scout_apm_core/core-agent.sock',
+            ]),
         ];
     }
 
