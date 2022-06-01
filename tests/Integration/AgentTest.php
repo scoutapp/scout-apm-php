@@ -193,8 +193,14 @@ final class AgentTest extends TestCase
         $this->agent->recordThrowable(new RuntimeException('something went wrong'));
         $this->agent->send();
 
-        self::assertTrue($this->logger->hasDebugThatContains('"errors_enabled":true'));
-        self::assertTrue($this->logger->hasDebugThatContains('Sent 1 error event to Scout Error Reporting'));
+        self::assertTrue(
+            $this->logger->hasDebugThatContains('"errors_enabled":true'),
+            'Debug did not have errors_enabled flag set: ' . $this->formatCapturedLogMessages()
+        );
+        self::assertTrue(
+            $this->logger->hasDebugThatContains('Sent 1 error event to Scout Error Reporting'),
+            'Debug did not indicate that error event was sent successfully: ' . $this->formatCapturedLogMessages()
+        );
     }
 
     public function testForMemoryLeaksWhenHandlingJobQueues(): void
