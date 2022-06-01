@@ -28,12 +28,18 @@ jobs:
 
   base-unit:
     name: "Unit tests"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        dependencies: ["lowest", "highest"]
-        scout-ext: ["with-scout-ext", "no-scout-ext"]
+        os:
+          - "ubuntu-latest"
+        dependencies:
+          - "lowest"
+          - "highest"
+        scout-ext:
+          - "with-scout-ext"
+          - "no-scout-ext"
         extensions: [
             "",
             "mongodb"
@@ -60,7 +66,7 @@ jobs:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
           tools: pecl, composer:v2.2
-          extensions: "curl, ${{ matrix.extensions }}"
+          extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
@@ -87,6 +93,64 @@ jobs:
         run: "composer update --prefer-dist --no-interaction --no-progress"
       - name: "Run PHPUnit test suite"
         run: "vendor/bin/phpunit --testsuite=unit,integration"
+
+  windows-unit:
+    name: "Windows tests"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "windows-latest"
+        dependencies:
+          - "lowest"
+          - "highest"
+        scout-ext:
+#          - "with-scout-ext" - Scout ext does not build on Windows yet
+          - "no-scout-ext"
+        extensions: [
+            "",
+        ]
+        php-version:
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: Vampire/setup-wsl@v1
+        if: ${{ matrix.os == 'windows-latest' }}
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.2
+          extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
+        env:
+          fail-fast: true
+      - name: "Install lowest dependencies"
+        if: ${{ matrix.dependencies == 'lowest' }}
+        run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
+      - name: "Install highest dependencies"
+        if: ${{ matrix.dependencies == 'highest' }}
+        run: "composer update --prefer-dist --no-interaction --no-progress"
+      - name: "Run PHPUnit test suite - unit"
+        run: "vendor/bin/phpunit --testsuite=unit"
+      - name: "Download and run core agent"
+        run: |
+          wget https://s3-us-west-1.amazonaws.com/scout-public-downloads/apm_core_agent/release/scout_apm_core-v1.4.0-x86_64-unknown-linux-musl.tgz
+          tar zxvf scout_apm_core-v1.4.0-x86_64-unknown-linux-musl.tgz
+          ./core-agent start --tcp 0.0.0.0:4444 --log-file core-agent.log --log-level DEBUG --daemonize true
+      - name: "Run PHPUnit test suite - integration"
+        run: "vendor/bin/phpunit --testsuite=integration --testdox"
+        env:
+          SCOUT_CORE_AGENT_DOWNLOAD: false
+          SCOUT_CORE_AGENT_LAUNCH: false
+          SCOUT_CORE_AGENT_SOCKET_PATH: tcp://127.0.0.1:4444
 
   memory-leak-unit:
     name: "Memory leak test"
