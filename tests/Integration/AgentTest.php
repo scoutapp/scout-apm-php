@@ -78,9 +78,9 @@ final class AgentTest extends TestCase
         parent::setUp();
 
         // Note, env var name is intentionally inconsistent (i.e. not `SCOUT_KEY`) as we only want to affect this test
-        $scoutApmKey = getenv('SCOUT_APM_KEY');
+        $scoutApmKey = (string) getenv('SCOUT_APM_KEY');
 
-        if ($scoutApmKey === false || $scoutApmKey === '') {
+        if ($scoutApmKey === '') {
             self::markTestSkipped('Set the environment variable SCOUT_APM_KEY to enable this test.');
         }
 
