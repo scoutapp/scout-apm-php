@@ -8,6 +8,7 @@ use function stripos;
 
 use const PHP_OS;
 
+/** @internal */
 final class Platform
 {
     public static function isWindows(): bool
