@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests;
 
-use Cache\Adapter\PHPArray\ArrayCachePool;
 use Exception;
+use Illuminate\Cache\ArrayStore;
+use Illuminate\Cache\Repository;
 use OutOfBoundsException;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -1004,7 +1005,7 @@ final class AgentTest extends TestCase
                 ConfigKey::MONITORING_ENABLED => true,
             ]),
             $this->logger,
-            new ArrayCachePool(),
+            new Repository(new ArrayStore()),
             $this->connector,
             $this->phpExtension
         );
