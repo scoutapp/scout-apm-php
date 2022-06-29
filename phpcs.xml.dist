@@ -14,6 +14,7 @@
     <file>tests</file>
 
     <exclude-pattern>tests/psalm-stubs.php</exclude-pattern>
+    <exclude-pattern>src/Cache</exclude-pattern>
 
     <rule ref="Doctrine">
         <exclude name="Generic.Files.LineLength.TooLong"/>

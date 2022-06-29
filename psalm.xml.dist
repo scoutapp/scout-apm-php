@@ -14,6 +14,7 @@
             <file name="stub/TwigMethods-Twig2.php" />
             <file name="stub/TwigMethods-Twig3.php" />
             <file name="tests/psalm-stubs.php" />
+            <directory name="src/Cache" />
         </ignoreFiles>
     </projectFiles>
     <stubs>

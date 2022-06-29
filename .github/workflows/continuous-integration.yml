@@ -395,9 +395,6 @@ jobs:
           fail-fast: true
       - name: "Install Laravel quickstart project"
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
-        # We do not support psr/simple-cache 3.0.0 yet (https://github.com/scoutapp/scout-apm-php/issues/258)
-      - name: "Require psr/simple-cache:^1.0"
-        run: cd test-app && composer require psr/simple-cache:^1.0
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"
@@ -585,9 +582,6 @@ jobs:
           fail-fast: true
       - name: "Install Lumen quickstart project"
         run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
-        # We do not support psr/simple-cache 3.0.0 yet (https://github.com/scoutapp/scout-apm-php/issues/258)
-      - name: "Require psr/simple-cache:^1.0"
-        run: cd test-app && composer require psr/simple-cache:^1.0
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
       - name: "Require scout-apm-php current checkout (PHP 7.2+)"
