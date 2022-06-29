@@ -11,6 +11,7 @@ use Scoutapm\Connector\ConnectionAddress;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\FailedToSendCommand;
 use Scoutapm\Connector\SocketConnector;
+use Scoutapm\Helper\Platform;
 
 use function exec;
 use function file_exists;
@@ -24,6 +25,19 @@ final class SocketConnectorTest extends TestCase
 
     /** @var int[] */
     private $pidsStarted = [];
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
+        if (Platform::isWindows()) {
+            // Because of the way the tests are run (launching the binary etc) this has not yet been updated to run on
+            // other platforms yet.
+            self::markTestSkipped('Test only runs on Linux at the moment');
+        }
+        // phpcs:enable
+    }
 
     public function testExceptionIsRaisedWhenConnectingToNonExistentSocket(): void
     {

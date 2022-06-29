@@ -19,6 +19,7 @@ use function str_replace;
 use function strpos;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
+use const DIRECTORY_SEPARATOR;
 
 /**
  * @internal
@@ -176,7 +177,7 @@ final class Backtrace
             return $formattedStack;
         }
 
-        $vendorPath = $pathWhereComposerLives . '/vendor';
+        $vendorPath = $pathWhereComposerLives . DIRECTORY_SEPARATOR . 'vendor';
 
         return array_values(array_filter(
             $formattedStack,

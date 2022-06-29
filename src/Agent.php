@@ -126,6 +126,8 @@ final class Agent implements ScoutApmAgent
         $this->startNewRequest();
 
         $this->ignoredEndpoints = new IgnoredEndpoints($configuration->get(ConfigKey::IGNORED_ENDPOINTS));
+
+        $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
     }
 
     private function warnIfConfigValueIsNotSet(string $configKey): void
@@ -208,8 +210,6 @@ final class Agent implements ScoutApmAgent
 
     public function connect(): void
     {
-        $this->logger->debug('Configuration: ' . json_encode($this->config->asArrayWithSecretsRemoved()));
-
         if (! $this->enabled()) {
             $this->logger->debug('Connection skipped, since monitoring is disabled');
 
