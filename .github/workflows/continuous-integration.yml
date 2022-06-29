@@ -105,12 +105,9 @@ jobs:
         dependencies:
           - "lowest"
           - "highest"
-        scout-ext:
-#          - "with-scout-ext" - Scout ext does not build on Windows yet
-          - "no-scout-ext"
-        extensions: [
-            "",
-        ]
+        extensions:
+          - ""
+          - "scoutapm"
         php-version:
           - "7.2"
           - "7.3"
