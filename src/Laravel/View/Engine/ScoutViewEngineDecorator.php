@@ -17,8 +17,15 @@ final class ScoutViewEngineDecorator implements Engine
 {
     public const VIEW_FACTORY_SHARED_KEY = '__scout_apm_view_name';
 
-    /** @var Engine */
-    private $realEngine;
+    /**
+     * Note: property MUST be called `$engine` as package `spatie/laravel-ignition` makes assumptions about how
+     * implementors of {@see Engine} structure their classes.
+     *
+     * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
+     *
+     * @var Engine
+     */
+    private $engine;
 
     /** @var ScoutApmAgent */
     private $agent;
@@ -26,9 +33,9 @@ final class ScoutViewEngineDecorator implements Engine
     /** @var Factory */
     private $viewFactory;
 
-    public function __construct(Engine $realEngine, ScoutApmAgent $agent, Factory $viewFactory)
+    public function __construct(Engine $engine, ScoutApmAgent $agent, Factory $viewFactory)
     {
-        $this->realEngine  = $realEngine;
+        $this->engine      = $engine;
         $this->agent       = $agent;
         $this->viewFactory = $viewFactory;
     }
@@ -42,7 +49,7 @@ final class ScoutViewEngineDecorator implements Engine
             'View',
             (string) $this->viewFactory->shared(self::VIEW_FACTORY_SHARED_KEY, 'unknown'),
             function () use ($path, $data) {
-                return $this->realEngine->get($path, $data);
+                return $this->engine->get($path, $data);
             }
         );
     }
@@ -55,9 +62,9 @@ final class ScoutViewEngineDecorator implements Engine
      */
     public function getCompiler(): CompilerInterface
     {
-        assert(method_exists($this->realEngine, 'getCompiler'));
+        assert(method_exists($this->engine, 'getCompiler'));
         /** @psalm-suppress UndefinedInterfaceMethod */
-        $compiler = $this->realEngine->getCompiler();
+        $compiler = $this->engine->getCompiler();
         assert($compiler instanceof CompilerInterface);
 
         return $compiler;

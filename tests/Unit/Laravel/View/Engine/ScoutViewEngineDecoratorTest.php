@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Laravel\View\Engine;
 
+use Illuminate\Container\Container as ContainerSingleton;
+use Illuminate\Contracts\Container\Container as ContainerInterface;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory as ViewFactory;
+use Illuminate\View\ViewException;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\ScoutApmAgent;
+use Spatie\LaravelIgnition\Views\BladeSourceMapCompiler;
+use Spatie\LaravelIgnition\Views\ViewExceptionMapper;
 
+use function class_exists;
 use function uniqid;
 
 /** @covers \Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator */
@@ -112,5 +119,40 @@ final class ScoutViewEngineDecoratorTest extends TestCase
             ->willReturn($compiler);
 
         self::assertSame($compiler, $this->viewEngineDecorator->getCompiler());
+    }
+
+    public function testSpatieLaravelIgnitionCompatibility(): void
+    {
+        if (! class_exists(ViewExceptionMapper::class)) {
+            self::markTestSkipped('Test depends on `spatie/laravel-ignition`, but it is not installed');
+        }
+
+        /**
+         * The `spatie/laravel-ignition` package depends on the engine having a property called `lastCompiled`, which
+         * only exists in the `\Illuminate\View\Engines\CompilerEngine` Blade Compiler. The implementation does sort of
+         * account for decoration, but it expects the property to be called `engine`. Therefore, in this test, we
+         * invoke the problematic consumer to ensure our decorated view engine conforms to this assumption.
+         *
+         * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
+         *
+         * @noinspection PhpPossiblePolymorphicInvocationInspection PhpUndefinedFieldInspection
+         * @psalm-suppress NoInterfaceProperties
+         */
+        $this->realEngine->lastCompiled = [];
+
+        $viewEngineResolver = new EngineResolver();
+        $viewEngineResolver->register('blade', function () {
+            return $this->viewEngineDecorator;
+        });
+
+        $fakeContainer = $this->createMock(ContainerInterface::class);
+        $fakeContainer->expects(self::once())
+            ->method('make')
+            ->with('view.engine.resolver')
+            ->willReturn($viewEngineResolver);
+        ContainerSingleton::setInstance($fakeContainer);
+
+        $vem = new ViewExceptionMapper($this->createMock(BladeSourceMapCompiler::class));
+        $vem->map(new ViewException('things (View: paththing)'));
     }
 }

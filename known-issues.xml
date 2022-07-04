@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.22.0@fc2c6ab4d5fa5d644d8617089f012f3bb84b8703">
+<files psalm-version="4.24.0@06dd975cb55d36af80f242561738f16c5f58264f">
   <file src="src/Agent.php">
-    <MixedArgument occurrences="10">
+    <MixedArgument occurrences="9">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
       <code>$configuration-&gt;get(ConfigKey::IGNORED_ENDPOINTS)</code>
-      <code>$this-&gt;config-&gt;get(ConfigKey::APPLICATION_NAME)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::APPLICATION_NAME)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::CORE_AGENT_CONFIG_FILE)</code>
       <code>$this-&gt;config-&gt;get(ConfigKey::CORE_AGENT_DOWNLOAD_URL)</code>
@@ -27,11 +26,6 @@
     <MixedReturnStatement occurrences="1">
       <code>$this-&gt;config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
     </MixedReturnStatement>
-  </file>
-  <file src="src/Cache/DevNullCache.php">
-    <MixedArgumentTypeCoercion occurrences="1">
-      <code>$keysAsArray</code>
-    </MixedArgumentTypeCoercion>
   </file>
   <file src="src/Config.php">
     <MixedArgumentTypeCoercion occurrences="1">
@@ -335,6 +329,19 @@
     </MixedAssignment>
   </file>
   <file src="tests/Unit/Laravel/View/Engine/ScoutViewEngineDecoratorTest.php">
+    <MixedArgument occurrences="1">
+      <code>BladeSourceMapCompiler::class</code>
+    </MixedArgument>
+    <MixedAssignment occurrences="1">
+      <code>$vem</code>
+    </MixedAssignment>
+    <MixedMethodCall occurrences="1">
+      <code>map</code>
+    </MixedMethodCall>
+    <UndefinedClass occurrences="2">
+      <code>BladeSourceMapCompiler</code>
+      <code>ViewException</code>
+    </UndefinedClass>
     <UnusedClosureParam occurrences="4">
       <code>$name</code>
       <code>$name</code>
