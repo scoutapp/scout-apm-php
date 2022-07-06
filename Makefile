@@ -16,6 +16,9 @@ unit: ## run unit tests
 cs: ## verify code style rules
 	$(PHP_PATH) vendor/bin/phpcs $(OPTS)
 
+cs-fix: ## auto fix code style rules
+	$(PHP_PATH) vendor/bin/phpcbf $(OPTS)
+
 static-analysis: ## verify that no new static analysis issues were introduced
 	$(PHP_PATH) vendor/bin/psalm $(OPTS)
 
