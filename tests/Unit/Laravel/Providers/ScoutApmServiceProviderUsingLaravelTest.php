@@ -20,8 +20,12 @@ use Psr\Log\LogLevel;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 
 use function class_exists;
+use function mkdir;
 use function sprintf;
 use function sys_get_temp_dir;
+use function uniqid;
+
+use const DIRECTORY_SEPARATOR;
 
 /** @covers \Scoutapm\Laravel\Providers\ScoutApmServiceProvider */
 final class ScoutApmServiceProviderUsingLaravelTest extends ScoutApmServiceProviderTestBase
@@ -63,6 +67,10 @@ final class ScoutApmServiceProviderUsingLaravelTest extends ScoutApmServiceProvi
                 );
             }
         );
+
+        $storagePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('scoutapm-test-laravel-storage', true) . DIRECTORY_SEPARATOR;
+        mkdir($storagePath);
+        $application->useStoragePath($storagePath);
 
         $application->singleton(
             HttpKernelInterface::class,
