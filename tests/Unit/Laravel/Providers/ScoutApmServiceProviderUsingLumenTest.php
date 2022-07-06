@@ -18,8 +18,13 @@ use ReflectionProperty;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 
 use function class_exists;
+use function method_exists;
+use function mkdir;
 use function sprintf;
 use function sys_get_temp_dir;
+use function uniqid;
+
+use const DIRECTORY_SEPARATOR;
 
 /** @covers \Scoutapm\Laravel\Providers\ScoutApmServiceProvider */
 final class ScoutApmServiceProviderUsingLumenTest extends ScoutApmServiceProviderTestBase
@@ -79,6 +84,12 @@ final class ScoutApmServiceProviderUsingLumenTest extends ScoutApmServiceProvide
                 );
             }
         );
+
+        if (method_exists($application, 'useStoragePath')) {
+            $storagePath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('scoutapm-test-lumen-storage', true) . DIRECTORY_SEPARATOR;
+            mkdir($storagePath);
+            $application->useStoragePath($storagePath);
+        }
 
         $application->make('view');
         $application->singleton(
