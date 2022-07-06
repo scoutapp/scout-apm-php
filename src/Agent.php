@@ -31,6 +31,7 @@ use Scoutapm\Events\Request\Request;
 use Scoutapm\Events\Span\Span;
 use Scoutapm\Events\Span\SpanReference;
 use Scoutapm\Events\Tag\Tag;
+use Scoutapm\Extension\DoNotInvokeAnyExtensionCapabilities;
 use Scoutapm\Extension\ExtensionCapabilities;
 use Scoutapm\Extension\PotentiallyAvailableExtensionCapabilities;
 use Scoutapm\Extension\Version;
@@ -149,6 +150,40 @@ final class Agent implements ScoutApmAgent
         );
     }
 
+    /**
+     * The {@see PotentiallyAvailableExtensionCapabilities} constructor implementation automatically invokes the
+     * {@see \scoutapm_enable_instrumentation()} function, which enables the extension, if it is available. However, if
+     * the extension is present, but monitoring is disabled, the extension is still enabled. Therefore, when setting up
+     * the Agent, if monitoring is NOT enabled, then use the new alternate implementation in
+     * {@see DoNotInvokeAnyExtensionCapabilities} which is essentially a no-op. This means the extension will remain
+     * dormant if monitoring is disabled.
+     */
+    private static function createExtensionCapabilitiesFromConfig(Config $config): ExtensionCapabilities
+    {
+        return $config->get(ConfigKey::MONITORING_ENABLED)
+            ? new PotentiallyAvailableExtensionCapabilities()
+            : new DoNotInvokeAnyExtensionCapabilities();
+    }
+
+    /**
+     * The only required arguments are the {@see Config}, and a {@see LoggerInterface} implementation.
+     *
+     * @example
+     *
+     *     $agent = Agent::fromConfig(
+     *       Config::fromArray([]), // Uses default configuration, which can be overridden with environment variables
+     *       $logger // PSR-3 compatible logger, e.g. Monolog, or most framework loggers
+     *     );
+     *
+     * If any of the other parameters are not provided, default configuration is used, which should be fine for most
+     * usual cases. Default implementations are as follows:
+     *
+     *  - $cache - {@see DevNullCache} - i.e. no caching
+     *  - $connector - {@see SocketConnector} - supports both UNIX sockets and TCP sockets
+     *  - $extensionCapabilities - {@see PotentiallyAvailableExtensionCapabilities} or {@see DoNotInvokeAnyExtensionCapabilities} depending on configuration
+     *  - $locateFileOrFolder - {@see LocateFileOrFolderUsingFilesystem}
+     *  - $errorHandling - {@see ScoutErrorHandling} or {@see NoErrorHandling} depending on configuration
+     */
     public static function fromConfig(
         Config $config,
         LoggerInterface $logger,
@@ -171,7 +206,7 @@ final class Agent implements ScoutApmAgent
             $config,
             $connector ?? self::createConnectorFromConfig($config),
             $logger,
-            $extensionCapabilities ?? new PotentiallyAvailableExtensionCapabilities(),
+            $extensionCapabilities ?? self::createExtensionCapabilitiesFromConfig($config),
             $cache ?? new DevNullCache(),
             $locateFileOrFolder ?? new LocateFileOrFolderUsingFilesystem(),
             $errorHandling ?? ErrorHandlingDiscoveryFactory::createAndListen($config, $logger, $superglobals),
