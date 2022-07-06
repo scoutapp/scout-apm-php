@@ -32,7 +32,6 @@ class TagSpan extends Tag
 
     /**
      * @return string[][][]|array[][][]|bool[][][]|null[][][]
-     *
      * @psalm-return list<
      *      array{
      *          TagSpan: array{

@@ -6,7 +6,7 @@
     "license": "MIT",
     "keywords": ["performance", "apm", "monitoring", "development"],
     "require": {
-        "php": "7.1.*|7.2.*|7.3.*|7.4.*|8.0.*|8.1.*",
+        "php": "7.2.*|7.3.*|7.4.*|8.0.*|8.1.*",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-sockets": "*",
@@ -25,14 +25,14 @@
     },
     "require-dev": {
         "composer-plugin-api": "^2.0",
-        "doctrine/coding-standard": "^8.2",
-        "guzzlehttp/guzzle": "^7.3",
+        "doctrine/coding-standard": "^9.0",
+        "guzzlehttp/guzzle": "^7.4",
         "laravel/framework": "^5.5.0|^6.0|^7.0|^8.0|^9.0",
         "laravel/lumen-framework": "^5.5.0|^6.0|^7.0|^8.0|^9.0",
-        "monolog/monolog": "^1.26|^2.2.0",
-        "phpunit/phpunit": "^7.5.20|^8.5.22|^9.5.2",
-        "nyholm/psr7": "^1.4",
-        "psalm/plugin-phpunit": "^0.15.1",
+        "monolog/monolog": "^1.27|^2.5",
+        "phpunit/phpunit": "^8.5.22|^9.5.2",
+        "nyholm/psr7": "^1.5",
+        "psalm/plugin-phpunit": "^0.16.1",
         "symfony/config": "^4.0 || ^5.0 || ^6.0",
         "symfony/dependency-injection": "^4.0 || ^5.0 || ^6.0",
         "symfony/event-dispatcher": "^4.0 || ^5.0 || ^6.0",
@@ -40,7 +40,7 @@
         "symfony/orm-pack": "^2.0",
         "symfony/process": "^3.0 || ^4.0 || ^5.0 || ^6.0",
         "symfony/twig-pack": "^1.0",
-        "vimeo/psalm": "^4.16"
+        "vimeo/psalm": "^4.23"
     },
     "suggest": {
         "composer-runtime-api": "Composer v2 is required for seeing version information in metadata",
@@ -80,9 +80,6 @@
     "config": {
         "preferred-install": "dist",
         "sort-packages": true,
-        "allow-plugins": {
-            "dealerdirect/phpcodesniffer-composer-installer": true,
-            "composer/package-versions-deprecated": true
-        }
+        "allow-plugins": true
     }
 }

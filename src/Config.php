@@ -115,7 +115,6 @@ class Config
      * keys).
      *
      * @return mixed[]
-     *
      * @psalm-return array<string, mixed>
      */
     public function asArrayWithSecretsRemoved(): array

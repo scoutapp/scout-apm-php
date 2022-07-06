@@ -57,7 +57,6 @@ final class ConnectionAddress
 
     /**
      * @return string[]
-     *
      * @psalm-return list<string>
      */
     private function explodeTcpAddress(): array

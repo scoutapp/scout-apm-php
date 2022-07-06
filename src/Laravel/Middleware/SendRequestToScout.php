@@ -25,9 +25,9 @@ final class SendRequestToScout
     }
 
     /**
-     * @return mixed
-     *
      * @psalm-param Closure(Request):mixed $next
+     *
+     * @return mixed
      */
     public function handle(Request $request, Closure $next)
     {

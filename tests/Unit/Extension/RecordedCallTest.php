@@ -40,7 +40,6 @@ final class RecordedCallTest extends TestCase
 
     /**
      * @return string[][]|string[][][]
-     *
      * @psalm-return array<string, array{recordedFunctionName: string, expectedFilteredArguments: array<string, string>}>
      */
     public function filteredArgumentsDataProvider(): array

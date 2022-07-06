@@ -40,34 +40,34 @@ interface ScoutApmAgent
     public function stopSpan(): void;
 
     /**
-     * @return mixed
-     *
-     * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
+     *
+     * @return mixed
      * @psalm-return T
      *
+     * @psalm-template T
      * @no-named-arguments
      */
     public function instrument(string $type, string $name, callable $block);
 
     /**
-     * @return mixed
-     *
-     * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
+     *
+     * @return mixed
      * @psalm-return T
      *
+     * @psalm-template T
      * @no-named-arguments
      */
     public function webTransaction(string $name, callable $block);
 
     /**
-     * @return mixed
-     *
-     * @psalm-template T
      * @psalm-param callable(?SpanReference): T $block
+     *
+     * @return mixed
      * @psalm-return T
      *
+     * @psalm-template T
      * @no-named-arguments
      */
     public function backgroundTransaction(string $name, callable $block);

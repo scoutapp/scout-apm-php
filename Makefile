@@ -1,39 +1,46 @@
 .PHONY: *
 
+PHP_VERSION=7.2
+PHP_PATH=/usr/bin/env php$(PHP_VERSION)
+COMPOSER_PATH=/usr/local/bin/composer
+OPTS=
+
 default: unit cs static-analysis ## all the things
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 unit: ## run unit tests
-	vendor/bin/phpunit
+	$(PHP_PATH) vendor/bin/phpunit $(OPTS)
 
 cs: ## verify code style rules
-	vendor/bin/phpcs
+	$(PHP_PATH) vendor/bin/phpcs $(OPTS)
+
+cs-fix: ## auto fix code style rules
+	$(PHP_PATH) vendor/bin/phpcbf $(OPTS)
 
 static-analysis: ## verify that no new static analysis issues were introduced
-	vendor/bin/psalm
+	$(PHP_PATH) vendor/bin/psalm $(OPTS)
 
 coverage: ## generate code coverage reports
-	vendor/bin/phpunit --testsuite unit --coverage-html build/coverage-html --coverage-text
+	$(PHP_PATH) vendor/bin/phpunit --testsuite unit --coverage-html build/coverage-html --coverage-text $(OPTS)
 
-unit-php71: ## run unit tests with php 7.1
-	php7.1 vendor/bin/phpunit
+deps-install: ## Install the currently-locked set of dependencies
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
 
-deps-php71-lowest: ## Update deps to lowest
-	php7.1 /usr/local/bin/composer update --prefer-lowest --prefer-dist --no-interaction
+deps-lowest: ## Update deps to lowest
+	$(PHP_PATH) $(COMPOSER_PATH) update --prefer-lowest --prefer-dist --no-interaction
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
 
-deps-php8-lowest: ## Update deps to lowest
-	php8.0 /usr/local/bin/composer update --prefer-lowest --prefer-dist --no-interaction
-
-deps-php71-highest: ## Update deps to highest
-	php7.1 /usr/local/bin/composer update --prefer-dist --no-interaction
-
-deps-php8-highest: ## Update deps to highest
-	php8.0 /usr/local/bin/composer update --prefer-dist --no-interaction
+deps-highest: ## Update deps to highest
+	$(PHP_PATH) $(COMPOSER_PATH) update --prefer-dist --no-interaction
+	rm -Rf vendor
+	$(PHP_PATH) $(COMPOSER_PATH) install
 
 update-static-analysis-baseline: ## bump static analysis baseline issues, reducing set of allowed failures
-	vendor/bin/psalm --update-baseline
+	$(PHP_PATH) vendor/bin/psalm --update-baseline
 
 reset-static-analysis-baseline: ## reset static analysis baseline issues to current HEAD
-	vendor/bin/psalm --set-baseline=known-issues.xml
+	$(PHP_PATH) vendor/bin/psalm --set-baseline=known-issues.xml

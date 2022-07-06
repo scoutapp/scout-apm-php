@@ -13,7 +13,6 @@ interface ErrorReportingClient
 {
     /**
      * @param ErrorEvent[] $errorEvents
-     *
      * @psalm-param non-empty-list<ErrorEvent> $errorEvents
      */
     public function sendErrorToScout(array $errorEvents): void;

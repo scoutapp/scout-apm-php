@@ -45,7 +45,6 @@ jobs:
             "mongodb"
         ]
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -65,7 +64,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
@@ -80,11 +79,6 @@ jobs:
           sudo mkdir -p /tmp/pear/temp
           sudo pecl update-channels
           yes | sudo pecl install -f scoutapm
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
-        if: ${{ matrix.php-version == '7.1' }}
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
         run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
@@ -128,7 +122,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
@@ -165,7 +159,6 @@ jobs:
         dependencies: ["highest"]
         scout-ext: ["with-scout-ext", "no-scout-ext"]
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -180,7 +173,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: "curl"
         env:
           fail-fast: true
@@ -195,11 +188,6 @@ jobs:
           sudo mkdir -p /tmp/pear/temp
           sudo pecl update-channels
           yes | sudo pecl install -f scoutapm
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
-        if: matrix.php-version == '7.1'
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install lowest dependencies"
         if: matrix.dependencies == 'lowest'
         run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
@@ -218,12 +206,12 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "8.0"
-          tools: composer:v2.2
+          php-version: "7.2"
+          tools: composer:v2.3
         env:
           fail-fast: true
       - name: "Install dependencies"
-        run: "composer install"
+        run: "composer install --no-interaction --prefer-dist"
       - name: "Run PHP_CodeSniffer"
         run: "vendor/bin/phpcs"
 
@@ -236,16 +224,12 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "7.1"
-          tools: composer:v2.2
+          php-version: "7.2"
+          tools: composer:v2.3
         env:
           fail-fast: true
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Install dependencies"
-        run: "composer update --no-interaction --prefer-dist --prefer-stable"
+        run: "composer install --no-interaction --prefer-dist"
       - name: "Run Psalm"
         run: "vendor/bin/psalm"
 
@@ -260,8 +244,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           coverage: "none"
-          php-version: "8.0"
-          tools: composer:v2.2
+          php-version: "8.1"
+          tools: composer:v2.3
         env:
           fail-fast: true
       - name: "Require Roave/BackwardCompatibilityCheck"
@@ -290,16 +274,12 @@ jobs:
           - "5.*"
           - "6.*"
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
           - "8.0"
           - "8.1"
         exclude:
-          - { symfony-version: "4.*", "twig-version": "3.*", php-version: "7.1" } # Twig 3 (on Symfony 4) requires 7.2+
-          - { symfony-version: "5.*", php-version: "7.1" } # Symfony 5 requires 7.2+
-          - { symfony-version: "6.*", php-version: "7.1" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.2" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.3" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.4" } # Symfony 6 requires 8.0+
@@ -310,7 +290,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
@@ -318,11 +298,6 @@ jobs:
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
-        if: ${{ matrix.php-version == '7.1' }}
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
         run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
@@ -349,7 +324,6 @@ jobs:
           - "8.*"
           - "9.*"
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -362,16 +336,12 @@ jobs:
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
-          - {laravel-version: "6.*", php-version: "7.1"} # Laravel 6 requires 7.2+
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
-          - {laravel-version: "7.*", php-version: "7.1"} # Laravel 7 requires 7.2+
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
           # Laravel 8 supports PHP 7.3 - 8.1
-          - {laravel-version: "8.*", php-version: "7.1"} # Laravel 8 requires 7.3+
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
           # Laravel 9 supports PHP 7.3 - 8.1
-          - {laravel-version: "9.*", php-version: "7.1"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
@@ -382,7 +352,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
@@ -395,11 +365,6 @@ jobs:
       - name: "Install spatie/laravel-ignition (if available)"
         if: ${{ (matrix.php-version == '8.0' || matrix.php-version == '8.1') && (matrix.laravel-version == '8.*' || matrix.laravel-version == '9.*') }}
         run: "composer require --dev spatie/laravel-ignition --no-update --no-interaction"
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter for PHP 7.1"
-        if: ${{ matrix.php-version == '7.1' }}
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Laravel) test suite"
@@ -421,7 +386,6 @@ jobs:
           - "8.*"
           - "9.*"
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -434,16 +398,12 @@ jobs:
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
-          - {laravel-version: "6.*", php-version: "7.1"} # Laravel 6 requires 7.2+
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
-          - {laravel-version: "7.*", php-version: "7.1"} # Laravel 7 requires 7.2+
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
           # Laravel 8 supports PHP 7.3 - 8.1
-          - {laravel-version: "8.*", php-version: "7.1"} # Laravel 8 requires 7.3+
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
           # Laravel 9 supports PHP 7.3 - 8.1
-          - {laravel-version: "9.*", php-version: "7.1"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
@@ -458,20 +418,18 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+      - name: "Composer allow-plugins to allow Laravel to actually install"
+        run: composer config --global allow-plugins true
       - name: "Install Laravel quickstart project"
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
-      - name: "Require scout-apm-php current checkout (PHP 7.2+)"
-        if: matrix.php-version != '7.1'
+      - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
-      - name: "Require scout-apm-php current checkout (PHP 7.1)"
-        if: matrix.php-version == '7.1'
-        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Publish the provider"
         run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
       - name: "Configure error handler (Laravel 5-6)"
@@ -535,7 +493,6 @@ jobs:
           - "8.*"
           - "9.*"
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -547,18 +504,14 @@ jobs:
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
-          - {lumen-version: "6.*", php-version: "7.1"} # Lumen 6 requires 7.2+
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
-          - {lumen-version: "7.*", php-version: "7.1"} # Lumen 7 requires 7.2+
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
           # Lumen 8 supports PHP 7.3 - 8.1
-          - {lumen-version: "8.*", php-version: "7.1"} # Lumen 8 requires 7.3+
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
           # Lumen 9 supports PHP 7.3 - 8.1
-          - {lumen-version: "9.*", php-version: "7.1"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
@@ -569,7 +522,7 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
@@ -579,11 +532,6 @@ jobs:
         run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
-      - name: "Replace guzzlehttp/guzzle with php-http/guzzle6-adapter (PHP 7.1)"
-        if: ${{ matrix.php-version == '7.1' }}
-        run: |
-          composer remove --dev guzzlehttp/guzzle --no-update --no-interaction
-          composer require --dev php-http/guzzle6-adapter --no-update --no-interaction
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Lumen) test suite"
@@ -605,7 +553,6 @@ jobs:
           - "8.*"
           - "9.*"
         php-version:
-          - "7.1"
           - "7.2"
           - "7.3"
           - "7.4"
@@ -617,18 +564,14 @@ jobs:
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
-          - {lumen-version: "6.*", php-version: "7.1"} # Lumen 6 requires 7.2+
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
-          - {lumen-version: "7.*", php-version: "7.1"} # Lumen 7 requires 7.2+
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
           # Lumen 8 supports PHP 7.3 - 8.1
-          - {lumen-version: "8.*", php-version: "7.1"} # Lumen 8 requires 7.3+
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
           # Lumen 9 supports PHP 7.3 - 8.1
-          - {lumen-version: "9.*", php-version: "7.1"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
@@ -645,20 +588,18 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
-          tools: pecl, composer:v2.2
+          tools: pecl, composer:v2.3
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+      - name: "Composer allow-plugins to allow Laravel to actually install"
+        run: composer config --global allow-plugins true
       - name: "Install Lumen quickstart project"
         run: "composer create-project laravel/lumen:${{ matrix.lumen-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
-      - name: "Require scout-apm-php current checkout (PHP 7.2+)"
-        if: matrix.php-version != '7.1'
+      - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
-      - name: "Require scout-apm-php current checkout (PHP 7.1)"
-        if: matrix.php-version == '7.1'
-        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev php-http/guzzle6-adapter nyholm/psr7 composer/package-versions-deprecated
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"

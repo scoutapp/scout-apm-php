@@ -77,11 +77,12 @@ final class SocketConnector implements Connector
     }
 
     /**
+     * @psalm-param callable():T $functionToRun
+     *
      * @return mixed
+     * @psalm-return T
      *
      * @psalm-template T
-     * @psalm-param callable():T $functionToRun
-     * @psalm-return T
      */
     private function convertErrorsToExceptions(callable $functionToRun)
     {

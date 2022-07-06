@@ -20,7 +20,6 @@ class TagRequest extends Tag
 {
     /**
      * @return string[][][]|array[][][]|bool[][][]|null[][][]
-     *
      * @psalm-return list<
      *      array{
      *          TagRequest: array{

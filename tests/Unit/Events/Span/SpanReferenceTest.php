@@ -29,7 +29,6 @@ final class SpanReferenceTest extends TestCase
 
     /**
      * @return string[][]|string[][][]|null[][]|float[][]
-     *
      * @psalm-return array<string, array{methodName: string, params: list<string>, expectedReturn: (string|float|null)}>
      */
     public function proxiedMethodsProvider(): array
