@@ -51,8 +51,7 @@ use function uniqid;
 
 abstract class ScoutApmServiceProviderTestBase extends TestCase
 {
-    private const CONFIG_SERVICE_KEY = ScoutApmAgent::class . '_config';
-    private const CACHE_SERVICE_KEY  = ScoutApmAgent::class . '_cache';
+    private const CACHE_SERVICE_KEY = ScoutApmAgent::class . '_cache';
 
     protected const VIEW_ENGINES_TO_WRAP = ['file', 'php', 'blade'];
 
@@ -457,7 +456,7 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
         $this->application->singleton(ScoutApmAgent::class, function () use ($connectorMock) {
             /** @psalm-suppress InvalidArgument */
             return Agent::fromConfig(
-                $this->application->make(self::CONFIG_SERVICE_KEY),
+                $this->application->make(Config::class),
                 $this->application->make(FilteredLogLevelDecorator::class),
                 $this->application->make(self::CACHE_SERVICE_KEY),
                 $connectorMock

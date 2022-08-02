@@ -21,6 +21,11 @@
         <file name="tests/psalm-stubs.php"/>
     </stubs>
     <issueHandlers>
+        <PropertyNotSetInConstructor>
+            <errorLevel type="info">
+                <file name="src/Laravel/Console/Commands/CoreAgent.php" />
+            </errorLevel>
+        </PropertyNotSetInConstructor>
         <DeprecatedClass>
             <errorLevel type="info">
                 <!-- Handles usage of composer/package-versions-deprecated -->
