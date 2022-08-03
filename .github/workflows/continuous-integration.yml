@@ -474,6 +474,81 @@ jobs:
           echo "Checking for Error Reporting"
           grep -q "local.DEBUG: \[Scout\] Sent 1 error event to Scout Error Reporting" storage/logs/laravel.log
 
+  artisan-test:
+    needs: [ check_secrets, laravel-unit ]
+    if: needs.check_secrets.outputs.has_scout_apm_key_secret == 'true'
+    name: "Artisan Test"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        extensions: ["scoutapm", ""]
+        laravel-version:
+          - "5.5.*"
+          - "6.*"
+          - "7.*"
+          - "8.*"
+          - "9.*"
+        php-version:
+          - "7.2"
+          - "7.3"
+          - "7.4"
+          - "8.0"
+          - "8.1"
+        exclude:
+          # See - https://laravel.com/docs/8.x/releases#support-policy
+          # See - https://github.com/laravel/framework/issues/40339
+          # Laravel 5.5 supports PHP 7.1 - 7.4
+          - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
+          # Laravel 6 supports PHP 7.2 - 8.0
+          - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
+          # Laravel 7 supports PHP 7.2 - 8.0
+          - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
+          # Laravel 8 supports PHP 7.3 - 8.1
+          - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
+          # Laravel 9 supports PHP 7.3 - 8.1
+          - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
+          - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
+    env:
+      SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          path: scout-apm-php
+      - name: "Install PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          coverage: "none"
+          php-version: "${{ matrix.php-version }}"
+          tools: pecl, composer:v2.3
+          extensions: ${{ matrix.extensions }}
+        env:
+          fail-fast: true
+      - name: "Composer allow-plugins to allow Laravel to actually install"
+        run: composer config --global allow-plugins true
+      - name: "Install Laravel quickstart project"
+        run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
+      - name: "Add scout-apm-php as a repository"
+        run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Require scout-apm-php current checkout"
+        run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
+      - name: "Publish the provider"
+        run: cd test-app && php artisan vendor:publish --provider="Scoutapm\Laravel\Providers\ScoutApmServiceProvider"
+      - name: "Configure Scout"
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true" >> .env
+      - name: "Run core agent"
+        run: |
+          cd test-app
+          cat .env
+          php artisan scoutapm:core-agent --download --launch
+      - name: "Check core agent is running"
+        run: |
+          sleep 2
+          ps ax | grep core-agent
+          pgrep core-agent
+
 ###############################################################################
 #################################### LUMEN ####################################
 ###############################################################################
