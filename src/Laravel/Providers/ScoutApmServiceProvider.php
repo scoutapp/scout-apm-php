@@ -24,7 +24,12 @@ use Laravel\Lumen\Application as LumenApplication;
 use Scoutapm\Agent;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
+use Scoutapm\Connector\ConnectionAddress;
+use Scoutapm\CoreAgent\Downloader;
+use Scoutapm\CoreAgent\Launcher;
+use Scoutapm\CoreAgent\Verifier;
 use Scoutapm\Helper\ComposerPackagesCheck;
+use Scoutapm\Laravel\Console\Commands;
 use Scoutapm\Laravel\Database\QueryListener;
 use Scoutapm\Laravel\Middleware\ActionInstrument;
 use Scoutapm\Laravel\Middleware\IgnoredEndpoints;
@@ -49,8 +54,7 @@ use function sprintf;
 /** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
 final class ScoutApmServiceProvider extends ServiceProvider
 {
-    private const CONFIG_SERVICE_KEY = ScoutApmAgent::class . '_config';
-    private const CACHE_SERVICE_KEY  = ScoutApmAgent::class . '_cache';
+    private const CACHE_SERVICE_KEY = ScoutApmAgent::class . '_cache';
 
     private const VIEW_ENGINES_TO_WRAP = ['file', 'php', 'blade'];
 
@@ -62,7 +66,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
     /** @throws BindingResolutionException */
     public function register(): void
     {
-        $this->app->singleton(self::CONFIG_SERVICE_KEY, function () {
+        $this->app->singleton(Config::class, function () {
             $configRepo = $this->app->make(ConfigRepository::class);
 
             return Config::fromArray(array_merge(
@@ -94,15 +98,48 @@ final class ScoutApmServiceProvider extends ServiceProvider
         $this->app->singleton(FilteredLogLevelDecorator::class, static function (Container $app) {
             return new FilteredLogLevelDecorator(
                 $app->make('log'),
-                $app->make(self::CONFIG_SERVICE_KEY)->get(ConfigKey::LOG_LEVEL)
+                $app->make(Config::class)->get(ConfigKey::LOG_LEVEL)
             );
         });
 
         $this->app->singleton(ScoutApmAgent::class, static function (Container $app) {
             return Agent::fromConfig(
-                $app->make(self::CONFIG_SERVICE_KEY),
+                $app->make(Config::class),
                 $app->make(FilteredLogLevelDecorator::class),
                 $app->make(self::CACHE_SERVICE_KEY)
+            );
+        });
+
+        $this->app->singleton(Verifier::class, static function (Container $app): Verifier {
+            $config = $app->make(Config::class);
+
+            return new Verifier(
+                $app->make(FilteredLogLevelDecorator::class),
+                $config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $config->get(ConfigKey::CORE_AGENT_FULL_NAME)
+            );
+        });
+
+        $this->app->singleton(Downloader::class, static function (Container $app): Downloader {
+            $config = $app->make(Config::class);
+
+            return new Downloader(
+                $config->get(ConfigKey::CORE_AGENT_DIRECTORY) . '/' . $config->get(ConfigKey::CORE_AGENT_FULL_NAME),
+                $config->get(ConfigKey::CORE_AGENT_FULL_NAME),
+                $app->make(FilteredLogLevelDecorator::class),
+                $config->get(ConfigKey::CORE_AGENT_DOWNLOAD_URL),
+                $config->get(ConfigKey::CORE_AGENT_PERMISSIONS)
+            );
+        });
+
+        $this->app->singleton(Launcher::class, static function (Container $app): Launcher {
+            $config = $app->make(Config::class);
+
+            return new Launcher(
+                $app->make(FilteredLogLevelDecorator::class),
+                ConnectionAddress::fromConfig($config),
+                $config->get(ConfigKey::CORE_AGENT_LOG_LEVEL),
+                $config->get(ConfigKey::CORE_AGENT_LOG_FILE),
+                $config->get(ConfigKey::CORE_AGENT_CONFIG_FILE)
             );
         });
 
@@ -181,6 +218,12 @@ final class ScoutApmServiceProvider extends ServiceProvider
         $runningInConsole = false;
         if ($this->isLumen($application) || $this->isLaravel($application)) {
             $runningInConsole = $application->runningInConsole();
+        }
+
+        if ($runningInConsole) {
+            $this->commands([
+                Commands\CoreAgent::class,
+            ]);
         }
 
         try {

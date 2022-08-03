@@ -16,7 +16,9 @@ use Scoutapm\Config\Source\EnvSource;
 use Scoutapm\Config\Source\NullSource;
 use Scoutapm\Config\Source\UserSettingsSource;
 use Scoutapm\Config\TypeCoercion\CoerceBoolean;
+use Scoutapm\Config\TypeCoercion\CoerceInt;
 use Scoutapm\Config\TypeCoercion\CoerceJson;
+use Scoutapm\Config\TypeCoercion\CoerceString;
 use Scoutapm\Config\TypeCoercion\CoerceType;
 
 use function array_combine;
@@ -52,13 +54,27 @@ class Config
 
         $this->coercions = [
             ConfigKey::MONITORING_ENABLED => new CoerceBoolean(),
+            ConfigKey::LOG_PAYLOAD_CONTENT => new CoerceBoolean(),
+            ConfigKey::ERRORS_ENABLED => new CoerceBoolean(),
+            ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => new CoerceBoolean(),
+            ConfigKey::CORE_AGENT_LAUNCH_ENABLED => new CoerceBoolean(),
             ConfigKey::IGNORED_ENDPOINTS => new CoerceJson(),
             ConfigKey::DISABLED_INSTRUMENTS => new CoerceJson(),
-            ConfigKey::LOG_PAYLOAD_CONTENT => new CoerceBoolean(),
             ConfigKey::URI_FILTERED_PARAMETERS => new CoerceJson(),
-            ConfigKey::ERRORS_ENABLED => new CoerceBoolean(),
             ConfigKey::ERRORS_IGNORED_EXCEPTIONS => new CoerceJson(),
             ConfigKey::ERRORS_FILTERED_PARAMETERS => new CoerceJson(),
+            ConfigKey::CORE_AGENT_PERMISSIONS => new CoerceInt(),
+            ConfigKey::ERRORS_BATCH_SIZE => new CoerceInt(),
+            ConfigKey::API_VERSION => new CoerceString(),
+            ConfigKey::CORE_AGENT_DIRECTORY => new CoerceString(),
+            ConfigKey::CORE_AGENT_VERSION => new CoerceString(),
+            ConfigKey::CORE_AGENT_DOWNLOAD_URL => new CoerceString(),
+            ConfigKey::LOG_LEVEL => new CoerceString(),
+            ConfigKey::ERRORS_HOST => new CoerceString(),
+            ConfigKey::URI_REPORTING => new CoerceString(),
+            ConfigKey::CORE_AGENT_SOCKET_PATH => new CoerceString(),
+            ConfigKey::CORE_AGENT_FULL_NAME => new CoerceString(),
+            ConfigKey::CORE_AGENT_TRIPLE => new CoerceString(),
         ];
     }
 
@@ -78,7 +94,18 @@ class Config
      * Looks through all available sources for the first that can handle this
      * key, then returns the value from that source.
      *
-     * @return mixed
+     * @param K $key
+     *
+     * @return bool|mixed[]|int|string|null
+     * @psalm-return (
+     *   K is ConfigKey::MONITORING_ENABLED|ConfigKey::LOG_PAYLOAD_CONTENT|ConfigKey::ERRORS_ENABLED|ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED|ConfigKey::CORE_AGENT_LAUNCH_ENABLED ? bool
+     *   : K is ConfigKey::IGNORED_ENDPOINTS|ConfigKey::DISABLED_INSTRUMENTS|ConfigKey::URI_FILTERED_PARAMETERS|ConfigKey::ERRORS_IGNORED_EXCEPTIONS|ConfigKey::ERRORS_FILTERED_PARAMETERS ? array|null
+     *   : K is ConfigKey::CORE_AGENT_PERMISSIONS|ConfigKey::ERRORS_BATCH_SIZE ? int
+     *   : K is ConfigKey::API_VERSION|ConfigKey::CORE_AGENT_DIRECTORY|ConfigKey::CORE_AGENT_VERSION|ConfigKey::CORE_AGENT_DOWNLOAD_URL|ConfigKey::LOG_LEVEL|ConfigKey::ERRORS_HOST|ConfigKey::URI_REPORTING|ConfigKey::CORE_AGENT_SOCKET_PATH|ConfigKey::CORE_AGENT_FULL_NAME|ConfigKey::CORE_AGENT_TRIPLE ? string
+     *   : string|null
+     * )
+     *
+     * @template K as string
      */
     public function get(string $key)
     {
