@@ -35,6 +35,7 @@ use function fopen;
 use function function_exists;
 use function getenv;
 use function gethostname;
+use function in_array;
 use function meminfo_dump;
 use function memory_get_usage;
 use function next;
@@ -552,6 +553,10 @@ final class AgentTest extends TestCase
 
         if (! extension_loaded('curl')) {
             self::markTestSkipped('curl extension must be enabled for HTTP spans');
+        }
+
+        if (! in_array('curl_exec', scoutapm_list_instrumented_functions(), true)) {
+            self::markTestSkipped('scoutapm extension was not compiled with curl support');
         }
 
         $this->setUpWithConfiguration(Config::fromArray([
