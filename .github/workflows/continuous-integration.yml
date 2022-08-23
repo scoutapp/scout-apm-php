@@ -100,11 +100,8 @@ jobs:
           - "lowest"
           - "highest"
         scout-ext:
-#          - "with-scout-ext" - Scout ext does not build on Windows yet
+          - "with-scout-ext"
           - "no-scout-ext"
-        extensions: [
-            "",
-        ]
         php-version:
           - "7.2"
           - "7.3"
@@ -122,10 +119,35 @@ jobs:
         with:
           coverage: "none"
           php-version: "${{ matrix.php-version }}"
+          ini-values: "${{ matrix.scout-ext == 'with-scout-ext' && 'zend_extension=D:\\a\\scout-apm-php\\scout-apm-php\\php_scoutapm.dll' || '' }}"
           tools: pecl, composer:v2.3
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
+      - name: "Get latest scoutapm extension version"
+        if: ${{ matrix.scout-ext == 'with-scout-ext' }}
+        uses: octokit/request-action@v2.x
+        id: get_latest_ext_release
+        with:
+          route: GET /repos/{owner}/{repo}/releases/latest
+          owner: scoutapp
+          repo: scout-apm-php-ext
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Install scoutapm extension"
+        if: ${{ matrix.scout-ext == 'with-scout-ext' }}
+        shell: wsl-bash {0}
+        run: |
+          apt-get update && apt-get install -y jq curl unzip
+          # `shivammathur/setup-php` uses "nts" by default: https://github.com/shivammathur/setup-php#phpts-optional
+          SCOUT_EXT_THREAD_SAFE="nts"
+          # `windows-latest` currently uses x64
+          SCOUT_EXT_ARCH="x64"
+          SCOUT_EXT_CONFIGURATION="${{ matrix.php-version }}-${SCOUT_EXT_THREAD_SAFE}-${SCOUT_EXT_ARCH}"
+          SCOUT_EXT_DLL_ZIP=$(echo '${{ toJSON(fromJson(steps.get_latest_ext_release.outputs.data).assets) }}' | jq -r "map(select(.name | contains(\"${SCOUT_EXT_CONFIGURATION}\"))) | .[0].browser_download_url")
+          echo "Found release URL: ${SCOUT_EXT_DLL_ZIP}"
+          curl -L -o scoutapm-ext.zip "${SCOUT_EXT_DLL_ZIP}"
+          unzip scoutapm-ext.zip php_scoutapm.dll
       - name: "Install lowest dependencies"
         if: ${{ matrix.dependencies == 'lowest' }}
         run: "composer update --prefer-lowest --prefer-dist --no-interaction --no-progress"
@@ -623,4 +645,3 @@ jobs:
           ls -l storage/logs/
           cat storage/logs/lumen.log
           grep -q "DEBUG: \[Scout\] Sent whole payload successfully to core agent." storage/logs/lumen.log
-
