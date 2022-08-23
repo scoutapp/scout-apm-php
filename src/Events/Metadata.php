@@ -108,7 +108,6 @@ final class Metadata implements Command
      * Return an array of arrays: [["package name", "package version"], ....]
      *
      * @return array<int, array<int, string>>
-     *
      * @psalm-return VersionList
      */
     private function getLibraries(): array

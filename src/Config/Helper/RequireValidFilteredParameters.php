@@ -21,6 +21,7 @@ final class RequireValidFilteredParameters
 {
     /**
      * @psalm-param ConfigKey::URI_FILTERED_PARAMETERS|ConfigKey::ERRORS_FILTERED_PARAMETERS $filteredParametersConfigKey
+     *
      * @psalm-return list<string>
      */
     private static function fromConfigForGivenKey(Config $config, string $filteredParametersConfigKey): array

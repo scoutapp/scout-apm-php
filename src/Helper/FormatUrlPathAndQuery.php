@@ -18,9 +18,10 @@ use function urldecode;
 final class FormatUrlPathAndQuery
 {
     /**
-     * @psalm-pure
      * @psalm-param ConfigKey::URI_REPORTING_* $uriReportingConfiguration
      * @psalm-param list<string> $filteredParameters
+     *
+     * @psalm-pure
      */
     public static function forUriReportingConfiguration(string $uriReportingConfiguration, array $filteredParameters, string $subjectUrlPath): string
     {

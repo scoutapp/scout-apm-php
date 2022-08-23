@@ -25,10 +25,9 @@ final class RecursivelyCountSpansTest extends TestCase
 {
     /**
      * @return Command[][][]|int[][]
+     * @psalm-return array<int, array{commands: array<int, Command>, expectedSpans: int}>
      *
      * @throws Exception
-     *
-     * @psalm-return array<int, array{commands: array<int, Command>, expectedSpans: int}>
      */
     public function commandAndExpectedSpansCountProvider(): array
     {

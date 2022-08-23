@@ -32,11 +32,11 @@ final class ActionInstrument
     }
 
     /**
+     * @psalm-param Closure(Request):mixed $next
+     *
      * @return mixed
      *
      * @throws Throwable
-     *
-     * @psalm-param Closure(Request):mixed $next
      */
     public function handle(Request $request, Closure $next)
     {

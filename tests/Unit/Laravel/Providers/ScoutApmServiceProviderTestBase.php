@@ -508,7 +508,6 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
      * binding library actually interacts with in some way.
      *
      * @return LumenApplication|LaravelApplication
-     *
      * @psalm-return LumenApplication|LaravelApplication&MockObject
      */
     abstract protected function createFrameworkApplicationFulfillingBasicRequirementsForScout(bool $runningInConsole = false): Container;

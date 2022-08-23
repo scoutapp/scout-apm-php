@@ -37,7 +37,6 @@ final class InstrumentationListenerTest extends TestCase
 
     /**
      * @return callable[][]|string[][]
-     *
      * @psalm-return array<string, array{0: callable, 1: string}>
      */
     public function controllerCallableTypeProvider(): array

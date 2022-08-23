@@ -23,11 +23,12 @@ use const ARRAY_FILTER_USE_KEY;
 final class FilterParameters
 {
     /**
+     * @psalm-param list<string> $parameterKeysToBeFiltered
+     * @psalm-param array<array-key, mixed> $parameters
+     *
      * @return array<array-key, mixed>
      *
      * @psalm-pure
-     * @psalm-param list<string> $parameterKeysToBeFiltered
-     * @psalm-param array<array-key, mixed> $parameters
      */
     public static function forUriReportingConfiguration(array $parameterKeysToBeFiltered, array $parameters): array
     {
@@ -43,13 +44,11 @@ final class FilterParameters
     }
 
     /**
-     * @return string[]
-     *
-     * @psalm-pure
-     * @psalm-template T as positive-int|0
      * @psalm-param list<string> $parameterKeysToBeFiltered
      * @psalm-param array<array-key, mixed> $parameters
      * @psalm-param T $depth
+     *
+     * @return string[]
      * @psalm-return (
      *      T is 0|1
      *      ? array<string,string>
@@ -67,6 +66,9 @@ final class FilterParameters
      *          )
      *      )
      * )
+     *
+     * @psalm-pure
+     * @psalm-template T as positive-int|0
      */
     public static function flattenedForUriReportingConfiguration(array $parameterKeysToBeFiltered, array $parameters, int $depth = 1): array
     {

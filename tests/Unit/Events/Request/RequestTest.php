@@ -197,7 +197,6 @@ final class RequestTest extends TestCase
 
     /**
      * @return string[][]
-     *
      * @psalm-return list<array{0: string}>
      */
     public function defaultFilteredParameterNamesProvider(): array

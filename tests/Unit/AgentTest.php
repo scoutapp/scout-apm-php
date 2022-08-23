@@ -103,7 +103,6 @@ final class AgentTest extends TestCase
 
     /**
      * @return Config[][]|string[][][]
-     *
      * @psalm-return array<string, array{config: array<string, mixed>, missingKeys: array<int, string>}>
      */
     public function invalidConfigurationProvider(): array

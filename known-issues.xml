@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<files psalm-version="4.24.0@06dd975cb55d36af80f242561738f16c5f58264f">
+<files psalm-version="4.22.0@fc2c6ab4d5fa5d644d8617089f012f3bb84b8703">
   <file src="src/Agent.php">
     <MixedArgument occurrences="9">
       <code>$config-&gt;get(ConfigKey::MONITORING_ENABLED)</code>
@@ -87,6 +87,9 @@
       <code>$this-&gt;sha256</code>
     </MixedAssignment>
   </file>
+  <file src="src/Errors/ErrorEvent.php">
+    <MixedArgumentTypeCoercion occurrences="1"/>
+  </file>
   <file src="src/Events/Metadata.php">
     <MixedAssignment occurrences="1">
       <code>$scmSubdirectoryConfiguration</code>
@@ -135,9 +138,13 @@
     <MixedArgument occurrences="1">
       <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)-&gt;get(ConfigKey::LOG_LEVEL)</code>
     </MixedArgument>
-    <UndefinedClass occurrences="1">
+    <UndefinedClass occurrences="2">
       <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
+      <code>Connection</code>
     </UndefinedClass>
+    <UndefinedDocblockClass occurrences="1">
+      <code>$application-&gt;make('db')-&gt;connection()</code>
+    </UndefinedDocblockClass>
     <UnusedClosureParam occurrences="1">
       <code>$event</code>
     </UnusedClosureParam>
@@ -152,6 +159,9 @@
       <code>$children</code>
       <code>$children</code>
     </MixedAssignment>
+    <MixedInferredReturnType occurrences="1">
+      <code>NodeDefinition|ArrayNodeDefinition</code>
+    </MixedInferredReturnType>
     <MixedMethodCall occurrences="8">
       <code>arrayNode</code>
       <code>children</code>
@@ -162,6 +172,14 @@
       <code>end</code>
       <code>scalarNode</code>
     </MixedMethodCall>
+    <MixedReturnStatement occurrences="1">
+      <code>$treeBuilder-&gt;root(self::ROOT_NODE_NAME)</code>
+    </MixedReturnStatement>
+  </file>
+  <file src="src/ScoutApmBundle/DependencyInjection/ScoutApmExtension.php">
+    <ReservedWord occurrences="1">
+      <code>$loader-&gt;load('scoutapm.xml')</code>
+    </ReservedWord>
   </file>
   <file src="src/ScoutApmBundle/Twig/TwigDecorator.php">
     <MixedInferredReturnType occurrences="1">
@@ -169,10 +187,18 @@
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1"/>
   </file>
-  <file src="src/ScoutApmBundle/symfony-version-compatibility.php">
-    <DeprecatedClass occurrences="1">
-      <code>FilterControllerEvent::class</code>
-    </DeprecatedClass>
+  <file src="tests/Integration/AgentTest.php">
+    <ReservedWord occurrences="1">
+      <code>(new PhpExecutableFinder())-&gt;find()</code>
+    </ReservedWord>
+  </file>
+  <file src="tests/Integration/CheckScoutApmKeyListener.php">
+    <DeprecatedInterface occurrences="1">
+      <code>CheckScoutApmKeyListener</code>
+    </DeprecatedInterface>
+    <DeprecatedTrait occurrences="1">
+      <code>TestListenerDefaultImplementation</code>
+    </DeprecatedTrait>
   </file>
   <file src="tests/Integration/TestHelper.php">
     <MixedAssignment occurrences="1">
@@ -186,6 +212,70 @@
     </MixedReturnStatement>
   </file>
   <file src="tests/Unit/AgentTest.php">
+    <DeprecatedClass occurrences="30">
+      <code>self::at(0)</code>
+      <code>self::at(0)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(5)</code>
+      <code>self::at(5)</code>
+      <code>self::at(6)</code>
+    </DeprecatedClass>
+    <DeprecatedMethod occurrences="30">
+      <code>self::at(0)</code>
+      <code>self::at(0)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(1)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(2)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(3)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(4)</code>
+      <code>self::at(5)</code>
+      <code>self::at(5)</code>
+      <code>self::at(6)</code>
+    </DeprecatedMethod>
     <MixedArgument occurrences="5">
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 1]</code>
       <code>$commands[(self::EXPECTED_SPAN_LIMIT * 2) + 2]</code>
@@ -276,6 +366,26 @@
       <code>$block</code>
     </UnusedVariable>
   </file>
+  <file src="tests/Unit/Helper/TimerTest.php">
+    <DeprecatedMethod occurrences="2">
+      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStart())</code>
+      <code>self::assertRegExp(self::DATE_FORMAT_VALIDATION_REGEX, (string) $timer-&gt;getStop())</code>
+    </DeprecatedMethod>
+  </file>
+  <file src="tests/Unit/Laravel/Database/QueryListenerTest.php">
+    <InvalidArgument occurrences="2">
+      <code>$this-&gt;createMock(Connection::class)</code>
+      <code>$this-&gt;createMock(Connection::class)</code>
+    </InvalidArgument>
+    <MixedArgument occurrences="2">
+      <code>Connection::class</code>
+      <code>Connection::class</code>
+    </MixedArgument>
+    <UndefinedClass occurrences="2">
+      <code>Connection</code>
+      <code>Connection</code>
+    </UndefinedClass>
+  </file>
   <file src="tests/Unit/Laravel/Facades/ScoutApmTest.php">
     <PossiblyInvalidArgument occurrences="1">
       <code>testFacadeProxiesMethodsToRealAgent</code>
@@ -298,29 +408,50 @@
     <InvalidArrayOffset occurrences="1">
       <code>$commands[1]['StartSpan']</code>
     </InvalidArrayOffset>
-    <MixedArgument occurrences="1">
+    <InvalidPropertyAssignmentValue occurrences="1">
+      <code>$this-&gt;createMock(Connection::class)</code>
+    </InvalidPropertyAssignmentValue>
+    <MixedArgument occurrences="2">
       <code>$commands[1]['StartSpan']</code>
+      <code>Connection::class</code>
     </MixedArgument>
     <MixedArrayAccess occurrences="2">
       <code>$commands[1]['StartSpan']['operation']</code>
       <code>json_decode(json_encode($metadata), true)['ApplicationEvent']</code>
     </MixedArrayAccess>
+    <MixedMethodCall occurrences="2">
+      <code>method</code>
+      <code>with</code>
+    </MixedMethodCall>
     <PossiblyInvalidArgument occurrences="1">
       <code>$this-&gt;application</code>
     </PossiblyInvalidArgument>
-    <UndefinedClass occurrences="6">
+    <UndefinedClass occurrences="7">
       <code>$events</code>
       <code>$events</code>
       <code>$events</code>
       <code>$events</code>
       <code>$events</code>
       <code>$events</code>
+      <code>Connection</code>
     </UndefinedClass>
+    <UndefinedDocblockClass occurrences="2">
+      <code>$this-&gt;connection</code>
+      <code>Connection&amp;MockObject</code>
+    </UndefinedDocblockClass>
     <UnusedClosureParam occurrences="1">
       <code>$whichViews</code>
     </UnusedClosureParam>
   </file>
+  <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderUsingLaravelTest.php">
+    <DeprecatedMethod occurrences="1">
+      <code>setMethods</code>
+    </DeprecatedMethod>
+  </file>
   <file src="tests/Unit/Laravel/Providers/ScoutApmServiceProviderUsingLumenTest.php">
+    <DeprecatedMethod occurrences="1">
+      <code>setMethods</code>
+    </DeprecatedMethod>
     <MixedArrayAssignment occurrences="1">
       <code>$loadedConfigurations['cache']</code>
     </MixedArrayAssignment>
@@ -338,9 +469,8 @@
     <MixedMethodCall occurrences="1">
       <code>map</code>
     </MixedMethodCall>
-    <UndefinedClass occurrences="2">
+    <UndefinedClass occurrences="1">
       <code>BladeSourceMapCompiler</code>
-      <code>ViewException</code>
     </UndefinedClass>
     <UnusedClosureParam occurrences="4">
       <code>$name</code>
@@ -357,8 +487,18 @@
       <code>$agentConfigurationArgument</code>
       <code>$agentConfigurationArgument</code>
     </MixedAssignment>
+    <ReservedWord occurrences="2">
+      <code>$agentDefinition-&gt;getArgument('$agentConfiguration')</code>
+      <code>$builder-&gt;getDefinition(ScoutApmAgent::class)-&gt;getArgument('$agentConfiguration')</code>
+    </ReservedWord>
   </file>
   <file src="tests/Unit/ScoutApmBundle/ScoutApmAgentFactoryTest.php">
+    <DeprecatedClass occurrences="1">
+      <code>self::at(3)</code>
+    </DeprecatedClass>
+    <DeprecatedMethod occurrences="1">
+      <code>self::at(3)</code>
+    </DeprecatedMethod>
     <MixedArgument occurrences="2">
       <code>$flattenedMetadata</code>
       <code>$flattenedMetadata</code>
@@ -384,10 +524,184 @@
       <code>$type</code>
     </UnusedClosureParam>
   </file>
-  <file src="tests/Unit/TestHelper.php">
-    <MixedReturnTypeCoercion occurrences="2">
-      <code>$children</code>
-      <code>Command[]</code>
-    </MixedReturnTypeCoercion>
+  <file src="vendor/laravel/framework/src/Illuminate/Auth/CreatesUserProviders.php">
+    <ParseError occurrences="8">
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>=&gt;</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>public</code>
+      <code>}</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Database/Connection.php">
+    <ParseError occurrences="54">
+      <code>$callback</code>
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>=&gt;</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>return</code>
+      <code>}</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Database/Connectors/ConnectionFactory.php">
+    <ParseError occurrences="8">
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>=&gt;</code>
+      <code>=&gt;</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/HasAttributes.php">
+    <ParseError occurrences="52">
+      <code>;</code>
+      <code>=&gt;</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>protected</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>public</code>
+      <code>}</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Database/Eloquent/Relations/Concerns/InteractsWithPivotTable.php">
+    <ParseError occurrences="1">
+      <code>,</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php">
+    <ParseError occurrences="1">
+      <code>=&gt;</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Http/Request.php">
+    <ParseError occurrences="4">
+      <code>)</code>
+      <code>)</code>
+      <code>=&gt;</code>
+      <code>=&gt;</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Mail/Message.php">
+    <ParseError occurrences="2">
+      <code>,</code>
+      <code>=&gt;</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Routing/UrlGenerator.php">
+    <ParseError occurrences="2">
+      <code>)</code>
+      <code>=&gt;</code>
+    </ParseError>
+  </file>
+  <file src="vendor/laravel/framework/src/Illuminate/Support/Str.php">
+    <ParseError occurrences="8">
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>,</code>
+      <code>=&gt;</code>
+      <code>=&gt;</code>
+      <code>=&gt;</code>
+      <code>=&gt;</code>
+    </ParseError>
   </file>
 </files>

@@ -317,12 +317,12 @@ final class Agent implements ScoutApmAgent
 
     /**
      * @param mixed $defaultReturn
+     * @psalm-param callable(): ?T $codeToRunIfBelowSpanLimit
      *
      * @return mixed
+     * @psalm-return ?T
      *
      * @psalm-template T
-     * @psalm-param callable(): ?T $codeToRunIfBelowSpanLimit
-     * @psalm-return ?T
      */
     private function onlyRunIfBelowSpanLimit(callable $codeToRunIfBelowSpanLimit)
     {

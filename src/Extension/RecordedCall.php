@@ -49,10 +49,9 @@ final class RecordedCall
 
     /**
      * @param string[]|float[]|array<string, (string|float|mixed[])> $extensionCall
+     * @psalm-param array{function:string, entered:float, exited: float, time_taken: float, argv: mixed[]} $extensionCall
      *
      * @return RecordedCall
-     *
-     * @psalm-param array{function:string, entered:float, exited: float, time_taken: float, argv: mixed[]} $extensionCall
      */
     public static function fromExtensionLoggedCallArray(array $extensionCall): self
     {
