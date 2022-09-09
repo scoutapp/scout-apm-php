@@ -469,7 +469,7 @@ jobs:
       - name: "Add route to trigger error"
         run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true\nSCOUT_LOG_PAYLOAD_CONTENT=true" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app
@@ -700,7 +700,7 @@ jobs:
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_LOG_PAYLOAD_CONTENT=true" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app
