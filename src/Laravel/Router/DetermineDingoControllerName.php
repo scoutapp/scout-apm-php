@@ -10,6 +10,7 @@ use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use Webmozart\Assert\Assert;
 
+/** @internal */
 final class DetermineDingoControllerName implements AutomaticallyDetermineControllerName
 {
     /** @var FilteredLogLevelDecorator */

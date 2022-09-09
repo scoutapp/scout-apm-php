@@ -41,6 +41,7 @@ use Scoutapm\Laravel\Router\AutomaticallyDetermineControllerName;
 use Scoutapm\Laravel\Router\DetermineDingoControllerName;
 use Scoutapm\Laravel\Router\DetermineLaravelControllerName;
 use Scoutapm\Laravel\Router\DetermineLumenControllerName;
+use Scoutapm\Laravel\Router\RuntimeDetermineControllerNameStrategy;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
@@ -51,6 +52,7 @@ use function array_filter;
 use function array_map;
 use function array_merge;
 use function config_path;
+use function count;
 use function sprintf;
 
 /** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
@@ -146,15 +148,24 @@ final class ScoutApmServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(AutomaticallyDetermineControllerName::class, function (Container $app) {
+            $determineControllerNameStrategies = [];
+
             if ($app->has(DingoRouter::class)) {
-                return $app->make(DetermineDingoControllerName::class);
+                $determineControllerNameStrategies[] = $app->make(DetermineDingoControllerName::class);
             }
 
             if ($this->isLumen($app)) {
-                return $app->make(DetermineLumenControllerName::class);
+                $determineControllerNameStrategies[] = $app->make(DetermineLumenControllerName::class);
             }
 
-            return $app->make(DetermineLaravelControllerName::class);
+            if ($this->isLaravel($app) || ! count($determineControllerNameStrategies)) {
+                $determineControllerNameStrategies[] = $app->make(DetermineLaravelControllerName::class);
+            }
+
+            return new RuntimeDetermineControllerNameStrategy(
+                $app->make(FilteredLogLevelDecorator::class),
+                $determineControllerNameStrategies
+            );
         });
 
         if (! $this->app->resolved('view.engine.resolver')) {

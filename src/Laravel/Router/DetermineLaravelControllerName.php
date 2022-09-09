@@ -10,6 +10,7 @@ use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use Webmozart\Assert\Assert;
 
+/** @internal */
 final class DetermineLaravelControllerName implements AutomaticallyDetermineControllerName
 {
     /** @var FilteredLogLevelDecorator */
