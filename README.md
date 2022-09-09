@@ -10,7 +10,7 @@ Detailed performance metrics and transaction traces are collected once the agent
 
 ## Requirements
 
-PHP Versions: 7.1+
+PHP Versions: 7.2+
 
 ## Quick Start
 

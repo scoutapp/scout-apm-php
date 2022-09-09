@@ -319,7 +319,7 @@ jobs:
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
-        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+        run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require Symfony ${{ matrix.symfony-version }}, Twig ${{ matrix.twig-version }}"
         run: "composer require symfony/symfony:${{ matrix.symfony-version }} twig/twig:${{ matrix.twig-version }} symfony/orm-pack:^2.0 symfony/twig-pack:^1.0 --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
@@ -381,7 +381,7 @@ jobs:
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
-        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+        run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require framework ${{ matrix.laravel-version}}"
         run: "composer require laravel/framework:${{ matrix.laravel-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Install spatie/laravel-ignition (if available)"
@@ -469,7 +469,7 @@ jobs:
       - name: "Add route to trigger error"
         run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Laravel App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_ERRORS_ENABLED=true\nSCOUT_LOG_PAYLOAD_CONTENT=true" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app
@@ -626,7 +626,7 @@ jobs:
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
-        run: "composer remove --dev symfony/* laravel/* --no-update --no-interaction"
+        run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
       - name: "Composer update with new requirements"
@@ -700,7 +700,7 @@ jobs:
       - name: "Configure the application"
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/lumen-app.php bootstrap/app.php
       - name: "Configure Scout"
-        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"" >> .env
+        run: cd test-app && echo -e "\nSCOUT_KEY=\"\${SCOUT_APM_KEY}\"\nSCOUT_NAME=\"My Lumen App\"\nSCOUT_MONITOR=true\nSCOUT_LOG_LEVEL=\"debug\"\nSCOUT_LOG_PAYLOAD_CONTENT=true" >> .env
       - name: "Load the index page to trigger instrumentation"
         run: |
           cd test-app

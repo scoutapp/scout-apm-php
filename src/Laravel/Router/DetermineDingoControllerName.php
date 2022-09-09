@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Scoutapm\Laravel\Router;
 
+use Dingo\Api\Routing\Router;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Router;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Throwable;
 use Webmozart\Assert\Assert;
 
 /** @internal */
-final class DetermineLaravelControllerName implements AutomaticallyDetermineControllerName
+final class DetermineDingoControllerName implements AutomaticallyDetermineControllerName
 {
     /** @var FilteredLogLevelDecorator */
     private $logger;
@@ -30,6 +30,7 @@ final class DetermineLaravelControllerName implements AutomaticallyDetermineCont
 
         try {
             $route = $this->router->current();
+            /** @psalm-suppress RedundantConditionGivenDocblockType Docblock says no null, but it CAN contain null */
             if ($route !== null) {
                 /** @var mixed $name */
                 $name = $route->action['controller'] ?? $route->uri();
@@ -37,7 +38,7 @@ final class DetermineLaravelControllerName implements AutomaticallyDetermineCont
             }
         } catch (Throwable $e) {
             $this->logger->debug(
-                'Exception obtaining name of Laravel endpoint: ' . $e->getMessage(),
+                'Exception obtaining name of Dingo endpoint: ' . $e->getMessage(),
                 ['exception' => $e]
             );
         }

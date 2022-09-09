@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Laravel\Providers;
 
+use Dingo\Api\Routing\Router as DingoRouter;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -37,8 +38,10 @@ use Scoutapm\Laravel\Middleware\MiddlewareInstrument;
 use Scoutapm\Laravel\Middleware\SendRequestToScout;
 use Scoutapm\Laravel\Queue\JobQueueListener;
 use Scoutapm\Laravel\Router\AutomaticallyDetermineControllerName;
+use Scoutapm\Laravel\Router\DetermineDingoControllerName;
 use Scoutapm\Laravel\Router\DetermineLaravelControllerName;
 use Scoutapm\Laravel\Router\DetermineLumenControllerName;
+use Scoutapm\Laravel\Router\RuntimeDetermineControllerNameStrategy;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
@@ -49,6 +52,7 @@ use function array_filter;
 use function array_map;
 use function array_merge;
 use function config_path;
+use function count;
 use function sprintf;
 
 /** @internal This class extends a third party vendor, so we mark as internal to not expose upstream BC breaks */
@@ -144,11 +148,24 @@ final class ScoutApmServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(AutomaticallyDetermineControllerName::class, function (Container $app) {
-            if ($this->isLumen($app)) {
-                return $app->make(DetermineLumenControllerName::class);
+            $determineControllerNameStrategies = [];
+
+            if ($app->has(DingoRouter::class)) {
+                $determineControllerNameStrategies[] = $app->make(DetermineDingoControllerName::class);
             }
 
-            return $app->make(DetermineLaravelControllerName::class);
+            if ($this->isLumen($app)) {
+                $determineControllerNameStrategies[] = $app->make(DetermineLumenControllerName::class);
+            }
+
+            if ($this->isLaravel($app) || ! count($determineControllerNameStrategies)) {
+                $determineControllerNameStrategies[] = $app->make(DetermineLaravelControllerName::class);
+            }
+
+            return new RuntimeDetermineControllerNameStrategy(
+                $app->make(FilteredLogLevelDecorator::class),
+                $determineControllerNameStrategies
+            );
         });
 
         if (! $this->app->resolved('view.engine.resolver')) {
@@ -266,8 +283,8 @@ final class ScoutApmServiceProvider extends ServiceProvider
      */
     private function instrumentMiddleware(HttpKernelInterface $kernel): void
     {
+        $kernel->prependMiddleware(ActionInstrument::class);
         $kernel->prependMiddleware(MiddlewareInstrument::class);
-        $kernel->pushMiddleware(ActionInstrument::class);
 
         // Must be outside any other scout instruments. When this middleware's terminate is called, it will complete
         // the request, and send it to the CoreAgent.
