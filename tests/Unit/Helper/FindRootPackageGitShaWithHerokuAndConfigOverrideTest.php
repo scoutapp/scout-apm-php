@@ -19,7 +19,7 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCas
             'abcdef',
             (new FindRootPackageGitShaWithHerokuAndConfigOverride(
                 Config::fromArray([Config\ConfigKey::REVISION_SHA => 'abcdef']),
-                new SuperglobalsArrays([], [], [], [])
+                new SuperglobalsArrays([], [], [], [], [])
             ))()
         );
     }
@@ -30,7 +30,7 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCas
             'bcdef1',
             (new FindRootPackageGitShaWithHerokuAndConfigOverride(
                 Config::fromArray([]),
-                new SuperglobalsArrays([], [], ['HEROKU_SLUG_COMMIT' => 'bcdef1'], [])
+                new SuperglobalsArrays([], [], ['HEROKU_SLUG_COMMIT' => 'bcdef1'], [], [])
             ))()
         );
     }
@@ -41,7 +41,7 @@ final class FindRootPackageGitShaWithHerokuAndConfigOverrideTest extends TestCas
             InstalledVersions::getRootPackage()['reference'],
             (new FindRootPackageGitShaWithHerokuAndConfigOverride(
                 Config::fromArray([]),
-                new SuperglobalsArrays([], [], [], [])
+                new SuperglobalsArrays([], [], [], [], [])
             ))()
         );
     }

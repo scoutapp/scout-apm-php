@@ -69,3 +69,26 @@ namespace Composer {
         }
     }
 }
+
+namespace Illuminate\Console\Events {
+    use Symfony\Component\Console\Input\InputInterface;
+    use Symfony\Component\Console\Output\OutputInterface;
+
+    class CommandStarting
+    {
+        /** @var string|null */
+        public $command;
+        /** @param string|null $command */
+        public function __construct($command, InputInterface $input, OutputInterface $output) {}
+    }
+    class CommandFinished
+    {
+        /** @var string|null */
+        public $command;
+        /**
+         * @param string|null $command
+         * @param int $exitCode
+         */
+        public function __construct($command, InputInterface $input, OutputInterface $output, $exitCode) {}
+    }
+}

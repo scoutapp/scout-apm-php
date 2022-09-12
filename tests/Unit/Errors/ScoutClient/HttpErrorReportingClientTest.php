@@ -59,7 +59,7 @@ final class HttpErrorReportingClientTest extends TestCase
         $this->config                = Config::fromArray([]);
         $this->logger                = new TestLogger();
         $this->findApplicationRoot   = $this->createMock(FindApplicationRoot::class);
-        $this->superglobals          = new SuperglobalsArrays([], [], [], []);
+        $this->superglobals          = new SuperglobalsArrays([], [], [], [], []);
         $this->determineHostname     = $this->createMock(DetermineHostname::class);
         $this->findRootPackageGitSha = $this->createMock(FindRootPackageGitSha::class);
 

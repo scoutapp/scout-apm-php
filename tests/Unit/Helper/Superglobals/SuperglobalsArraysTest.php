@@ -17,10 +17,14 @@ final class SuperglobalsArraysTest extends TestCase
         $oldSession = $_SESSION ?? [];
         $oldRequest = $_REQUEST;
 
-        $_SERVER  = ['a' => 'a'];
-        $_ENV     = ['b' => 'b'];
-        $_SESSION = ['c' => 'c'];
-        $_REQUEST = ['d' => 'd'];
+        /** @psalm-suppress MixedAssignment */
+        $oldArgv = $GLOBALS['argv'];
+
+        $_SERVER         = ['a' => 'a'];
+        $_ENV            = ['b' => 'b'];
+        $_SESSION        = ['c' => 'c'];
+        $_REQUEST        = ['d' => 'd'];
+        $GLOBALS['argv'] = ['a', 'b', 'c'];
 
         try {
             $superglobals = SuperglobalsArrays::fromGlobalState();
@@ -29,11 +33,15 @@ final class SuperglobalsArraysTest extends TestCase
             self::assertEquals(['b' => 'b'], $superglobals->env());
             self::assertEquals(['c' => 'c'], $superglobals->session());
             self::assertEquals(['d' => 'd'], $superglobals->request());
+            self::assertEquals(['a', 'b', 'c'], $superglobals->argv());
         } finally {
             $_ENV     = $oldEnv;
             $_SERVER  = $oldServer;
             $_SESSION = $oldSession;
             $_REQUEST = $oldRequest;
+
+            /** @psalm-suppress MixedAssignment */
+            $GLOBALS['argv'] = $oldArgv;
         }
     }
 }

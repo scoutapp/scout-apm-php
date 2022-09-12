@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper\Superglobals;
 
+use Throwable;
+use Webmozart\Assert\Assert;
+
 use function array_combine;
 use function array_filter;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function is_object;
@@ -25,6 +29,8 @@ final class SuperglobalsArrays implements Superglobals
     private $env;
     /** @var array<string, string> */
     private $server;
+    /** @var list<string> */
+    private $argv;
 
     /**
      * @internal This is not covered by BC promise
@@ -33,13 +39,34 @@ final class SuperglobalsArrays implements Superglobals
      * @param array<array-key, mixed> $request
      * @param array<string, string>   $env
      * @param array<string, string>   $server
+     * @param list<string>            $argv
      */
-    public function __construct(array $session, array $request, array $env, array $server)
+    public function __construct(array $session, array $request, array $env, array $server, array $argv)
     {
         $this->session = $session;
         $this->request = $request;
         $this->env     = $env;
         $this->server  = $server;
+        $this->argv    = $argv;
+    }
+
+    /** @return list<string> */
+    private static function typeSafeArgvFromGlobals(): array
+    {
+        if (! array_key_exists('argv', $GLOBALS)) {
+            return [];
+        }
+
+        $argv = $GLOBALS['argv'];
+
+        try {
+            Assert::isList($argv);
+            Assert::allString($argv);
+
+            return $argv;
+        } catch (Throwable $anything) {
+            return [];
+        }
     }
 
     /**
@@ -51,7 +78,8 @@ final class SuperglobalsArrays implements Superglobals
             $_SESSION ?? [],
             $_REQUEST,
             self::convertKeysAndValuesToStrings($_ENV),
-            self::convertKeysAndValuesToStrings($_SERVER)
+            self::convertKeysAndValuesToStrings($_SERVER),
+            self::typeSafeArgvFromGlobals()
         );
     }
 
@@ -108,5 +136,11 @@ final class SuperglobalsArrays implements Superglobals
     public function server(): array
     {
         return $this->server;
+    }
+
+    /** @return list<string> */
+    public function argv(): array
+    {
+        return $this->argv;
     }
 }
