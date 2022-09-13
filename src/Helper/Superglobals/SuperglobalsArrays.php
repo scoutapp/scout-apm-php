@@ -12,6 +12,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_values;
 use function is_object;
 use function is_scalar;
 use function method_exists;
@@ -60,10 +61,10 @@ final class SuperglobalsArrays implements Superglobals
         $argv = $GLOBALS['argv'];
 
         try {
-            Assert::isList($argv);
+            Assert::isArray($argv);
             Assert::allString($argv);
 
-            return $argv;
+            return array_values($argv);
         } catch (Throwable $anything) {
             return [];
         }
