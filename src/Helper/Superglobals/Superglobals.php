@@ -36,4 +36,11 @@ interface Superglobals
      * @return array<string, string>
      */
     public function server(): array;
+
+    /**
+     * @internal This is not covered by BC promise
+     *
+     * @return list<string>
+     */
+    public function argv(): array;
 }

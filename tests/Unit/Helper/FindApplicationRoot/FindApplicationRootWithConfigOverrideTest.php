@@ -29,7 +29,7 @@ final class FindApplicationRootWithConfigOverrideTest extends TestCase
         $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([Config\ConfigKey::APPLICATION_ROOT => '/my/configured/app/root']),
-            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'], [])
         );
 
         self::assertSame('/my/configured/app/root', ($findApplicationRoot)());
@@ -40,7 +40,7 @@ final class FindApplicationRootWithConfigOverrideTest extends TestCase
         $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
-            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'], [])
         );
 
         $this->locateFileOrFolder
@@ -57,7 +57,7 @@ final class FindApplicationRootWithConfigOverrideTest extends TestCase
         $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
-            new SuperglobalsArrays([], [], [], [])
+            new SuperglobalsArrays([], [], [], [], [])
         );
         self::assertSame('', ($findApplicationRoot)());
     }
@@ -67,7 +67,7 @@ final class FindApplicationRootWithConfigOverrideTest extends TestCase
         $findApplicationRoot = new FindApplicationRootWithConfigOverride(
             $this->locateFileOrFolder,
             Config::fromArray([]),
-            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'])
+            new SuperglobalsArrays([], [], [], ['DOCUMENT_ROOT' => '/my/document/root/path'], [])
         );
         self::assertSame('/my/document/root/path', ($findApplicationRoot)());
     }

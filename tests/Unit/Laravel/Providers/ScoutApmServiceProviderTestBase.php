@@ -8,6 +8,8 @@ use Closure;
 use Illuminate\Cache\ArrayStore;
 use Illuminate\Cache\Repository as CacheRepository;
 use Illuminate\Config\Repository as ConfigRepository;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -41,6 +43,8 @@ use Scoutapm\Laravel\Providers\ScoutApmServiceProvider;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\ScoutApmAgent;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 use function assert;
@@ -302,10 +306,17 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
         $agent = $this->application->make(ScoutApmAgent::class);
         assert($agent instanceof Agent && $agent instanceof MockObject);
 
-        $agent->expects(self::once())
+        $agent
+            ->expects(self::exactly(2))
             ->method('shouldInstrument')
-            ->with(ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES)
-            ->willReturn(true);
+            ->withConsecutive(
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES],
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_CONSOLE]
+            )
+            ->willReturnOnConsecutiveCalls(
+                true,
+                false
+            );
 
         $agent->expects(self::once())
             ->method('startNewRequest');
@@ -407,10 +418,17 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
         $agent = $this->application->make(ScoutApmAgent::class);
         assert($agent instanceof Agent && $agent instanceof MockObject);
 
-        $agent->expects(self::once())
+        $agent
+            ->expects(self::exactly(2))
             ->method('shouldInstrument')
-            ->with(ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES)
-            ->willReturn(false);
+            ->withConsecutive(
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES],
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_CONSOLE]
+            )
+            ->willReturnOnConsecutiveCalls(
+                false,
+                false
+            );
 
         $agent->expects(self::never())
             ->method('startNewRequest');
@@ -434,6 +452,134 @@ abstract class ScoutApmServiceProviderTestBase extends TestCase
 
         $events->dispatch(new JobProcessing('foo', $this->createMock(Job::class)));
         $events->dispatch(new JobProcessed('foo', $this->createMock(Job::class)));
+    }
+
+    /** @throws Throwable */
+    public function testConsoleCommandIsInstrumentedWhenEnabled(): void
+    {
+        $this->application = $this->createFrameworkApplicationFulfillingBasicRequirementsForScout(true);
+
+        /** @psalm-suppress PossiblyInvalidArgument */
+        $this->serviceProvider = new ScoutApmServiceProvider($this->application);
+        $this->serviceProvider->register();
+
+        $this->application->singleton(
+            ScoutApmAgent::class,
+            function (): ScoutApmAgent {
+                return $this->createMock(ScoutApmAgent::class);
+            }
+        );
+
+        $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent && $agent instanceof MockObject);
+
+        $agent
+            ->expects(self::exactly(2))
+            ->method('shouldInstrument')
+            ->withConsecutive(
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES],
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_CONSOLE]
+            )
+            ->willReturnOnConsecutiveCalls(
+                false,
+                true
+            );
+
+        $agent->expects(self::once())
+            ->method('startNewRequest');
+
+        $agent->expects(self::once())
+            ->method('addContext');
+
+        $agent->expects(self::once())
+            ->method('startSpan');
+
+        $agent->expects(self::once())
+            ->method('stopSpan');
+
+        $agent->expects(self::once())
+            ->method('connect');
+
+        $agent->expects(self::once())
+            ->method('send');
+
+        $this->bootServiceProvider();
+
+        $events = $this->application->make('events');
+        assert($events instanceof Dispatcher);
+
+        $jobWithName = $this->createMock(Job::class);
+        $jobWithName->method('resolveName')->willReturn('JobName');
+
+        $input  = $this->createMock(InputInterface::class);
+        $output = $this->createMock(OutputInterface::class);
+
+        $events->dispatch(new CommandStarting('app:sparkle', $input, $output));
+        $events->dispatch(new CommandFinished('app:sparkle', $input, $output, 0));
+    }
+
+    /** @throws Throwable */
+    public function testConsoleCommandIsNotInstrumentedWhenDisabled(): void
+    {
+        $this->application = $this->createFrameworkApplicationFulfillingBasicRequirementsForScout(true);
+
+        /** @psalm-suppress PossiblyInvalidArgument */
+        $this->serviceProvider = new ScoutApmServiceProvider($this->application);
+        $this->serviceProvider->register();
+
+        $this->application->singleton(
+            ScoutApmAgent::class,
+            function (): ScoutApmAgent {
+                return $this->createMock(ScoutApmAgent::class);
+            }
+        );
+
+        $agent = $this->application->make(ScoutApmAgent::class);
+        assert($agent instanceof Agent && $agent instanceof MockObject);
+
+        $agent
+            ->expects(self::exactly(2))
+            ->method('shouldInstrument')
+            ->withConsecutive(
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_QUEUES],
+                [ScoutApmServiceProvider::INSTRUMENT_LARAVEL_CONSOLE]
+            )
+            ->willReturnOnConsecutiveCalls(
+                false,
+                false
+            );
+
+        $agent->expects(self::never())
+            ->method('startNewRequest');
+
+        $agent->expects(self::never())
+            ->method('addContext');
+
+        $agent->expects(self::never())
+            ->method('startSpan');
+
+        $agent->expects(self::never())
+            ->method('stopSpan');
+
+        $agent->expects(self::never())
+            ->method('connect');
+
+        $agent->expects(self::never())
+            ->method('send');
+
+        $this->bootServiceProvider();
+
+        $events = $this->application->make('events');
+        assert($events instanceof Dispatcher);
+
+        $jobWithName = $this->createMock(Job::class);
+        $jobWithName->method('resolveName')->willReturn('JobName');
+
+        $input  = $this->createMock(InputInterface::class);
+        $output = $this->createMock(OutputInterface::class);
+
+        $events->dispatch(new CommandStarting('app:sparkle', $input, $output));
+        $events->dispatch(new CommandFinished('app:sparkle', $input, $output, 0));
     }
 
     /** @throws BindingResolutionException */

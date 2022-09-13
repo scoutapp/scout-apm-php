@@ -29,7 +29,7 @@ final class ErrorEventTest extends TestCase
         $exception        = new RuntimeException($exceptionMessage);
 
         $request = Request::fromConfigAndOverrideTime(
-            new SuperglobalsArrays([], [], [], []),
+            new SuperglobalsArrays([], [], [], [], []),
             $config,
             $this->createMock(FindRequestHeaders::class)
         );
@@ -58,7 +58,8 @@ final class ErrorEventTest extends TestCase
                     [
                         'HTTPS' => 'on',
                         'HTTP_HOST' => 'the-great-website',
-                    ]
+                    ],
+                    []
                 ),
                 $determineHostname,
                 $findRootPackageGitSha

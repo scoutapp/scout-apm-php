@@ -36,7 +36,8 @@ final class FindRequestHeadersUsingServerGlobalTest extends TestCase
                     'HTTP_ACCEPT' => '*/*',
                     'HTTP_X_SOMETHING_EMPTY' => '',
                     'HTTP_X_SOMETHING_CUSTOM' => 'Something custom',
-                ]
+                ],
+                []
             )))->__invoke()
         );
     }

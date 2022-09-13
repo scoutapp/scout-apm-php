@@ -26,6 +26,7 @@ coverage: ## generate code coverage reports
 	$(PHP_PATH) vendor/bin/phpunit --testsuite unit --coverage-html build/coverage-html --coverage-text $(OPTS)
 
 deps-install: ## Install the currently-locked set of dependencies
+	git restore composer.lock
 	rm -Rf vendor
 	$(PHP_PATH) $(COMPOSER_PATH) install
 

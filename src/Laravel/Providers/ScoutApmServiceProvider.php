@@ -6,6 +6,8 @@ namespace Scoutapm\Laravel\Providers;
 
 use Dingo\Api\Routing\Router as DingoRouter;
 use Illuminate\Cache\CacheManager;
+use Illuminate\Console\Events\CommandFinished;
+use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Container\Container;
@@ -30,7 +32,9 @@ use Scoutapm\CoreAgent\Downloader;
 use Scoutapm\CoreAgent\Launcher;
 use Scoutapm\CoreAgent\Verifier;
 use Scoutapm\Helper\ComposerPackagesCheck;
+use Scoutapm\Helper\Superglobals\SuperglobalsArrays;
 use Scoutapm\Laravel\Console\Commands;
+use Scoutapm\Laravel\Console\ConsoleListener;
 use Scoutapm\Laravel\Database\QueryListener;
 use Scoutapm\Laravel\Middleware\ActionInstrument;
 use Scoutapm\Laravel\Middleware\IgnoredEndpoints;
@@ -51,6 +55,7 @@ use function array_combine;
 use function array_filter;
 use function array_map;
 use function array_merge;
+use function array_splice;
 use function config_path;
 use function count;
 use function sprintf;
@@ -62,7 +67,8 @@ final class ScoutApmServiceProvider extends ServiceProvider
 
     private const VIEW_ENGINES_TO_WRAP = ['file', 'php', 'blade'];
 
-    public const INSTRUMENT_LARAVEL_QUEUES = 'laravel_queues';
+    public const INSTRUMENT_LARAVEL_QUEUES  = 'laravel_queues';
+    public const INSTRUMENT_LARAVEL_CONSOLE = 'laravel_console';
 
     /** @var bool */
     private $resolveViewEngineResolverOnBoot = false;
@@ -260,6 +266,10 @@ final class ScoutApmServiceProvider extends ServiceProvider
             $this->instrumentQueues($agent, $application->make('events'), $runningInConsole);
         }
 
+        if ($runningInConsole && $agent->shouldInstrument(self::INSTRUMENT_LARAVEL_CONSOLE)) {
+            $this->instrumentConsole($agent, $application->make('events'));
+        }
+
         if ($this->resolveViewEngineResolverOnBoot) {
             $engineResolver = $this->app->make('view.engine.resolver');
             $this->registerWrappedEngines($engineResolver);
@@ -299,6 +309,19 @@ final class ScoutApmServiceProvider extends ServiceProvider
         });
     }
 
+    private function instrumentConsole(ScoutApmAgent $agent, Dispatcher $eventDispatcher): void
+    {
+        $argv     = SuperglobalsArrays::fromGlobalState()->argv();
+        $listener = new ConsoleListener($agent, array_splice($argv, 2));
+
+        $eventDispatcher->listen(CommandStarting::class, static function (CommandStarting $event) use ($listener): void {
+            $listener->startSpanForCommand($event);
+        });
+        $eventDispatcher->listen(CommandFinished::class, static function (CommandFinished $event) use ($listener): void {
+            $listener->stopSpanForCommand($event);
+        });
+    }
+
     private function instrumentQueues(ScoutApmAgent $agent, Dispatcher $eventDispatcher, bool $runningInConsole): void
     {
         $listener = new JobQueueListener($agent);
@@ -311,7 +334,7 @@ final class ScoutApmServiceProvider extends ServiceProvider
             $listener->startSpanForJob($event);
         });
 
-        $eventDispatcher->listen(JobProcessed::class, static function (JobProcessed $event) use ($listener, $runningInConsole): void {
+        $eventDispatcher->listen(JobProcessed::class, static function () use ($listener, $runningInConsole): void {
             $listener->stopSpanForJob();
 
             if (! $runningInConsole) {

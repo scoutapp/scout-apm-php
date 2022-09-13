@@ -113,19 +113,9 @@
     </MixedAssignment>
   </file>
   <file src="src/Laravel/Providers/ScoutApmServiceProvider.php">
-    <InvalidArgument occurrences="2">
+    <InvalidArgument occurrences="1">
       <code>$app-&gt;make(self::CACHE_SERVICE_KEY)</code>
-      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
     </InvalidArgument>
-    <MixedArgument occurrences="1">
-      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)-&gt;get(ConfigKey::LOG_LEVEL)</code>
-    </MixedArgument>
-    <UndefinedClass occurrences="1">
-      <code>$app-&gt;make(self::CONFIG_SERVICE_KEY)</code>
-    </UndefinedClass>
-    <UnusedClosureParam occurrences="1">
-      <code>$event</code>
-    </UnusedClosureParam>
   </file>
   <file src="src/Logger/FilteredLogLevelDecorator.php">
     <MixedArrayOffset occurrences="1">
@@ -302,7 +292,11 @@
     <PossiblyInvalidArgument occurrences="1">
       <code>$this-&gt;application</code>
     </PossiblyInvalidArgument>
-    <UndefinedClass occurrences="6">
+    <UndefinedClass occurrences="10">
+      <code>$events</code>
+      <code>$events</code>
+      <code>$events</code>
+      <code>$events</code>
       <code>$events</code>
       <code>$events</code>
       <code>$events</code>

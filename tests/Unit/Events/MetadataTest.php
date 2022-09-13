@@ -218,6 +218,7 @@ final class MetadataTest extends TestCase
             [],
             [],
             ['HEROKU_SLUG_COMMIT' => $testHerokuSlugCommit],
+            [],
             []
         );
 
