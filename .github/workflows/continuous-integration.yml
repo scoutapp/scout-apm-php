@@ -129,9 +129,7 @@ jobs:
         uses: octokit/request-action@v2.x
         id: get_latest_ext_release
         with:
-          route: GET /repos/{owner}/{repo}/releases/latest
-          owner: scoutapp
-          repo: scout-apm-php-ext
+          route: GET /repos/scoutapp/scout-apm-php-ext/releases/latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Install scoutapm extension"
