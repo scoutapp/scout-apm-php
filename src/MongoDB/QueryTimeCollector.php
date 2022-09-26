@@ -47,12 +47,13 @@ final class QueryTimeCollector implements CommandSubscriber
     {
         $activeSpan = $this->agent->startSpan('Mongo/Query/' . $event->getCommandName());
 
-        if ($activeSpan !== null) {
-            $activeSpan->tag('db', $event->getDatabaseName());
-            $activeSpan->tag('operationId', $event->getOperationId());
-            $activeSpan->tag('requestId', $event->getRequestId());
+        if ($activeSpan === null) {
+            return;
         }
-//        echo serialize($event);
+
+        $activeSpan->tag('db', $event->getDatabaseName());
+        $activeSpan->tag('operationId', $event->getOperationId());
+        $activeSpan->tag('requestId', $event->getRequestId());
     }
 
     public function commandSucceeded(CommandSucceededEvent $event): void
