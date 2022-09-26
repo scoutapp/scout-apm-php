@@ -150,6 +150,12 @@
     </MixedInferredReturnType>
     <MixedReturnStatement occurrences="1"/>
   </file>
+  <file src="tests/Integration/AgentTest.php">
+    <DeprecatedMethod occurrences="2">
+      <code>getEvents</code>
+      <code>getRequest</code>
+    </DeprecatedMethod>
+  </file>
   <file src="tests/Integration/CheckScoutApmKeyListener.php">
     <DeprecatedInterface occurrences="1">
       <code>CheckScoutApmKeyListener</code>

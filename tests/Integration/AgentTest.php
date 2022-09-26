@@ -122,15 +122,17 @@ final class AgentTest extends TestCase
 
         $this->agent = Agent::fromConfig($config, $this->logger, null, $this->connector);
 
-        $retryCount = 0;
-        while ($retryCount < 5 && ! $this->connector->connected()) {
-            $this->agent->connect();
-            sleep(1);
-            $retryCount++;
-        }
+        if ($config->get(ConfigKey::MONITORING_ENABLED)) {
+            $retryCount = 0;
+            while ($retryCount < 5 && ! $this->connector->connected()) {
+                $this->agent->connect();
+                sleep(1);
+                $retryCount++;
+            }
 
-        if (! $this->connector->connected()) {
-            self::fail('Could not connect to core agent in test harness. ' . $this->formatCapturedLogMessages());
+            if (! $this->connector->connected()) {
+                self::fail('Could not connect to core agent in test harness. ' . $this->formatCapturedLogMessages());
+            }
         }
 
         (new PotentiallyAvailableExtensionCapabilities())->clearRecordedCalls();
@@ -426,6 +428,53 @@ final class AgentTest extends TestCase
         );
     }
 
+    /**
+     * Run Mongo with:
+     *
+     * ```
+     * docker run --rm --name some-mongo -p 27017:27017 -d mongo:latest
+     * ```
+     *
+     * @group mongo
+     */
+    public function testMongoDbDoesNotStartSpansWhenMonitoringIsDisabled(): void
+    {
+        if (! extension_loaded('mongodb')) {
+            self::markTestSkipped('MongoDB extension required for this test - mongodb is not loaded');
+        }
+
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => false,
+        ]));
+
+        $mongo = new Manager('mongodb://localhost:27017');
+
+        try {
+            $mongo->startSession();
+        } catch (ConnectionTimeoutException $timeoutException) {
+            self::markTestSkipped('Could not connect to mongodb server, is it running?');
+        }
+
+        $db         = 'scout-apm-test-db';
+        $collection = uniqid('scout-apm-test-', true);
+
+        $mongo->executeCommand($db, new Command(['create' => $collection]));
+
+        $request = $this->agent->getRequest();
+        self::assertNotNull($request);
+        self::assertEmpty($request->getEvents());
+    }
+
+    /**
+     * Run Mongo with:
+     *
+     * ```
+     * docker run --rm --name some-mongo -p 27017:27017 -d mongo:latest
+     * ```
+     *
+     * @group mongo
+     */
     public function testMongoDbInstrumentation(): void
     {
         if (! extension_loaded('mongodb')) {

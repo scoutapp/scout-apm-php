@@ -118,10 +118,10 @@ final class Agent implements ScoutApmAgent
         if ($this->config->get(ConfigKey::MONITORING_ENABLED)) {
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_NAME);
             $this->warnIfConfigValueIsNotSet(ConfigKey::APPLICATION_KEY);
-        }
 
-        if (extension_loaded('mongodb')) {
-            QueryTimeCollector::register($this);
+            if (extension_loaded('mongodb')) {
+                QueryTimeCollector::register($this);
+            }
         }
 
         $this->startNewRequest();
