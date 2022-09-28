@@ -6,7 +6,7 @@
     "license": "MIT",
     "keywords": ["performance", "apm", "monitoring", "development"],
     "require": {
-        "php": "7.2.*|7.3.*|7.4.*|8.0.*|8.1.*",
+        "php": "7.2.*|7.3.*|7.4.*|8.0.*|8.1.*|8.2.*",
         "ext-json": "*",
         "ext-openssl": "*",
         "ext-sockets": "*",
@@ -26,7 +26,7 @@
     "require-dev": {
         "composer-plugin-api": "^2.0",
         "api-ecosystem-for-laravel/dingo-api": "^3.0|^4.0",
-        "doctrine/coding-standard": "^9.0",
+        "doctrine/coding-standard": "^10.0",
         "guzzlehttp/guzzle": "^7.4",
         "laravel/framework": "^5.5.0|^6.0|^7.0|^8.0|^9.0",
         "laravel/lumen-framework": "^5.5.0|^6.0|^7.0|^8.0|^9.0",
