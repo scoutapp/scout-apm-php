@@ -68,9 +68,7 @@ final class Metadata implements Command
         unset($this->timer);
     }
 
-    /**
-     * @return array<string, (string|VersionList|null)>
-     */
+    /** @return array<string, (string|VersionList|null)> */
     private function data(): array
     {
         return [

@@ -50,8 +50,10 @@ abstract class ConfigKey
 
     /** @internal */
     public const URI_REPORTING_PATH_ONLY = 'path';
+
     /** @internal */
     public const URI_REPORTING_FULL_PATH = 'full_path';
+
     /** @internal */
     public const URI_REPORTING_FILTERED = 'filtered_params';
 

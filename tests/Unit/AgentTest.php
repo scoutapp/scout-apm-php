@@ -226,9 +226,7 @@ final class AgentTest extends TestCase
                     'BatchCommand',
                     [
                         'commands' =>
-                            /**
-                             * @psalm-param list<array<string, array<string, mixed>>> $commands
-                             */
+                            /** @psalm-param list<array<string, array<string, mixed>>> $commands */
                             static function (array $commands): bool {
                                 TestHelper::assertUnserializedCommandContainsPayload('StartRequest', [], reset($commands), null);
                                 TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => 'file_get_contents'], next($commands), null);

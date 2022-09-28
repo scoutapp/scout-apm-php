@@ -32,9 +32,7 @@ final class VersionTest extends TestCase
         ];
     }
 
-    /**
-     * @dataProvider olderThanVersionProvider
-     */
+    /** @dataProvider olderThanVersionProvider */
     public function testOlderThan(string $testVersion, string $olderThan, bool $expectedResult): void
     {
         self::assertSame(

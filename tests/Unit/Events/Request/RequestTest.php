@@ -232,9 +232,7 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider defaultFilteredParameterNamesProvider
-     */
+    /** @dataProvider defaultFilteredParameterNamesProvider */
     public function testRequestUriDefaultQueryParametersAreFilteredWhenFilteringEnabled(string $parameterName): void
     {
         $this->superglobals
@@ -435,9 +433,7 @@ final class RequestTest extends TestCase
         );
     }
 
-    /**
-     * @psalm-return list<array{0: list<string>, 1: ?string}>
-     */
+    /** @psalm-return list<array{0: list<string>, 1: ?string}> */
     public function controllerNameProvider(): array
     {
         return [

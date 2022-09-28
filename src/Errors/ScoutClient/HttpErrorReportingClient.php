@@ -133,9 +133,7 @@ final class HttpErrorReportingClient implements ErrorReportingClient
         return $this->memoizedErrorReportingServiceUrl;
     }
 
-    /**
-     * @param non-empty-list<ErrorEvent> $errorEvent
-     */
+    /** @param non-empty-list<ErrorEvent> $errorEvent */
     private function psrRequestFromEvents(array $errorEvent): RequestInterface
     {
         return $this->requestFactory

@@ -11,9 +11,7 @@ use Scoutapm\Helper\FormatUrlPathAndQuery;
 /** @covers \Scoutapm\Helper\FormatUrlPathAndQuery */
 final class FormatUrlPathAndQueryTest extends TestCase
 {
-    /**
-     * @psalm-return array<string, array{0: ConfigKey::URI_REPORTING_*, 1: string, 2: string}>
-     */
+    /** @psalm-return array<string, array{0: ConfigKey::URI_REPORTING_*, 1: string, 2: string}> */
     public function urlFilteringProvider(): array
     {
         return [

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Helper\Superglobals;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 interface Superglobals
 {
     /**

@@ -7,9 +7,7 @@ namespace Scoutapm\Errors;
 use Scoutapm\Events\Request\Request;
 use Throwable;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 final class NoErrorHandling implements ErrorHandling
 {
     public function changeCurrentRequest(Request $request): void

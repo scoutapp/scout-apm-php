@@ -16,9 +16,7 @@ use function socket_last_error;
 use function socket_strerror;
 use function sprintf;
 
-/**
- * @psalm-type ValidLogLevel = LogLevel::*
- */
+/** @psalm-type ValidLogLevel = LogLevel::* */
 final class FailedToSendCommand extends RuntimeException
 {
     /**
@@ -27,9 +25,7 @@ final class FailedToSendCommand extends RuntimeException
      */
     private $logLevel;
 
-    /**
-     * @psalm-param ValidLogLevel $logLevel
-     */
+    /** @psalm-param ValidLogLevel $logLevel */
     public function __construct(string $logLevel, string $message, int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);

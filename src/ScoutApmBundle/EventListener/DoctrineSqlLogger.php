@@ -41,9 +41,7 @@ final class DoctrineSqlLogger implements SQLLogger
         ]));
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function startQuery($sql, ?array $params = null, ?array $types = null)
     {
         $this->currentSpan = $this->agent->startSpan('SQL/Query', null, true);
@@ -55,9 +53,7 @@ final class DoctrineSqlLogger implements SQLLogger
         $this->currentSpan->tag('db.statement', $sql);
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function stopQuery()
     {
         if ($this->currentSpan === null) {

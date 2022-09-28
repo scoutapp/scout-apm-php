@@ -6,9 +6,7 @@ namespace Scoutapm\Errors\ScoutClient;
 
 use Scoutapm\Errors\ErrorEvent;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 interface ErrorReportingClient
 {
     /**

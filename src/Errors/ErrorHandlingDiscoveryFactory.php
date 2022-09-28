@@ -58,7 +58,7 @@ final class ErrorHandlingDiscoveryFactory
              */
             $logger->warning(
                 sprintf(
-                    <<<ERROR
+                    <<<'ERROR'
 Scout Error handling was enabled, but we could not find a PSR-18 HTTP client and/or PSR-17 HTTP message factory to use.
 
 PHP-HTTP PSR-18 HTTP discovery exception: %s
