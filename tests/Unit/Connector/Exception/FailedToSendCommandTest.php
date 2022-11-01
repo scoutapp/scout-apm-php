@@ -92,9 +92,10 @@ final class FailedToSendCommandTest extends TestCase
 
     public function testReadingResponseContentFromSocket(): void
     {
-        $exception = FailedToSendCommand::readingResponseContentFromSocket($this->command, $this->socketResource, $this->connectionAddress);
+        $exception = FailedToSendCommand::readingResponseContentFromSocket($this->command, 1000, 200, 600, $this->socketResource, $this->connectionAddress);
 
         self::assertStringContainsString('Failed to read response content', $exception->getMessage());
+        self::assertStringContainsString('read 600 of 1000 bytes, tried to read 200 bytes more', $exception->getMessage());
         self::assertSame(LogLevel::ERROR, $exception->logLevel());
     }
 }
