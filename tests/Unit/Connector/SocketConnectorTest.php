@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Scoutapm\UnitTests\Connector;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Scoutapm\Config;
 use Scoutapm\Connector\Command;
 use Scoutapm\Connector\ConnectionAddress;
@@ -25,25 +27,28 @@ final class SocketConnectorTest extends TestCase
 
     /** @var int[] */
     private $pidsStarted = [];
+    /** @var LoggerInterface&MockObject */
+    private $loggerMock;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        // phpcs:disable SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed
         if (Platform::isWindows()) {
             // Because of the way the tests are run (launching the binary etc) this has not yet been updated to run on
             // other platforms yet.
             self::markTestSkipped('Test only runs on Linux at the moment');
         }
-        // phpcs:enable
+
+        $this->loggerMock = $this->createMock(LoggerInterface::class);
     }
 
     public function testExceptionIsRaisedWhenConnectingToNonExistentSocket(): void
     {
         $connector = new SocketConnector(
             ConnectionAddress::fromConfig(Config::fromArray([Config\ConfigKey::CORE_AGENT_SOCKET_PATH => '/path/does/not/exist'])),
-            false
+            false,
+            $this->loggerMock
         );
 
         $this->expectException(FailedToConnect::class);
@@ -57,7 +62,8 @@ final class SocketConnectorTest extends TestCase
 
         $connector = new SocketConnector(
             ConnectionAddress::fromConfig(Config::fromArray([Config\ConfigKey::CORE_AGENT_SOCKET_PATH => 'tcp://localhost:10001'])),
-            false
+            false,
+            $this->loggerMock
         );
         self::assertFalse($connector->connected());
         self::assertFileExists('/proc/' . $this->pidsStarted[0]);
@@ -69,7 +75,8 @@ final class SocketConnectorTest extends TestCase
 
         $connector = new SocketConnector(
             ConnectionAddress::fromConfig(Config::fromArray([Config\ConfigKey::CORE_AGENT_SOCKET_PATH => 'tcp://localhost:10002'])),
-            true
+            true,
+            $this->loggerMock
         );
         self::assertTrue($connector->connected());
     }
@@ -80,7 +87,8 @@ final class SocketConnectorTest extends TestCase
 
         $connector = new SocketConnector(
             ConnectionAddress::fromConfig(Config::fromArray([Config\ConfigKey::CORE_AGENT_SOCKET_PATH => 'tcp://localhost:10003'])),
-            true
+            true,
+            $this->loggerMock
         );
         $connector->connect();
 
