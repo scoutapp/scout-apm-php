@@ -149,15 +149,24 @@ final class FailedToSendCommand extends RuntimeException
     }
 
     /** @param resource $socketResource */
-    public static function readingResponseContentFromSocket(Command $attemptedCommand, $socketResource, ConnectionAddress $connectionAddress): self
-    {
+    public static function readingResponseContentFromSocket(
+        Command $attemptedCommand,
+        int $responseLength,
+        int $bytesAttempted,
+        int $bytesReadSoFar,
+        $socketResource,
+        ConnectionAddress $connectionAddress
+    ): self {
         $socketErrorNumber = socket_last_error($socketResource);
 
         return new self(
             LogLevel::ERROR,
             sprintf(
-                'Failed to read response content for %s - error %d (%s). Address was: %s',
+                'Failed to read response content for %s - read %d of %d bytes, tried to read %d bytes more - error %d (%s). Address was: %s',
                 get_class($attemptedCommand),
+                $bytesReadSoFar,
+                $responseLength,
+                $bytesAttempted,
                 $socketErrorNumber,
                 socket_strerror($socketErrorNumber),
                 $connectionAddress->toString()

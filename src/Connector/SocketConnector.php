@@ -217,11 +217,25 @@ final class SocketConnector implements Connector
             );
         }
 
-        $dataRead = @socket_read($this->socket, $responseLength);
+        $dataRead  = '';
+        $bytesRead = 0;
+        do {
+            $readBuffer = @socket_read($this->socket, $responseLength - $bytesRead);
 
-        if ($dataRead === false) {
-            throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->connectionAddress);
-        }
+            if ($readBuffer === false) {
+                throw Exception\FailedToSendCommand::readingResponseContentFromSocket(
+                    $message,
+                    $responseLength,
+                    $responseLength - $bytesRead,
+                    $bytesRead,
+                    $this->socket,
+                    $this->connectionAddress
+                );
+            }
+
+            $dataRead  .= $readBuffer;
+            $bytesRead += strlen($readBuffer);
+        } while ($bytesRead < $responseLength && $readBuffer !== '');
 
         $actualResponseLength = strlen($dataRead);
         if ($actualResponseLength < $responseLength) {
