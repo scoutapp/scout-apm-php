@@ -114,9 +114,11 @@ final class AgentTest extends TestCase
 
         $this->logger = new TestLogger();
 
-        $this->connector = new MessageCapturingConnectorDelegator(
-            new SocketConnector(ConnectionAddress::fromConfig($config), true)
-        );
+        $this->connector = new MessageCapturingConnectorDelegator(new SocketConnector(
+            ConnectionAddress::fromConfig($config),
+            true,
+            $this->logger
+        ));
 
         $_SERVER['REQUEST_URI'] = '/fake-path';
 
@@ -285,6 +287,24 @@ final class AgentTest extends TestCase
                 ConfigKey::CORE_AGENT_SOCKET_PATH => '/tmp/scout_apm_core/core-agent.sock',
             ]),
         ];
+    }
+
+    public function testResponseIsReadCorrectlyWhenResponseSizeExceedsBufferLimit(): void
+    {
+        $this->setUpWithConfiguration(Config::fromArray([
+            ConfigKey::APPLICATION_NAME => self::APPLICATION_NAME,
+            ConfigKey::MONITORING_ENABLED => true,
+        ]));
+
+        for ($i = 0; $i < 2; $i++) {
+            for ($j = 0; $j < 500; $j++) {
+                $this->agent->instrument('Test', 'qux', static function (): void {
+                });
+            }
+
+            self::assertTrue($this->agent->send(), 'Failed to send messages. ' . $this->formatCapturedLogMessages());
+            self::assertFalse($this->logger->hasNoticeThatContains('exceeded our limit for reading'), 'Response read limit reached. ' . $this->formatCapturedLogMessages());
+        }
     }
 
     /**

@@ -142,11 +142,12 @@ final class Agent implements ScoutApmAgent
         $this->logger->warning(sprintf('Config key "%s" should be set, but it was empty', $configKey));
     }
 
-    private static function createConnectorFromConfig(Config $config): SocketConnector
+    private static function createConnectorFromConfig(Config $config, LoggerInterface $logger): SocketConnector
     {
         return new SocketConnector(
             ConnectionAddress::fromConfig($config),
-            $config->get(ConfigKey::MONITORING_ENABLED)
+            $config->get(ConfigKey::MONITORING_ENABLED),
+            $logger
         );
     }
 
@@ -204,7 +205,7 @@ final class Agent implements ScoutApmAgent
 
         return new self(
             $config,
-            $connector ?? self::createConnectorFromConfig($config),
+            $connector ?? self::createConnectorFromConfig($config, $logger),
             $logger,
             $extensionCapabilities ?? self::createExtensionCapabilitiesFromConfig($config),
             $cache ?? new DevNullCache(),

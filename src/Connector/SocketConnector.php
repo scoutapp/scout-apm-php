@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Connector;
 
 use ErrorException;
+use Psr\Log\LoggerInterface;
 use Scoutapm\Connector\Exception\FailedToConnect;
 use Scoutapm\Connector\Exception\NotConnected;
 use Throwable;
@@ -24,6 +25,7 @@ use function socket_create;
 use function socket_read;
 use function socket_send;
 use function socket_shutdown;
+use function sprintf;
 use function strlen;
 use function unpack;
 
@@ -37,6 +39,10 @@ use const SOCK_STREAM;
 /** @internal */
 final class SocketConnector implements Connector
 {
+    /**
+     * Read a maximum of 10mb; practically this should not happen, since the response is mostly composed of small JSON
+     * objects per successful StartSpan/StopSpan etc, so we have a limit applied to prevent allocating too much memory
+     */
     private const MAXIMUM_RESPONSE_LENGTH_TO_READ = 10000000;
 
     /**
@@ -50,13 +56,18 @@ final class SocketConnector implements Connector
 
     /** @var bool */
     private $connected = false;
-
     /** @var ConnectionAddress */
     private $connectionAddress;
+    /** @var LoggerInterface */
+    private $logger;
 
-    public function __construct(ConnectionAddress $connectionAddress, bool $preEmptivelyAttemptToConnect)
-    {
+    public function __construct(
+        ConnectionAddress $connectionAddress,
+        bool $preEmptivelyAttemptToConnect,
+        LoggerInterface $logger
+    ) {
         $this->connectionAddress = $connectionAddress;
+        $this->logger            = $logger;
 
         $this->socket = socket_create(
             $this->connectionAddress->isTcpAddress() ? AF_INET : AF_UNIX,
@@ -210,6 +221,11 @@ final class SocketConnector implements Connector
 
         if ($dataRead === false) {
             throw Exception\FailedToSendCommand::readingResponseContentFromSocket($message, $this->socket, $this->connectionAddress);
+        }
+
+        $actualResponseLength = strlen($dataRead);
+        if ($actualResponseLength < $responseLength) {
+            $this->logger->debug(sprintf('Response read from core agent was %d bytes, but we expected %d bytes.', $actualResponseLength, $responseLength));
         }
 
         return $dataRead;
