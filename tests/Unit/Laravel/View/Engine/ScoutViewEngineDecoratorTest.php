@@ -8,18 +8,24 @@ use Illuminate\Container\Container as ContainerSingleton;
 use Illuminate\Contracts\Container\Container as ContainerInterface;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\View\Compilers\CompilerInterface;
+use Illuminate\View\Engines\CompilerEngine;
 use Illuminate\View\Engines\EngineResolver;
 use Illuminate\View\Factory as ViewFactory;
 use Illuminate\View\ViewException;
 use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionMethod;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\ScoutApmAgent;
 use Spatie\LaravelIgnition\Views\BladeSourceMapCompiler;
 use Spatie\LaravelIgnition\Views\ViewExceptionMapper;
 
 use function class_exists;
+use function get_class;
+use function method_exists;
+use function sprintf;
 use function uniqid;
 
 /** @covers \Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator */
@@ -119,6 +125,50 @@ final class ScoutViewEngineDecoratorTest extends TestCase
             ->willReturn($compiler);
 
         self::assertSame($compiler, $this->viewEngineDecorator->getCompiler());
+    }
+
+    public function testForgetCompiledOrNotExpiredWillProxyToRealEngineForgetCompiledOrNotExpiredMethd(): void
+    {
+        $this->realEngine
+            ->expects(self::once())
+            ->method('forgetCompiledOrNotExpired');
+
+        $this->viewEngineDecorator->forgetCompiledOrNotExpired();
+    }
+
+    /**
+     * ScoutViewEngineDecorator is designed to be generic decorator for {@see \Illuminate\Contracts\View\Engine}
+     * implementations. However, specific implementations such as {@see \Illuminate\View\Engines\CompilerEngine} keep
+     * having public API added that is NOT part of the engine, therefore breaking LSP.
+     *
+     * @link https://github.com/scoutapp/scout-apm-laravel/issues/8
+     * @link https://github.com/scoutapp/scout-apm-php/issues/293
+     *
+     * This test aims to ensure that when public methods are added to {@see \Illuminate\View\Engines\CompilerEngine}
+     * then we have implemented it in {@see \Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator}.
+     */
+    public function testScoutViewEngineDecoratorImplementsAllPublicApiOfCompilerEngine(): void
+    {
+        $realCompilerEngineMethods = (new ReflectionClass(CompilerEngine::class))
+            ->getMethods(ReflectionMethod::IS_PUBLIC);
+
+        foreach ($realCompilerEngineMethods as $compilerEngineMethod) {
+            if ($compilerEngineMethod->isConstructor()) {
+                continue;
+            }
+
+            $compilerEngineMethodName = $compilerEngineMethod->getShortName();
+
+            self::assertTrue(
+                method_exists($this->viewEngineDecorator, $compilerEngineMethodName),
+                sprintf(
+                    'Method "%s" did not exist on %s, but exists in %s',
+                    $compilerEngineMethodName,
+                    get_class($this->viewEngineDecorator),
+                    CompilerEngine::class
+                )
+            );
+        }
     }
 
     public function testSpatieLaravelIgnitionCompatibility(): void
