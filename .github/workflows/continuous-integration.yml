@@ -24,7 +24,7 @@ jobs:
           SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
         run: |
           echo "has_scout_apm_key_secret: ${{ env.SCOUT_APM_KEY != '' }}"
-          echo "::set-output name=has_scout_apm_key_secret::${{ env.SCOUT_APM_KEY != '' }}"
+          echo "has_scout_apm_key_secret=${{ env.SCOUT_APM_KEY != '' }}" >> $GITHUB_OUTPUT
 
   base-unit:
     name: "Unit tests"
@@ -58,7 +58,7 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -111,7 +111,7 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: Vampire/setup-wsl@v1
         if: ${{ matrix.os == 'windows-latest' }}
       - name: "Install PHP"
@@ -187,7 +187,7 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -221,7 +221,7 @@ jobs:
     name: "Check coding standards"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -239,7 +239,7 @@ jobs:
     name: "Perform static analysis"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -257,7 +257,7 @@ jobs:
     name: "Check for Backward Compatibility breaks"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: "Install PHP"
@@ -304,7 +304,7 @@ jobs:
           - { symfony-version: "6.*", php-version: "7.3" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.4" } # Symfony 6 requires 8.0+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -366,7 +366,7 @@ jobs:
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -430,7 +430,7 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: scout-apm-php
       - name: "Install PHP"
@@ -534,7 +534,7 @@ jobs:
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: scout-apm-php
       - name: "Install PHP"
@@ -611,7 +611,7 @@ jobs:
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
@@ -675,7 +675,7 @@ jobs:
     steps:
       - name: "Skip if SCOUT_APM_KEY secret is not available"
         run: echo 'This job is skipped entirely as it needs SCOUT_APM_KEY set in secrets.'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: scout-apm-php
       - name: "Install PHP"
