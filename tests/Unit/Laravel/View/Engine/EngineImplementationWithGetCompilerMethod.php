@@ -36,4 +36,8 @@ class EngineImplementationWithGetCompilerMethod implements Engine
             }
         };
     }
+
+    public function forgetCompiledOrNotExpired(): void
+    {
+    }
 }
