@@ -55,18 +55,31 @@ final class ScoutViewEngineDecorator implements Engine
     }
 
     /**
-     * Since Laravel has a nasty habit of exposing public API that is not defined in interfaces, we must expose the
-     * getCompiler method commonly used in the actual view engines.
+     * Note: this is a proxy for a method that does NOT exist in {@see \Illuminate\Contracts\View\Engine} but is still
+     * relied on by consumers of {@see \Illuminate\View\Engines\CompilerEngine::getCompiler}
      *
-     * Unfortunately, we have to make all kinds of assertions due to this violation :/
+     * @link https://github.com/scoutapp/scout-apm-laravel/issues/8
      */
     public function getCompiler(): CompilerInterface
     {
+        // Assertion is necessary as normally this breaks LSP
         assert(method_exists($this->engine, 'getCompiler'));
-        /** @psalm-suppress UndefinedInterfaceMethod */
         $compiler = $this->engine->getCompiler();
         assert($compiler instanceof CompilerInterface);
 
         return $compiler;
+    }
+
+    /**
+     * Note: this is a proxy for a method that does NOT exist in {@see \Illuminate\Contracts\View\Engine} but is still
+     * relied on by consumers of {@see \Illuminate\View\Engines\CompilerEngine::forgetCompiledOrNotExpired}
+     *
+     * @link https://github.com/scoutapp/scout-apm-php/issues/293
+     */
+    public function forgetCompiledOrNotExpired(): void
+    {
+        // Assertion is necessary as normally this breaks LSP
+        assert(method_exists($this->engine, 'forgetCompiledOrNotExpired'));
+        $this->engine->forgetCompiledOrNotExpired();
     }
 }
