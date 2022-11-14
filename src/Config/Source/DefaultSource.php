@@ -56,6 +56,7 @@ final class DefaultSource implements ConfigSource
             ConfigKey::CORE_AGENT_PERMISSIONS => 0777,
             ConfigKey::MONITORING_ENABLED => false,
             ConfigKey::IGNORED_ENDPOINTS => [],
+            ConfigKey::IGNORED_JOBS => ['horizon'],
             ConfigKey::LOG_LEVEL => Config::DEFAULT_LOG_LEVEL,
             ConfigKey::LOG_PAYLOAD_CONTENT => false,
             ConfigKey::ERRORS_ENABLED => false,

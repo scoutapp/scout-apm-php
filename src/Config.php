@@ -59,6 +59,7 @@ class Config
             ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED => new CoerceBoolean(),
             ConfigKey::CORE_AGENT_LAUNCH_ENABLED => new CoerceBoolean(),
             ConfigKey::IGNORED_ENDPOINTS => new CoerceJson(),
+            ConfigKey::IGNORED_JOBS => new CoerceJson(),
             ConfigKey::DISABLED_INSTRUMENTS => new CoerceJson(),
             ConfigKey::URI_FILTERED_PARAMETERS => new CoerceJson(),
             ConfigKey::ERRORS_IGNORED_EXCEPTIONS => new CoerceJson(),
@@ -99,7 +100,7 @@ class Config
      * @return bool|mixed[]|int|string|null
      * @psalm-return (
      *   K is ConfigKey::MONITORING_ENABLED|ConfigKey::LOG_PAYLOAD_CONTENT|ConfigKey::ERRORS_ENABLED|ConfigKey::CORE_AGENT_DOWNLOAD_ENABLED|ConfigKey::CORE_AGENT_LAUNCH_ENABLED ? bool
-     *   : K is ConfigKey::IGNORED_ENDPOINTS|ConfigKey::DISABLED_INSTRUMENTS|ConfigKey::URI_FILTERED_PARAMETERS|ConfigKey::ERRORS_IGNORED_EXCEPTIONS|ConfigKey::ERRORS_FILTERED_PARAMETERS ? array|null
+     *   : K is ConfigKey::IGNORED_ENDPOINTS|ConfigKey::IGNORED_JOBS|ConfigKey::DISABLED_INSTRUMENTS|ConfigKey::URI_FILTERED_PARAMETERS|ConfigKey::ERRORS_IGNORED_EXCEPTIONS|ConfigKey::ERRORS_FILTERED_PARAMETERS ? array|null
      *   : K is ConfigKey::CORE_AGENT_PERMISSIONS|ConfigKey::ERRORS_BATCH_SIZE ? int
      *   : K is ConfigKey::API_VERSION|ConfigKey::CORE_AGENT_DIRECTORY|ConfigKey::CORE_AGENT_VERSION|ConfigKey::CORE_AGENT_DOWNLOAD_URL|ConfigKey::LOG_LEVEL|ConfigKey::ERRORS_HOST|ConfigKey::URI_REPORTING|ConfigKey::CORE_AGENT_SOCKET_PATH|ConfigKey::CORE_AGENT_FULL_NAME|ConfigKey::CORE_AGENT_TRIPLE ? string
      *   : string|null

@@ -49,6 +49,8 @@ use Scoutapm\Logger\FilteredLogLevelDecorator;
 use Scoutapm\MongoDB\QueryTimeCollector;
 use Throwable;
 
+use function array_filter;
+use function array_values;
 use function count;
 use function extension_loaded;
 use function in_array;
@@ -56,6 +58,7 @@ use function is_array;
 use function is_string;
 use function json_encode;
 use function sprintf;
+use function stripos;
 
 final class Agent implements ScoutApmAgent
 {
@@ -75,8 +78,12 @@ final class Agent implements ScoutApmAgent
     private $logger;
     /** @var IgnoredEndpoints Class that helps check incoming http paths vs. the configured ignore list*/
     private $ignoredEndpoints;
+    /** @var ?list<string> */
+    private $ignoredJobs;
     /** @var bool If this request was marked as ignored*/
     private $isIgnored = false;
+    /** @var ?string */
+    private $ignoreReason;
     /** @var ExtensionCapabilities */
     private $phpExtension;
     /** @var CacheInterface */
@@ -455,14 +462,48 @@ final class Agent implements ScoutApmAgent
     /** {@inheritDoc} */
     public function ignored(string $path): bool
     {
-        return $this->ignoredEndpoints->ignored($path);
+        return $this->isIgnoredEndpoint($path) || $this->isIgnoredJob($path);
+    }
+
+    private function isIgnoredEndpoint(string $endpoint): bool
+    {
+        return $this->ignoredEndpoints->ignored($endpoint);
+    }
+
+    private function isIgnoredJob(string $job): bool
+    {
+        if ($this->ignoredJobs === null) {
+            $ignoredJobsUnfiltered = $this->config->get(ConfigKey::IGNORED_JOBS);
+            if (! is_array($ignoredJobsUnfiltered)) {
+                $this->ignoredJobs = [];
+
+                return false;
+            }
+
+            $this->ignoredJobs = array_values(array_filter(
+                $ignoredJobsUnfiltered,
+                /** @param mixed $item */
+                static function ($item): bool {
+                    return is_string($item) && $item !== '';
+                }
+            ));
+        }
+
+        foreach ($this->ignoredJobs as $ignoredJob) {
+            if (stripos($job, $ignoredJob) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /** {@inheritDoc} */
-    public function ignore(): void
+    public function ignore(?string $ignoreReason = null): void
     {
-        $this->request   = null;
-        $this->isIgnored = true;
+        $this->request      = null;
+        $this->isIgnored    = true;
+        $this->ignoreReason = $ignoreReason;
     }
 
     /** {@inheritDoc} */
@@ -502,7 +543,14 @@ final class Agent implements ScoutApmAgent
 
         // Don't send it if the request was ignored
         if ($this->isIgnored) {
-            $this->logger->debug('Not sending payload, request has been ignored');
+            $this->logger->debug(sprintf(
+                'Not sending payload, request has been ignored%s',
+                $this->ignoreReason
+                    ? sprintf(' (%s)', $this->ignoreReason)
+                    : ''
+            ));
+
+            $this->startNewRequest();
 
             return false;
         }
@@ -574,6 +622,9 @@ final class Agent implements ScoutApmAgent
         if ($this->request !== null) {
             $this->request->cleanUp();
         }
+
+        $this->isIgnored    = false;
+        $this->ignoreReason = null;
 
         $this->request = Request::fromConfigAndOverrideTime($this->superglobals, $this->config, $this->findRequestHeaders);
 

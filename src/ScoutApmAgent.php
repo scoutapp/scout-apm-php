@@ -91,7 +91,7 @@ interface ScoutApmAgent
      * Mark the running request as ignored. Triggers optimizations in various
      * tracing and tagging methods to turn them into NOOPs
      */
-    public function ignore(): void;
+    public function ignore(?string $ignoreReason = null): void;
 
     /**
      * Should the instrumentation be enabled for a particular functionality. This checks the `disabled_instruments`
