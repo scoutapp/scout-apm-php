@@ -926,7 +926,7 @@ final class AgentTest extends TestCase
         );
         $agent->send();
 
-        self::assertTrue($this->logger->hasDebugThatContains('Sending metrics from 2 collected spans. Payload: {'));
+        self::assertTrue($this->logger->hasDebugThatContains('Sending metrics from request (unknown) with 2 collected spans. Payload: {'));
         self::assertTrue($this->logger->hasDebugThatContains('Sent whole payload successfully to core agent. Response: {"Request":"Success"}'));
     }
 

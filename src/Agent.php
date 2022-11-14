@@ -536,11 +536,14 @@ final class Agent implements ScoutApmAgent
 
             $this->errorHandling->sendCollectedErrors();
 
-            $shouldLogContent = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);
+            $shouldLogContent    = $this->config->get(ConfigKey::LOG_PAYLOAD_CONTENT);
+            $collectedSpans      = $this->request->collectedSpans();
+            $controllerOrJobName = $this->request->controllerOrJobName() ?: '(unknown)';
 
             $this->logger->debug(sprintf(
-                'Sending metrics from %d collected spans.%s',
-                $this->request->collectedSpans(),
+                'Sending metrics from request %s with %d collected spans.%s',
+                $controllerOrJobName,
+                $collectedSpans,
                 $shouldLogContent ? sprintf(' Payload: %s', json_encode($this->request)) : ''
             ));
 
