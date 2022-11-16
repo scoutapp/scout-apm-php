@@ -18,6 +18,7 @@ abstract class ConfigKey
     public const LOG_PAYLOAD_CONTENT         = 'log_payload_content';
     public const API_VERSION                 = 'api_version';
     public const IGNORED_ENDPOINTS           = 'ignore';
+    public const IGNORED_JOBS                = 'ignore_jobs';
     public const APPLICATION_ROOT            = 'application_root';
     public const SCM_SUBDIRECTORY            = 'scm_subdirectory';
     public const REVISION_SHA                = 'revision_sha';

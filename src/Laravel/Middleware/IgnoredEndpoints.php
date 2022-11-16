@@ -24,7 +24,7 @@ final class IgnoredEndpoints
         // Check if the request path we're handling is configured to be
         // ignored, and if so, mark it as such.
         if ($this->agent->ignored('/' . $request->path())) {
-            $this->agent->ignore();
+            $this->agent->ignore('/' . $request->path());
         }
 
         return $next($request);

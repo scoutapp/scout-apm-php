@@ -30,11 +30,17 @@ final class JobQueueListener
     /** @throws Exception */
     public function startSpanForJob(JobProcessing $jobProcessingEvent): void
     {
+        $jobName = class_basename($jobProcessingEvent->job->resolveName());
+
+        if ($this->agent->ignored($jobName)) {
+            $this->agent->ignore($jobName);
+        }
+
         /** @noinspection UnusedFunctionResultInspection */
         $this->agent->startSpan(sprintf(
             '%s/%s',
             SpanReference::INSTRUMENT_JOB,
-            class_basename($jobProcessingEvent->job->resolveName())
+            $jobName
         ));
     }
 

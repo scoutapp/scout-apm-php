@@ -35,7 +35,13 @@ final class ConsoleListener
             return;
         }
 
+        $commandName = $commandStartingEvent->command;
+
         $this->agent->startNewRequest();
+
+        if ($this->agent->ignored($commandName)) {
+            $this->agent->ignore($commandName);
+        }
 
         $this->agent->addContext(Tag::TAG_ARGUMENTS, implode(' ', $this->argv));
 
@@ -43,7 +49,7 @@ final class ConsoleListener
         $this->agent->startSpan(sprintf(
             '%s/artisan/%s',
             SpanReference::INSTRUMENT_JOB,
-            $commandStartingEvent->command
+            $commandName
         ));
     }
 
