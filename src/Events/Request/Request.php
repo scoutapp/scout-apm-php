@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Scoutapm\Events\Request;
 
 use DateInterval;
+use DateTimeImmutable;
 use Exception;
 use Scoutapm\Config;
 use Scoutapm\Config\ConfigKey;
@@ -182,7 +183,7 @@ class Request implements CommandWithChildren
     {
         $tenYearsAgo = Timer::utcDateTimeFromFloatTimestamp($currentTimestamp)
             ->sub(new DateInterval('P10Y'));
-        Assert::notFalse($tenYearsAgo);
+        Assert::isInstanceOf($tenYearsAgo, DateTimeImmutable::class);
 
         $cutoffTimestamp = (float) $tenYearsAgo
             ->setDate((int) $tenYearsAgo->format('Y'), 1, 1)
