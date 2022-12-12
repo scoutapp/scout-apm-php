@@ -1011,17 +1011,14 @@ final class AgentTest extends TestCase
             ->method('connected')
             ->willReturn(true);
 
-        /** @noinspection PhpParamsInspection */
         $this->connector->expects(self::at(1))
             ->method('sendCommand')
             ->with(self::isInstanceOf(RegisterMessage::class))
             ->willReturn('{"Register":"Success"}');
-        /** @noinspection PhpParamsInspection */
         $this->connector->expects(self::at(2))
             ->method('sendCommand')
             ->with(self::isInstanceOf(Metadata::class))
             ->willReturn('{"Metadata":"Success"}');
-        /** @noinspection PhpParamsInspection */
         $this->connector->expects(self::at(3))
             ->method('sendCommand')
             ->with(self::isInstanceOf(Request::class))
@@ -1029,7 +1026,6 @@ final class AgentTest extends TestCase
         $this->connector->expects(self::at(4))
             ->method('connected')
             ->willReturn(true);
-        /** @noinspection PhpParamsInspection */
         $this->connector->expects(self::at(5))
             ->method('sendCommand')
             ->with(self::isInstanceOf(Request::class))
