@@ -6,9 +6,7 @@ namespace Scoutapm\Errors\ScoutClient;
 
 use function gzencode;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 class CompressPayload
 {
     public function __invoke(string $payload): string

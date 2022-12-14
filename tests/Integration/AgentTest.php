@@ -263,9 +263,7 @@ final class AgentTest extends TestCase
         self::assertLessThan($tagSize * 2, memory_get_usage() - $startingMemory);
     }
 
-    /**
-     * @psalm-return iterable<string,list<Config>>
-     */
+    /** @psalm-return iterable<string,list<Config>> */
     public function endToEndConfigurationProvider(): iterable
     {
         yield 'defaultBasicConfiguration' => [
@@ -677,9 +675,7 @@ final class AgentTest extends TestCase
         next($unserialized); // Skip Metadata event
 
         $assertSpanContainingHttpSpan =
-            /**
-             * @psalm-param list<array<string, array<string, mixed>>> $commands
-             */
+            /** @psalm-param list<array<string, array<string, mixed>>> $commands */
             static function (&$commands, string $outerOperation, string $method, string $url): void {
                 $fileGetContentsSpanId = TestHelper::assertUnserializedCommandContainsPayload('StartSpan', ['operation' => $outerOperation], next($commands), 'span_id');
 

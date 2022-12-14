@@ -26,9 +26,7 @@ use const E_ERROR;
 use const E_PARSE;
 use const E_USER_ERROR;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 final class ScoutErrorHandling implements ErrorHandling
 {
     private const ERROR_TYPES_TO_CATCH = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];

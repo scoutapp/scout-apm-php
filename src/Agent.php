@@ -646,9 +646,7 @@ final class Agent implements ScoutApmAgent
         $this->registered = true;
     }
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     private function sendMetadataIfRequired(): void
     {
         if ($this->metadataWasSent()) {

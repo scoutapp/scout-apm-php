@@ -39,9 +39,7 @@ final class InstrumentationListener implements EventSubscriberInterface
         $this->agent->connect();
     }
 
-    /**
-     * @throws Exception
-     */
+    /** @throws Exception */
     public function onKernelController(ControllerEvent $controllerEvent): void
     {
         $this->currentSpan = $this->agent->startSpan(sprintf(
@@ -51,9 +49,7 @@ final class InstrumentationListener implements EventSubscriberInterface
         ));
     }
 
-    /**
-     * @throws ReflectionException
-     */
+    /** @throws ReflectionException */
     private function controllerNameFromCallable(callable $controller): string
     {
         if (is_array($controller)) {
@@ -97,9 +93,7 @@ final class InstrumentationListener implements EventSubscriberInterface
         $this->agent->recordThrowable($exceptionEvent->getThrowable());
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public static function getSubscribedEvents(): array
     {
         return [

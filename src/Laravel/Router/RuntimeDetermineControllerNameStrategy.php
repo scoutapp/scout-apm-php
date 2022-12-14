@@ -26,9 +26,7 @@ final class RuntimeDetermineControllerNameStrategy implements AutomaticallyDeter
     /** @var non-empty-list<AutomaticallyDetermineControllerName> */
     private $strategies;
 
-    /**
-     * @param non-empty-list<AutomaticallyDetermineControllerName> $possibleStrategies
-     */
+    /** @param non-empty-list<AutomaticallyDetermineControllerName> $possibleStrategies */
     public function __construct(LoggerInterface $logger, array $possibleStrategies)
     {
         $this->strategies = $possibleStrategies;

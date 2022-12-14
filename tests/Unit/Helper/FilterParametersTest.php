@@ -13,9 +13,7 @@ use function fopen;
 /** @covers \Scoutapm\Helper\FilterParameters */
 final class FilterParametersTest extends TestCase
 {
-    /**
-     * @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, expectedFiltered: array}>
-     */
+    /** @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, expectedFiltered: array}> */
     public function uriReportingConfigurationProvider(): array
     {
         return [
@@ -68,9 +66,7 @@ final class FilterParametersTest extends TestCase
         );
     }
 
-    /**
-     * @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, depth: positive-int|0, expectedFiltered: array}>
-     */
+    /** @psalm-return array<string, array{inputParameters: array, parameterKeysToBeFiltered: list<string>, depth: positive-int|0, expectedFiltered: array}> */
     public function flattenedUriReportingConfiguration(): array
     {
         return [

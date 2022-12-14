@@ -156,9 +156,7 @@ final class SocketConnector implements Connector
         }
     }
 
-    /**
-     * @psalm-assert-if-true !null $this->socket
-     */
+    /** @psalm-assert-if-true !null $this->socket */
     public function connected(): bool
     {
         return $this->socket !== null && $this->connected;

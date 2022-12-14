@@ -10,9 +10,7 @@ use Scoutapm\Connector\Connector;
 use function json_decode;
 use function json_encode;
 
-/**
- * @psalm-type UnserializedCapturedMessagesList = list<array<string, array<string, mixed>>>
- */
+/** @psalm-type UnserializedCapturedMessagesList = list<array<string, array<string, mixed>>> */
 final class MessageCapturingConnectorDelegator implements Connector
 {
     /** @psalm-var UnserializedCapturedMessagesList */

@@ -44,9 +44,7 @@ final class FilteredLogLevelDecorator implements LoggerInterface
     /** @var int */
     private $minimumLogLevel;
 
-    /**
-     * @param string $minimumLogLevel e.g. `emergency`, `error`, etc. - {@see \Psr\Log\LogLevel}
-     */
+    /** @param string $minimumLogLevel e.g. `emergency`, `error`, etc. - {@see \Psr\Log\LogLevel} */
     public function __construct(LoggerInterface $realLogger, string $minimumLogLevel)
     {
         try {

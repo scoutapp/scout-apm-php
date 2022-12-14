@@ -69,9 +69,7 @@ class TestLogger extends AbstractLogger
     /** @psalm-var array<string,list<LogRecord>> */
     public $recordsByLevel = [];
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function log($level, $message, array $context = []): void
     {
         /** @psalm-suppress RedundantCastGivenDocblockType */
@@ -90,9 +88,7 @@ class TestLogger extends AbstractLogger
         return isset($this->recordsByLevel[$level]);
     }
 
-    /**
-     * @param string|array{message:string, context?: mixed} $record
-     */
+    /** @param string|array{message:string, context?: mixed} $record */
     public function hasRecord($record, string $level): bool
     {
         if (is_string($record)) {

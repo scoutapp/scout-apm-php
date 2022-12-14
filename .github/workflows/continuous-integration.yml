@@ -50,6 +50,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
     services:
       mongo:
         image: mongo
@@ -68,6 +69,7 @@ jobs:
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
         # be missing wherever the extension is built (not immediately obvious), so install it first
       - name: "Install scoutapm extension"
@@ -108,6 +110,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -124,6 +127,7 @@ jobs:
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Get latest scoutapm extension version"
         if: ${{ matrix.scout-ext == 'with-scout-ext' }}
         uses: octokit/request-action@v2.x
@@ -184,6 +188,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -197,6 +202,7 @@ jobs:
           extensions: "curl"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
         # be missing wherever the extension is built (not immediately obvious), so install it first
       - name: "Install scoutapm extension"
@@ -230,6 +236,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Install dependencies"
         run: "composer install --no-interaction --prefer-dist"
       - name: "Run PHP_CodeSniffer"
@@ -248,6 +255,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Install dependencies"
         run: "composer install --no-interaction --prefer-dist"
       - name: "Run Psalm"
@@ -268,6 +276,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Require Roave/BackwardCompatibilityCheck"
         run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:^6.0.1"
       - name: "Composer update with new requirements"
@@ -299,6 +308,7 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2"
         exclude:
           - { symfony-version: "6.*", php-version: "7.2" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.3" } # Symfony 6 requires 8.0+
@@ -314,6 +324,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -349,22 +360,31 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
-          # See - https://laravel.com/docs/8.x/releases#support-policy
+          # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
           # Laravel 5.5 supports PHP 7.1 - 7.4
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
+          - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
           # Laravel 8 supports PHP 7.3 - 8.1
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 7.3 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
+          # Laravel 10 supports PHP 8.1 - ?
+          - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "8.0"} # Laravel 10 requires 8.1+
     steps:
       - uses: actions/checkout@v3
       - name: "Install PHP"
@@ -376,6 +396,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -385,6 +406,9 @@ jobs:
       - name: "Install spatie/laravel-ignition (if available)"
         if: ${{ (matrix.php-version == '8.0' || matrix.php-version == '8.1') && (matrix.laravel-version == '8.*' || matrix.laravel-version == '9.*') }}
         run: "composer require --dev spatie/laravel-ignition --no-update --no-interaction"
+      - name: "Unrestrict nesbot/carbon for older PHP versions"
+        if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
+        run: "composer remove --dev --no-update --no-interaction nesbot/carbon"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Laravel) test suite"
@@ -411,22 +435,31 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
-          # See - https://laravel.com/docs/8.x/releases#support-policy
+          # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
           # Laravel 5.5 supports PHP 7.1 - 7.4
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
+          - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
           # Laravel 8 supports PHP 7.3 - 8.1
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 7.3 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
+          # Laravel 10 supports PHP 8.1 - ?
+          - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "8.0"} # Laravel 10 requires 8.1+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -442,6 +475,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Laravel quickstart project"
@@ -515,22 +549,31 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
-          # See - https://laravel.com/docs/8.x/releases#support-policy
+          # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
           # Laravel 5.5 supports PHP 7.1 - 7.4
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
+          - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
           # Laravel 8 supports PHP 7.3 - 8.1
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 7.3 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
+          # Laravel 10 supports PHP 8.1 - ?
+          - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
+          - {laravel-version: "10.*", php-version: "8.0"} # Laravel 10 requires 8.1+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -546,6 +589,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Laravel quickstart project"
@@ -593,23 +637,32 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
           # Lumen 5.5 supports PHP 7.1 - 7.3
           - {lumen-version: "5.5.*", php-version: "7.4"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
+          - {lumen-version: "5.5.*", php-version: "8.2"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
+          - {lumen-version: "6.*", php-version: "8.2"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
+          - {lumen-version: "7.*", php-version: "8.2"} # Lumen 7 does not support PHP 8.0+
           # Lumen 8 supports PHP 7.3 - 8.1
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
-          # Lumen 9 supports PHP 7.3 - 8.1
+          # Lumen 9 supports PHP 8.0 - 8.1
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
+          # Lumen 10 supports PHP 8.1 - ?
+          - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "8.0"} # Lumen 10 requires 8.1+
     steps:
       - uses: actions/checkout@v3
       - name: "Install PHP"
@@ -621,12 +674,16 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
         run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Unrestrict nesbot/carbon for older PHP versions"
+        if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
+        run: "composer remove --dev --no-update --no-interaction nesbot/carbon"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Lumen) test suite"
@@ -653,23 +710,32 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
+          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
           # Lumen 5.5 supports PHP 7.1 - 7.3
           - {lumen-version: "5.5.*", php-version: "7.4"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
+          - {lumen-version: "5.5.*", php-version: "8.2"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
+          - {lumen-version: "6.*", php-version: "8.2"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
+          - {lumen-version: "7.*", php-version: "8.2"} # Lumen 7 does not support PHP 8.0+
           # Lumen 8 supports PHP 7.3 - 8.1
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
-          # Lumen 9 supports PHP 7.3 - 8.1
+          # Lumen 9 supports PHP 8.0 - 8.1
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
+          # Lumen 10 supports PHP 8.1 - ?
+          - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
+          - {lumen-version: "10.*", php-version: "8.0"} # Lumen 10 requires 8.1+
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -687,6 +753,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Lumen quickstart project"

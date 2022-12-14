@@ -17,9 +17,7 @@ use function is_object;
 use function is_scalar;
 use function method_exists;
 
-/**
- * @internal This is not covered by BC promise
- */
+/** @internal This is not covered by BC promise */
 final class SuperglobalsArrays implements Superglobals
 {
     /** @var array<array-key, mixed> */
@@ -70,9 +68,7 @@ final class SuperglobalsArrays implements Superglobals
         }
     }
 
-    /**
-     * @internal This is not covered by BC promise
-     */
+    /** @internal This is not covered by BC promise */
     public static function fromGlobalState(): self
     {
         return new self(

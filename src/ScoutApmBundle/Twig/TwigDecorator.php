@@ -25,9 +25,7 @@ class TwigDecorator extends Twig
         $this->agent = $agent;
     }
 
-    /**
-     * @param string|TemplateWrapper $nameOrTemplateWrapper
-     */
+    /** @param string|TemplateWrapper $nameOrTemplateWrapper */
     private function nameOrConvertTemplateWrapperToString($nameOrTemplateWrapper): string
     {
         if (! $nameOrTemplateWrapper instanceof TemplateWrapper) {

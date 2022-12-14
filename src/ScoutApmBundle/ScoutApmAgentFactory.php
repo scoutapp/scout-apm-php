@@ -18,9 +18,7 @@ use function array_merge;
 
 final class ScoutApmAgentFactory
 {
-    /**
-     * @param array<string, mixed> $agentConfiguration
-     */
+    /** @param array<string, mixed> $agentConfiguration */
     public static function createAgent(
         LoggerInterface $logger,
         ?CacheInterface $cache,

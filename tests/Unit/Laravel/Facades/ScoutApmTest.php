@@ -25,9 +25,7 @@ final class ScoutApmTest extends TestCase
         ScoutApmFacade::swap($this->agent);
     }
 
-    /**
-     * @return string[][]|string[][][]|null[][][]|callable[][][]
-     */
+    /** @return string[][]|string[][][]|null[][][]|callable[][][] */
     public function proxiedMethodsProvider(): array
     {
         $callable = static function (): void {
