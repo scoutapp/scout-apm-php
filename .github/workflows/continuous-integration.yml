@@ -398,6 +398,9 @@ jobs:
       - name: "Install spatie/laravel-ignition (if available)"
         if: ${{ (matrix.php-version == '8.0' || matrix.php-version == '8.1') && (matrix.laravel-version == '8.*' || matrix.laravel-version == '9.*') }}
         run: "composer require --dev spatie/laravel-ignition --no-update --no-interaction"
+      - name: "Unrestrict nesbot/carbon for older PHP versions"
+        if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
+        run: "composer remove --dev --no-update --no-interaction nesbot/carbon"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Laravel) test suite"
@@ -667,6 +670,9 @@ jobs:
         run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require framework ${{ matrix.lumen-version}}"
         run: "composer require laravel/lumen:${{ matrix.lumen-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
+      - name: "Unrestrict nesbot/carbon for older PHP versions"
+        if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
+        run: "composer remove --dev --no-update --no-interaction nesbot/carbon"
       - name: "Composer update with new requirements"
         run: "composer update --no-interaction --prefer-dist --prefer-stable"
       - name: "Run PHPUnit (Lumen) test suite"
