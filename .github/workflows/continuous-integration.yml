@@ -69,6 +69,7 @@ jobs:
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
         # be missing wherever the extension is built (not immediately obvious), so install it first
       - name: "Install scoutapm extension"
@@ -126,6 +127,7 @@ jobs:
           extensions: "curl, sockets, fileinfo, ${{ matrix.extensions }}"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Get latest scoutapm extension version"
         if: ${{ matrix.scout-ext == 'with-scout-ext' }}
         uses: octokit/request-action@v2.x
@@ -200,6 +202,7 @@ jobs:
           extensions: "curl"
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Normally, we'd just add "scoutapm" to the above extensions in shivammathur/setup-php, but libcurl appears to
         # be missing wherever the extension is built (not immediately obvious), so install it first
       - name: "Install scoutapm extension"
@@ -233,6 +236,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Install dependencies"
         run: "composer install --no-interaction --prefer-dist"
       - name: "Run PHP_CodeSniffer"
@@ -251,6 +255,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Install dependencies"
         run: "composer install --no-interaction --prefer-dist"
       - name: "Run Psalm"
@@ -271,6 +276,7 @@ jobs:
           tools: composer:v2.3
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Require Roave/BackwardCompatibilityCheck"
         run: "composer require --no-update --no-interaction --prefer-dist --prefer-stable --dev roave/backward-compatibility-check:^6.0.1"
       - name: "Composer update with new requirements"
@@ -318,6 +324,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -389,6 +396,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -467,6 +475,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Laravel quickstart project"
@@ -580,6 +589,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Laravel quickstart project"
@@ -664,6 +674,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # --no-update then a full `composer update` is needed to overcome locked dependencies
       # See: https://github.com/composer/composer/issues/9561
       - name: "Remove existing requirements components (avoid conflicts)"
@@ -742,6 +753,7 @@ jobs:
           extensions: ${{ matrix.extensions }}
         env:
           fail-fast: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Composer allow-plugins to allow Laravel to actually install"
         run: composer config --global allow-plugins true
       - name: "Install Lumen quickstart project"
