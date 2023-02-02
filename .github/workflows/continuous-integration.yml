@@ -119,6 +119,11 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         with:
           update: 'true'
+      - name: "Update CA certificates"
+        shell: wsl-bash {0}
+        run: |
+          apt-get update && apt-get install -y ca-certificates
+          update-ca-certificates
       - name: "Install PHP"
         uses: shivammathur/setup-php@v2
         with:
