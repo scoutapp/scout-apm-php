@@ -14,6 +14,7 @@ use Laravel\Lumen\Application;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
+use ReflectionClass;
 use ReflectionProperty;
 use Scoutapm\Logger\FilteredLogLevelDecorator;
 
@@ -41,9 +42,14 @@ final class ScoutApmServiceProviderUsingLumenTest extends ScoutApmServiceProvide
             self::markTestSkipped(Application::class . ' is not available in the current dependency tree');
         }
 
-        $application = $this->getMockBuilder(Application::class)
-            ->setMethods(['runningInConsole'])
-            ->getMock();
+        $applicationMockBuilder = $this->getMockBuilder(Application::class)
+            ->onlyMethods(['runningInConsole']);
+
+        if (! (new ReflectionClass(Application::class))->hasMethod('terminating')) {
+            $applicationMockBuilder->addMethods(['terminating']);
+        }
+
+        $application = $applicationMockBuilder->getMock();
 
         $application
             ->method('runningInConsole')
