@@ -487,6 +487,8 @@ jobs:
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Allow Composer plugins to run for this project"
+        run: cd test-app && composer config --no-plugins allow-plugins true
       - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Publish the provider"
@@ -602,6 +604,8 @@ jobs:
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Allow Composer plugins to run for this project"
+        run: cd test-app && composer config --no-plugins allow-plugins true
       - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Publish the provider"
