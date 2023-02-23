@@ -354,6 +354,7 @@ jobs:
           - "7.*"
           - "8.*"
           - "9.*"
+          - "10.*"
         php-version:
           - "7.2"
           - "7.3"
@@ -380,7 +381,7 @@ jobs:
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - ?
+          # Laravel 10 supports PHP 8.1 - 8.2
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -403,10 +404,12 @@ jobs:
         run: "composer remove --dev symfony/* laravel/* api-ecosystem-for-laravel/dingo-api --no-update --no-interaction"
       - name: "Require framework ${{ matrix.laravel-version}}"
         run: "composer require laravel/framework:${{ matrix.laravel-version}} --no-update --no-interaction --prefer-dist --prefer-stable"
-      - name: "Install spatie/laravel-ignition (if available)"
+      - name: "Install spatie/laravel-ignition ^1.6 (if available)"
         if: ${{ (matrix.php-version == '8.0' || matrix.php-version == '8.1') && (matrix.laravel-version == '8.*' || matrix.laravel-version == '9.*') }}
-        # Note: for Laravel 10, we will need to use `spatie/laravel-ignition:^2.0`
         run: "composer require --dev spatie/laravel-ignition:^1.6 --no-update --no-interaction"
+      - name: "Install spatie/laravel-ignition ^2.0 (if available)"
+        if: ${{ (matrix.php-version == '8.1' || matrix.php-version == '8.2') && (matrix.laravel-version == '10.*') }}
+        run: "composer require --dev spatie/laravel-ignition:^2.0 --no-update --no-interaction"
       - name: "Unrestrict nesbot/carbon for older PHP versions"
         if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
         run: "composer remove --dev --no-update --no-interaction nesbot/carbon"
@@ -430,6 +433,7 @@ jobs:
           - "7.*"
           - "8.*"
           - "9.*"
+          - "10.*"
         php-version:
           - "7.2"
           - "7.3"
@@ -456,7 +460,7 @@ jobs:
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - ?
+          # Laravel 10 supports PHP 8.1 - 8.2
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -483,6 +487,8 @@ jobs:
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Allow Composer plugins to run for this project"
+        run: cd test-app && composer config --no-plugins allow-plugins true
       - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Publish the provider"
@@ -497,7 +503,7 @@ jobs:
         if: matrix.laravel-version == '8.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel8-exception-handler.php app/Exceptions/Handler.php
       - name: "Configure error handler (Laravel 9)"
-        if: matrix.laravel-version == '9.*'
+        if: matrix.laravel-version == '9.*' || matrix.laravel-version == '10.*'
         run: cd test-app && cp ../scout-apm-php/.github/fixtures/laravel9-exception-handler.php app/Exceptions/Handler.php
       - name: "Add route to trigger error"
         run: cd test-app && echo -e "Route::get('/e', function () { throw new \RuntimeException('fail'); });" >> routes/web.php
@@ -544,6 +550,7 @@ jobs:
           - "7.*"
           - "8.*"
           - "9.*"
+          - "10.*"
         php-version:
           - "7.2"
           - "7.3"
@@ -570,7 +577,7 @@ jobs:
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - ?
+          # Laravel 10 supports PHP 8.1 - 8.2
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -597,6 +604,8 @@ jobs:
         run: "composer create-project laravel/laravel:${{ matrix.laravel-version}} test-app --prefer-dist"
       - name: "Add scout-apm-php as a repository"
         run: cd test-app && composer config repositories.scout path ../scout-apm-php
+      - name: "Allow Composer plugins to run for this project"
+        run: cd test-app && composer config --no-plugins allow-plugins true
       - name: "Require scout-apm-php current checkout"
         run: cd test-app && composer require scoutapp/scout-apm-php:*@dev guzzlehttp/guzzle composer/package-versions-deprecated
       - name: "Publish the provider"
@@ -632,6 +641,7 @@ jobs:
           - "7.*"
           - "8.*"
           - "9.*"
+          - "10.*"
         php-version:
           - "7.2"
           - "7.3"
@@ -659,7 +669,7 @@ jobs:
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
-          # Lumen 10 supports PHP 8.1 - ?
+          # Lumen 10 supports PHP 8.1 - 8.2
           - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
@@ -705,6 +715,7 @@ jobs:
           - "7.*"
           - "8.*"
           - "9.*"
+          - "10.*"
         php-version:
           - "7.2"
           - "7.3"
@@ -732,7 +743,7 @@ jobs:
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
-          # Lumen 10 supports PHP 8.1 - ?
+          # Lumen 10 supports PHP 8.1 - 8.2
           - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
