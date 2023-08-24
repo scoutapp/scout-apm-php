@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Laravel\View\Engine;
 
+use Closure;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
@@ -57,9 +58,15 @@ final class ScoutViewEngineDecorator implements Engine
 
         /**
          * @psalm-suppress MixedAssignment
-         * @psalm-suppress NoInterfaceProperties
+         * @psalm-suppress PossiblyInvalidFunctionCall
          */
-        $this->lastCompiled = &$engine->lastCompiled;
+        $this->lastCompiled = & Closure::bind(
+            function & () {
+                return $this->lastCompiled;
+            },
+            $engine,
+            $engine
+        )->__invoke();
     }
 
     /**

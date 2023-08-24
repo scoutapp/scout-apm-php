@@ -211,24 +211,17 @@ final class ScoutViewEngineDecoratorTest extends TestCase
     /** @throws ReflectionException */
     public function testDecoratorLastCompiledPropertyReferencesCompilerEngineLastCompiledPropertyWhenUsingReflection(): void
     {
-        /**
-         * @noinspection PhpPossiblePolymorphicInvocationInspection
-         * @psalm-suppress NoInterfaceProperties
-         */
-        $this->realEngine->lastCompiled = ['a', 'b'];
+        $realEngine = new EngineImplementationWithGetCompilerMethod();
+        $realEngine->setLastCompiled(['a', 'b']);
 
-        $this->viewEngineDecorator = new ScoutViewEngineDecorator($this->realEngine, $this->agent, $this->viewFactory);
+        $this->viewEngineDecorator = new ScoutViewEngineDecorator($realEngine, $this->agent, $this->viewFactory);
 
         $prop = new ReflectionProperty($this->viewEngineDecorator, 'lastCompiled');
         $prop->setAccessible(true);
         self::assertSame(['a', 'b'], $prop->getValue($this->viewEngineDecorator));
 
-        /**
-         * @noinspection PhpPossiblePolymorphicInvocationInspection
-         * @psalm-suppress NoInterfaceProperties
-         */
-        $this->realEngine->lastCompiled = ['a', 'b', 'c'];
-
+        // Make sure the value can be changed at runtime, and the decorator's value is also changed
+        $realEngine->setLastCompiled(['a', 'b', 'c']);
         self::assertSame(['a', 'b', 'c'], $prop->getValue($this->viewEngineDecorator));
     }
 }
