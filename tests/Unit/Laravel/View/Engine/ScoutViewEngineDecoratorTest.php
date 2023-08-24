@@ -173,24 +173,19 @@ final class ScoutViewEngineDecoratorTest extends TestCase
         }
     }
 
+    /**
+     * The `spatie/laravel-ignition` package depends on the engine having a property called `lastCompiled`, which
+     * only exists in the `\Illuminate\View\Engines\CompilerEngine` Blade Compiler. The implementation does sort of
+     * account for decoration, but it expects the property to be called `engine`. Therefore, in this test, we
+     * invoke the problematic consumer to ensure our decorated view engine conforms to this assumption.
+     *
+     * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
+     */
     public function testSpatieLaravelIgnitionCompatibility(): void
     {
         if (! class_exists(ViewExceptionMapper::class)) {
             self::markTestSkipped('Test depends on `spatie/laravel-ignition`, but it is not installed');
         }
-
-        /**
-         * The `spatie/laravel-ignition` package depends on the engine having a property called `lastCompiled`, which
-         * only exists in the `\Illuminate\View\Engines\CompilerEngine` Blade Compiler. The implementation does sort of
-         * account for decoration, but it expects the property to be called `engine`. Therefore, in this test, we
-         * invoke the problematic consumer to ensure our decorated view engine conforms to this assumption.
-         *
-         * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
-         *
-         * @noinspection PhpPossiblePolymorphicInvocationInspection
-         * @psalm-suppress NoInterfaceProperties
-         */
-        $this->realEngine->lastCompiled = [];
 
         $viewEngineResolver = new EngineResolver();
         $viewEngineResolver->register('blade', function () {
