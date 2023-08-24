@@ -16,7 +16,9 @@ use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
+use ReflectionProperty;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\ScoutApmAgent;
 use Spatie\LaravelIgnition\Views\BladeSourceMapCompiler;
@@ -185,7 +187,7 @@ final class ScoutViewEngineDecoratorTest extends TestCase
          *
          * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
          *
-         * @noinspection PhpPossiblePolymorphicInvocationInspection PhpUndefinedFieldInspection
+         * @noinspection PhpPossiblePolymorphicInvocationInspection
          * @psalm-suppress NoInterfaceProperties
          */
         $this->realEngine->lastCompiled = [];
@@ -204,5 +206,29 @@ final class ScoutViewEngineDecoratorTest extends TestCase
 
         $vem = new ViewExceptionMapper($this->createMock(BladeSourceMapCompiler::class));
         $vem->map(new ViewException('things (View: paththing)'));
+    }
+
+    /** @throws ReflectionException */
+    public function testDecoratorLastCompiledPropertyReferencesCompilerEngineLastCompiledPropertyWhenUsingReflection(): void
+    {
+        /**
+         * @noinspection PhpPossiblePolymorphicInvocationInspection
+         * @psalm-suppress NoInterfaceProperties
+         */
+        $this->realEngine->lastCompiled = ['a', 'b'];
+
+        $this->viewEngineDecorator = new ScoutViewEngineDecorator($this->realEngine, $this->agent, $this->viewFactory);
+
+        $prop = new ReflectionProperty($this->viewEngineDecorator, 'lastCompiled');
+        $prop->setAccessible(true);
+        self::assertSame(['a', 'b'], $prop->getValue($this->viewEngineDecorator));
+
+        /**
+         * @noinspection PhpPossiblePolymorphicInvocationInspection
+         * @psalm-suppress NoInterfaceProperties
+         */
+        $this->realEngine->lastCompiled = ['a', 'b', 'c'];
+
+        self::assertSame(['a', 'b', 'c'], $prop->getValue($this->viewEngineDecorator));
     }
 }
