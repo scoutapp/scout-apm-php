@@ -51,6 +51,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
     services:
       mongo:
         image: mongo
@@ -111,6 +112,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -189,6 +191,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
     env:
       SCOUT_APM_KEY: ${{ secrets.SCOUT_APM_KEY }}
     steps:
@@ -309,6 +312,7 @@ jobs:
           - "8.0"
           - "8.1"
           - "8.2"
+          - "8.3"
         exclude:
           - { symfony-version: "6.*", php-version: "7.2" } # Symfony 6 requires 8.0+
           - { symfony-version: "6.*", php-version: "7.3" } # Symfony 6 requires 8.0+
@@ -361,7 +365,8 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
+          - "8.2"
+          - "8.3" # @todo confirm which versions of Laravel will support PHP 8.3
         exclude:
           # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
@@ -369,19 +374,22 @@ jobs:
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.3"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
           - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.3"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
           - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
-          # Laravel 8 supports PHP 7.3 - 8.1
+          - {laravel-version: "7.*", php-version: "8.3"} # Laravel 7 does not support PHP 8.1+
+          # Laravel 8 supports PHP 7.3 - 8.1 @todo tbc
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 8.0 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1 @todo tbc
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - 8.2
+          # Laravel 10 supports PHP 8.1 - 8.2 @todo tbc
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -408,7 +416,7 @@ jobs:
         if: ${{ (matrix.php-version == '8.0' || matrix.php-version == '8.1') && (matrix.laravel-version == '8.*' || matrix.laravel-version == '9.*') }}
         run: "composer require --dev spatie/laravel-ignition:^1.6 --no-update --no-interaction"
       - name: "Install spatie/laravel-ignition ^2.0 (if available)"
-        if: ${{ (matrix.php-version == '8.1' || matrix.php-version == '8.2') && (matrix.laravel-version == '10.*') }}
+        if: ${{ (matrix.php-version == '8.1' || matrix.php-version == '8.2' || matrix.php-version == '8.3') && (matrix.laravel-version == '10.*') }}
         run: "composer require --dev spatie/laravel-ignition:^2.0 --no-update --no-interaction"
       - name: "Unrestrict nesbot/carbon for older PHP versions"
         if: ${{ (matrix.php-version == '7.2' || matrix.php-version == '7.3' || matrix.php-version == '7.4' || matrix.php-version == '8.0' || matrix.php-version == '8.1') }}
@@ -440,7 +448,8 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
+          - "8.2"
+          - "8.3" # @todo confirm which versions of Laravel will support PHP 8.3
         exclude:
           # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
@@ -448,19 +457,22 @@ jobs:
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.3"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
           - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.3"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
           - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
-          # Laravel 8 supports PHP 7.3 - 8.1
+          - {laravel-version: "7.*", php-version: "8.3"} # Laravel 7 does not support PHP 8.1+
+          # Laravel 8 supports PHP 7.3 - 8.1 @todo tbc
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 8.0 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1 @todo tbc
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - 8.2
+          # Laravel 10 supports PHP 8.1 - 8.2 @todo tbc
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -557,7 +569,8 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
+          - "8.2"
+          - "8.3" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
           # See - https://laravel.com/docs/9.x/releases#support-policy
           # See - https://github.com/laravel/framework/issues/40339
@@ -565,19 +578,22 @@ jobs:
           - {laravel-version: "5.5.*", php-version: "8.0"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.1"} # Laravel 5.5.* does not support PHP 8.0+
           - {laravel-version: "5.5.*", php-version: "8.2"} # Laravel 5.5.* does not support PHP 8.0+
+          - {laravel-version: "5.5.*", php-version: "8.3"} # Laravel 5.5.* does not support PHP 8.0+
           # Laravel 6 supports PHP 7.2 - 8.0
           - {laravel-version: "6.*", php-version: "8.1"} # Laravel 6 does not support PHP 8.1+
           - {laravel-version: "6.*", php-version: "8.2"} # Laravel 6 does not support PHP 8.1+
+          - {laravel-version: "6.*", php-version: "8.3"} # Laravel 6 does not support PHP 8.1+
           # Laravel 7 supports PHP 7.2 - 8.0
           - {laravel-version: "7.*", php-version: "8.1"} # Laravel 7 does not support PHP 8.1+
           - {laravel-version: "7.*", php-version: "8.2"} # Laravel 7 does not support PHP 8.1+
-          # Laravel 8 supports PHP 7.3 - 8.1
+          - {laravel-version: "7.*", php-version: "8.3"} # Laravel 7 does not support PHP 8.1+
+          # Laravel 8 supports PHP 7.3 - 8.1 @todo tbc
           - {laravel-version: "8.*", php-version: "7.2"} # Laravel 8 requires 7.3+
-          # Laravel 9 supports PHP 8.0 - 8.1
+          # Laravel 9 supports PHP 8.0 - 8.1 @todo tbc
           - {laravel-version: "9.*", php-version: "7.2"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.3"} # Laravel 9 requires 8.0+
           - {laravel-version: "9.*", php-version: "7.4"} # Laravel 9 requires 8.0+
-          # Laravel 10 supports PHP 8.1 - 8.2
+          # Laravel 10 supports PHP 8.1 - 8.2 @todo tbc
           - {laravel-version: "10.*", php-version: "7.2"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.3"} # Laravel 10 requires 8.1+
           - {laravel-version: "10.*", php-version: "7.4"} # Laravel 10 requires 8.1+
@@ -648,28 +664,32 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
+          - "8.2"
+          - "8.3" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
           # Lumen 5.5 supports PHP 7.1 - 7.3
           - {lumen-version: "5.5.*", php-version: "7.4"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.2"} # Lumen 5.5 does not support PHP 7.4+
+          - {lumen-version: "5.5.*", php-version: "8.3"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.2"} # Lumen 6 does not support PHP 8.0+
+          - {lumen-version: "6.*", php-version: "8.3"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.2"} # Lumen 7 does not support PHP 8.0+
-          # Lumen 8 supports PHP 7.3 - 8.1
+          - {lumen-version: "7.*", php-version: "8.3"} # Lumen 7 does not support PHP 8.0+
+          # Lumen 8 supports PHP 7.3 - 8.1 @todo tbc
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
-          # Lumen 9 supports PHP 8.0 - 8.1
+          # Lumen 9 supports PHP 8.0 - 8.1 @todo tbc
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
-          # Lumen 10 supports PHP 8.1 - 8.2
+          # Lumen 10 supports PHP 8.1 - 8.2 @todo tbc
           - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
@@ -722,28 +742,32 @@ jobs:
           - "7.4"
           - "8.0"
           - "8.1"
-          - "8.2" # @todo confirm which versions of Laravel will support PHP 8.2
+          - "8.2"
+          - "8.3" # @todo confirm which versions of Laravel will support PHP 8.2
         exclude:
           # Lumen 5.5 supports PHP 7.1 - 7.3
           - {lumen-version: "5.5.*", php-version: "7.4"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.0"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.1"} # Lumen 5.5 does not support PHP 7.4+
           - {lumen-version: "5.5.*", php-version: "8.2"} # Lumen 5.5 does not support PHP 7.4+
+          - {lumen-version: "5.5.*", php-version: "8.3"} # Lumen 5.5 does not support PHP 7.4+
           # Lumen 6 supports PHP 7.2 - 7.4
           - {lumen-version: "6.*", php-version: "8.0"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.1"} # Lumen 6 does not support PHP 8.0+
           - {lumen-version: "6.*", php-version: "8.2"} # Lumen 6 does not support PHP 8.0+
+          - {lumen-version: "6.*", php-version: "8.3"} # Lumen 6 does not support PHP 8.0+
           # Lumen 7 supports PHP 7.2 - 7.4
           - {lumen-version: "7.*", php-version: "8.0"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.1"} # Lumen 7 does not support PHP 8.0+
           - {lumen-version: "7.*", php-version: "8.2"} # Lumen 7 does not support PHP 8.0+
-          # Lumen 8 supports PHP 7.3 - 8.1
+          - {lumen-version: "7.*", php-version: "8.3"} # Lumen 7 does not support PHP 8.0+
+          # Lumen 8 supports PHP 7.3 - 8.1 @todo tbc
           - {lumen-version: "8.*", php-version: "7.2"} # Lumen 8 requires 7.3+
-          # Lumen 9 supports PHP 8.0 - 8.1
+          # Lumen 9 supports PHP 8.0 - 8.1 @todo tbc
           - {lumen-version: "9.*", php-version: "7.2"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.3"} # Lumen 9 requires 8.0+
           - {lumen-version: "9.*", php-version: "7.4"} # Lumen 9 requires 8.0+
-          # Lumen 10 supports PHP 8.1 - 8.2
+          # Lumen 10 supports PHP 8.1 - 8.2 @todo tbc
           - {lumen-version: "10.*", php-version: "7.2"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.3"} # Lumen 10 requires 8.1+
           - {lumen-version: "10.*", php-version: "7.4"} # Lumen 10 requires 8.1+
