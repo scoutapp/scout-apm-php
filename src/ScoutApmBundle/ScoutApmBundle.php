@@ -28,6 +28,7 @@ final class ScoutApmBundle extends Bundle
                 if ($this->container === null) {
                     return;
                 }
+
                 if (! $this->container->has($connectionServiceName)) {
                     return;
                 }
