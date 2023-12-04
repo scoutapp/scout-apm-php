@@ -25,6 +25,10 @@ final class ScoutApmBundle extends Bundle
         /** @noinspection UnusedFunctionResultInspection */
         array_map(
             function (string $connectionServiceName): void {
+                if ($this->container === null) {
+                    return;
+                }
+
                 if (! $this->container->has($connectionServiceName)) {
                     return;
                 }
@@ -42,6 +46,10 @@ final class ScoutApmBundle extends Bundle
 
     private function safelyCheckForSymfonyPackagePresence(): void
     {
+        if ($this->container === null) {
+            return;
+        }
+
         if (! $this->container->has(LoggerInterface::class)) {
             return;
         }
