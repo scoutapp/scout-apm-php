@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Scoutapm\Laravel\View\Engine;
 
+use Closure;
 use Illuminate\Contracts\View\Engine;
 use Illuminate\View\Compilers\CompilerInterface;
 use Illuminate\View\Factory;
@@ -11,6 +12,7 @@ use Scoutapm\ScoutApmAgent;
 
 use function assert;
 use function method_exists;
+use function property_exists;
 
 /** @noinspection ContractViolationInspection */
 final class ScoutViewEngineDecorator implements Engine
@@ -33,11 +35,38 @@ final class ScoutViewEngineDecorator implements Engine
     /** @var Factory */
     private $viewFactory;
 
+    /** @var array<array-key, mixed>|null */
+    protected $lastCompiled;
+
     public function __construct(Engine $engine, ScoutApmAgent $agent, Factory $viewFactory)
     {
         $this->engine      = $engine;
         $this->agent       = $agent;
         $this->viewFactory = $viewFactory;
+
+        /**
+         * Unsure of which library or bit of code is trying to directly reflect on this protected property, but a
+         * customer reported a {@see \ReflectionException} when something was trying to reflect on `lastCompiled`
+         * (which was not a property of {@see ScoutViewEngineDecorator}, but it is a `protected` property in
+         * {@see CompilerEngine}. In order to satisfy the reflection, we can create a reference to the real
+         * {@see CompilerEngine::lastCompiled} property, so if someone mistakenly references our decorator directly,
+         * they should see the real value.
+         */
+        if (! property_exists($engine, 'lastCompiled')) {
+            return;
+        }
+
+        /**
+         * @psalm-suppress MixedAssignment
+         * @psalm-suppress PossiblyInvalidFunctionCall
+         */
+        $this->lastCompiled = & Closure::bind(
+            function & () {
+                return $this->lastCompiled;
+            },
+            $engine,
+            $engine
+        )->__invoke();
     }
 
     /**
