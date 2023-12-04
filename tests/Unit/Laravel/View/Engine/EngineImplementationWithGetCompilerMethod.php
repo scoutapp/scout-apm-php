@@ -9,10 +9,19 @@ use Illuminate\View\Compilers\CompilerInterface;
 
 class EngineImplementationWithGetCompilerMethod implements Engine
 {
+    /** @var list<non-empty-string> */
+    protected $lastCompiled = [];
+
     /** @inheritDoc */
     public function get($path, array $data = [])
     {
         return '';
+    }
+
+    /** @param list<non-empty-string> $newValue */
+    public function setLastCompiled(array $newValue): void
+    {
+        $this->lastCompiled = $newValue;
     }
 
     public function getCompiler(): CompilerInterface

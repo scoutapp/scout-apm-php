@@ -544,6 +544,9 @@ jobs:
           wget --content-on-error -O error.html http://localhost:8000/e || true
           cat error.html
           ps -ax
+      - name: "Output logs on failure"
+        if: failure()
+        run: cat test-app/storage/logs/laravel.log
       - name: "Check logs for successful payload send"
         run: |
           cd test-app
@@ -830,6 +833,9 @@ jobs:
           wget http://localhost:8000
           cat index.html
           ps -ax
+      - name: "Output logs on failure"
+        if: failure()
+        run: cat test-app/storage/logs/lumen.log
       - name: "Check logs for successful payload send"
         run: |
           cd test-app

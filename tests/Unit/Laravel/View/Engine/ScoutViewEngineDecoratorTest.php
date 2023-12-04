@@ -16,7 +16,9 @@ use PHPUnit\Framework\Constraint\IsType;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionMethod;
+use ReflectionProperty;
 use Scoutapm\Laravel\View\Engine\ScoutViewEngineDecorator;
 use Scoutapm\ScoutApmAgent;
 use Spatie\LaravelIgnition\Views\BladeSourceMapCompiler;
@@ -171,24 +173,19 @@ final class ScoutViewEngineDecoratorTest extends TestCase
         }
     }
 
+    /**
+     * The `spatie/laravel-ignition` package depends on the engine having a property called `lastCompiled`, which
+     * only exists in the `\Illuminate\View\Engines\CompilerEngine` Blade Compiler. The implementation does sort of
+     * account for decoration, but it expects the property to be called `engine`. Therefore, in this test, we
+     * invoke the problematic consumer to ensure our decorated view engine conforms to this assumption.
+     *
+     * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
+     */
     public function testSpatieLaravelIgnitionCompatibility(): void
     {
         if (! class_exists(ViewExceptionMapper::class)) {
             self::markTestSkipped('Test depends on `spatie/laravel-ignition`, but it is not installed');
         }
-
-        /**
-         * The `spatie/laravel-ignition` package depends on the engine having a property called `lastCompiled`, which
-         * only exists in the `\Illuminate\View\Engines\CompilerEngine` Blade Compiler. The implementation does sort of
-         * account for decoration, but it expects the property to be called `engine`. Therefore, in this test, we
-         * invoke the problematic consumer to ensure our decorated view engine conforms to this assumption.
-         *
-         * @link https://github.com/spatie/laravel-ignition/blob/d53075177ee0c710fbf588b8569f50435e1da054/src/Views/ViewExceptionMapper.php#L124-L130
-         *
-         * @noinspection PhpPossiblePolymorphicInvocationInspection PhpUndefinedFieldInspection
-         * @psalm-suppress NoInterfaceProperties
-         */
-        $this->realEngine->lastCompiled = [];
 
         $viewEngineResolver = new EngineResolver();
         $viewEngineResolver->register('blade', function () {
@@ -204,5 +201,22 @@ final class ScoutViewEngineDecoratorTest extends TestCase
 
         $vem = new ViewExceptionMapper($this->createMock(BladeSourceMapCompiler::class));
         $vem->map(new ViewException('things (View: paththing)'));
+    }
+
+    /** @throws ReflectionException */
+    public function testDecoratorLastCompiledPropertyReferencesCompilerEngineLastCompiledPropertyWhenUsingReflection(): void
+    {
+        $realEngine = new EngineImplementationWithGetCompilerMethod();
+        $realEngine->setLastCompiled(['a', 'b']);
+
+        $this->viewEngineDecorator = new ScoutViewEngineDecorator($realEngine, $this->agent, $this->viewFactory);
+
+        $prop = new ReflectionProperty($this->viewEngineDecorator, 'lastCompiled');
+        $prop->setAccessible(true);
+        self::assertSame(['a', 'b'], $prop->getValue($this->viewEngineDecorator));
+
+        // Make sure the value can be changed at runtime, and the decorator's value is also changed
+        $realEngine->setLastCompiled(['a', 'b', 'c']);
+        self::assertSame(['a', 'b', 'c'], $prop->getValue($this->viewEngineDecorator));
     }
 }
